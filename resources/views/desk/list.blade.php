@@ -1,0 +1,94 @@
+@section('title', '台桌输赢情况')
+@section('header')
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+    </div>
+    <div class="layui-inline">
+    <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+    </div>
+    <div class="layui-inline">
+        <!--<input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">-->
+    </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="" value="" name="" placeholder="靴号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+    </div>
+@endsection
+@section('table')
+    <table class="layui-table" lay-even lay-skin="nob">
+        <colgroup>
+        <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+        </colgroup>
+        <thead>
+        <tr>
+            <th class="hidden-xs">日期</th>
+            <th class="hidden-xs">台桌类型</th>
+            <th class="hidden-xs">台桌名称</th>
+            <th class="hidden-xs">靴号</th>
+            <th class="hidden-xs">总下注</th>
+            <th class="hidden-xs">下注输赢</th>
+            <th class="hidden-xs">洗码费</th>
+            <th class="hidden-xs">公司总赢</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($list as $info)
+            <tr>
+                <td class="hidden-xs">{{$info['time']}}</td>
+                <td class="hidden-xs">{{$info['game_id']}}</td>
+                <td class="hidden-xs">{{$info['desk_name']}}</td>
+                <td class="hidden-xs">0</td>
+                <td class="hidden-xs">{{$info['betMoney']}}</td>
+                <td class="hidden-xs">{{$info['winAndErr']}}</td>
+                <td class="hidden-xs">{{$info['creatime']}}</td>
+                <td class="hidden-xs">{{$info['last_ip']}}</td>
+            </tr>
+        @endforeach
+        @if(!$list[0])
+            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+        @endif
+        </tbody>
+    </table>
+    <div class="page-wrap">
+        {{$list->render()}}
+    </div>
+@endsection
+@section('js')
+    <script>
+        layui.use(['form', 'jquery','laydate', 'layer'], function() {
+            var form = layui.form(),
+                $ = layui.jquery,
+                laydate = layui.laydate,
+                layer = layui.layer
+            ;
+            laydate({istoday: true});
+            $(".reset").click(function(){
+                $("input[name='begin']").val('');
+            });
+            form.render();
+            form.verify({
+                begin:function(value){
+                    var begin = Date.parse(new Date(value));
+                    //获取当前时间戳
+                    var nowTime = (new Date()).getTime();
+                    if(begin>nowTime){
+                        return "选择的日期不能大于今天的日期";
+                    }
+                }
+            });
+            form.on('submit(formDemo)', function(data) {
+            });
+        });
+    </script>
+@endsection
+@extends('common.list')
