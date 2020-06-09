@@ -42,17 +42,17 @@ return [
 
         'mysql' => [
             'read' => [
-                'host' => ['114.67.97.70'],
+                'host' => ['129.211.114.135'],
             ],
             'write' => [
-                'host' => ['114.67.97.70'],
+                'host' => ['129.211.114.135'],
             ],
 
             'sticky'    => false,
             'driver'    => 'mysql',
             'database'  => 'huanqiu',
             'username'  => 'huanqiu',
-            'password'  => 'huanqiu',
+            'password'  => 'lcf2954626',
             'charset'   => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'    => 'hq_',
