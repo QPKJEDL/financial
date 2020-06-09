@@ -3,14 +3,108 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use App\Models\Desk;
+use App\Models\HqUser;
 use Illuminate\Http\Request;
 
 class AgentListController extends Controller
 {
     public function index(Request $request){
         $map = array();
-        $data = Desk::where($map)->paginate(10)->appends($request->all());
-        return view('agent.list',['list'=>$data]);
+        $map['parent_id']=0;
+        if (true==$request->has('username'))
+        {
+            $map['username']=$request->input('username');
+        }
+        $sql = Agent::query();
+        if (true==$request->has('nickname')) {
+           $sql->where('nickname','like','%'.$request->input('nickname').'%');
+        }
+        if (true==$request->has('excel') && true==$request->input('excel')){
+            $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
+                ->where($map)->get()->toArray();
+            foreach ($excel as $key=>$value){
+                $excel[$key]['ancestors'] = $this->getGroupBalance($value['id']);
+                $data = json_decode($value['fee'],true);
+                $excel[$key]['fee']=$data['baccarat'].'%/'.$data['dragonTiger'].'%/'.$data['niuniu'].'%/'.$data['sangong'].'%/'.$data['A89'].'%';
+            }
+            $head = array('ID','代理账号','姓名','账户余额','群组余额','百/龙/牛/三/A','占成(%)','创建时间');
+            try {
+                exportExcel($head, $excel, '代理列表', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }else{
+            $data = $sql->where($map)->paginate(10)->appends($request->all());
+            foreach ($data as $key=>$value){
+                $data[$key]['fee']=json_decode($value['fee'],true);
+                $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
+            }
+        }
+        return view('agent.list',['list'=>$data,'input'=>$request->all()]);
+    }
+
+    public function getGroupBalance($agentId){
+        $agentList = Agent::get();
+        $userList = $this->getHqUserList();
+        $userMoney = $this->getAgentUserMoney($agentId,$userList);
+        $info = $this->getAgentInfo($agentId,$agentList);
+        return $info + $userMoney + $this->getRecursiveBalance($agentId,$agentList,$userList);
+    }
+
+    public function getRecursiveBalance($agentId,$agentList,$userList){
+        $money = 0;
+        $children = $this->getAgentChildrenList($agentId,$agentList);
+        if(count($children) > 0){
+            foreach ($children as $key=>$value){
+                $money = $money + $value['balance'] + $this->getRecursiveBalance($value['id'],$agentList,$userList) + $this->getAgentUserMoney($value['id'],$userList);
+            }
+        }
+        return $money;
+    }
+
+    public function getAgentInfo($agentId,$agentList){
+        foreach ($agentList as $key=>$value){
+            if ($value['id']=$agentId){
+                return $agentList[$key]['balance'];
+                break;
+            }
+        }
+    }
+    /**获取用户列表
+     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
+     */
+    public function getHqUserList(){
+        $sql = HqUser::query();
+        return $sql->leftJoin('user_account','user_account.user_id','=','user.user_id')
+            ->select('user.user_id','user.agent_id','user_account.balance')->get();
+    }
+
+    public function getAgentUserMoney($agentId,$userList){
+        $arr = array();
+        foreach ($userList as $key=>$value){
+            if($agentId==$value['agent_id']){
+                $arr[] = $userList[$key];
+            }
+        }
+        return $this->getMoneyByUserList($arr);
+    }
+
+    public function getMoneyByUserList($userList){
+        $money = 0;
+        foreach ($userList as $key=>$value){
+            $money = $money + $value['balance'];
+        }
+        return $money;
+    }
+    public function getAgentChildrenList($agentId,$agentList){
+        $arr = array();
+        foreach ($agentList as $key=>$value){
+            if ($agentId==$value['parent_id']){
+                $arr[] = $agentList[$key];
+            }
+        }
+        return $arr;
     }
 }
