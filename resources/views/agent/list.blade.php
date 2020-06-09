@@ -50,8 +50,8 @@
                 <td class="hidden-xs">{{$info['proportion']}}%</td>
                 <td class="hidden-xs">{{$info['created_at']}}</td>
                 <td class="hidden-xs">
-                    <button class="layui-btn layui-btn-small layui-btn-normal user" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">下级会员</i></button>
-                    <button class="layui-btn layui-btn-small layui-btn-disabled layui-btn-normal agent" data-id="{{$info['id']}}"data-name="{{$info['nickname']}}" data-desc="下级代理"><i class="layui-icon">下级代理</i></button>
+                    <button class="layui-btn layui-btn-small @if($info['userCount']==0) layui-btn-disabled @else layui-btn-normal @endif user" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">下级会员</i></button>
+                    <button class="layui-btn layui-btn-small @if($info['agentCount']==0) layui-btn-disabled @else layui-btn-normal @endif agent" data-id="{{$info['id']}}"data-name="{{$info['nickname']}}" data-desc="下级代理"><i class="layui-icon">下级代理</i></button>
                 </td>
             </tr>
         @endforeach
@@ -76,6 +76,34 @@
             $(".reset").click(function(){
                 $('input[name="username"]').val('')
                 $('input[name="nickname"]').val('')
+            });
+            //下级会员
+            $(".user").click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                var index = layer.open({
+                    type: 2,
+                    title: name + '的下级会员',
+                    shadeClose: true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/agent/subUser/' + id
+                });
+                layer.full(index)
+            });
+            //下级代理
+            $(".agent").click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                var index = layer.open({
+                    type:2,
+                    title:name+'的下级代理',
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/agent/subordinate/'+id
+                });
+                layer.full(index)
             });
             form.render();
             form.on('submit(formDemo)', function(data) {
