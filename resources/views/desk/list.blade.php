@@ -48,10 +48,10 @@
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
                 <td class="hidden-xs">0</td>
-                <td class="hidden-xs">{{$info['betMoney']}}</td>
-                <td class="hidden-xs">{{$info['winAndErr']}}</td>
-                <td class="hidden-xs">{{$info['creatime']}}</td>
-                <td class="hidden-xs">{{$info['last_ip']}}</td>
+                <td class="hidden-xs">{{$info['betMoney']/100}}</td>
+                <td class="hidden-xs">{{$info['winAndErr']/100}}</td>
+                <td class="hidden-xs">{{$info['']}}</td>
+                <td class="hidden-xs">{{$info['']}}</td>
             </tr>
         @endforeach
         @if(!$list[0])

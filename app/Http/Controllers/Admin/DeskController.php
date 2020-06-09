@@ -23,8 +23,8 @@ class DeskController extends Controller
         {
             $data[$key]['time']=$tableName;
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
-            $data[$key]['betMoney']=$this->getDeskAllBetMoney($data[$key]['id'],$list);
-            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$list);
+            $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$tableName);
+            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$tableName);
         }
         $min=config('admin.min_date');
         return view('desk.list',['list'=>$data,'input'=>$request->all(),'min'=>$min]);
@@ -33,14 +33,19 @@ class DeskController extends Controller
 
     /**
      * 解析order表中得bet_money获取总金额
+     * @param $deskId
+     * @param $tableName
+     * @return float|int
      */
-    public function getCalculationMoney($orderInfo)
+    public function getCalculationMoney($deskId,$tableName)
     {
         $sum=0;
-        $json = $orderInfo['bet_money'];
-        $data = json_decode($json,true);
-        foreach($data as $key=>$value){
-            $sum += $data[$key];
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        $data = $order->where('desk_id','=',$deskId)->where('status','=',1)->get();
+        foreach ($data as $key=>$datum){
+            $bet = json_decode($datum['bet_money'],true);
+            $sum = $sum + array_sum($bet);
         }
         return $sum;
     }
@@ -58,17 +63,17 @@ class DeskController extends Controller
         }
         return $sum;
     }
+
     /**
      * 获取游戏输赢情况
+     * @param $deskId
+     * @param $tableName
+     * @return int|mixed
      */
-    public function getWinAndErrMoney($deskId,$data)
+    public function getWinAndErrMoney($deskId,$tableName)
     {
-        $num = 0;
-        foreach($data as $key=>$value){
-            if($data[$key]['desk_id']==$deskId){
-                $num -= $data[$key]['get_money'];
-            }
-        }
-        return $num;
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        return $order->where('desk_id','=',$deskId)->sum('get_money');
     }
 }

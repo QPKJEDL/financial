@@ -16,7 +16,7 @@ class GameRecordController extends Controller
         if(true==$request->has('begin')){
             $tableName = date('Ymd',strtotime($request->input('begin')));
         }else{
-            $tableName = date('Ymd',strtotime('-1day'));
+            $tableName = date('Ymd',time());
         }
         $map = array();
         if(true==$request->has('desk_id')){
