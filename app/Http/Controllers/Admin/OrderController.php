@@ -59,7 +59,6 @@ class OrderController extends Controller
                 $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
             }
         }
-        //dump($data);
         $min=config('admin.min_date');
         return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min]);
     }
