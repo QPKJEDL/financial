@@ -56,7 +56,7 @@ class OrderController extends Controller
             }else if($data[$key]['game_type']==4){
 
             }else{
-
+                $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
             }
         }
         //dump($data);

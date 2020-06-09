@@ -12,6 +12,7 @@ class HqUser extends Model{
      */
     public static function getUserInfoByUserId($userId){
         $data = $userId?HqUser::find($userId):[];
+        $data['fee']=json_decode($data['fee'],true);
         return $data;
     }
 }

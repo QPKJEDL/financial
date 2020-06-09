@@ -47,7 +47,6 @@
 @section('table')
     <table class="layui-table" lay-even lay-skin="nob">
         <colgroup>
-            
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -65,43 +64,54 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="300">
         </colgroup>
         <thead>
         <tr>
-            <th class="hidden-xs">注单号</th>
-            <th class="hidden-xs">台类型</th>
-            <th class="hidden-xs">台号</th>
-            <th class="hidden-xs">下注时间</th>
-            <th class="hidden-xs">靴号</th>
-            <th class="hidden-xs">铺号</th>
-            <th class="hidden-xs">会员名称[账号]</th>
-            <th class="hidden-xs">下注前余额</th>
-            <th class="hidden-xs">注单详情</th>
-            <th class="hidden-xs">下注后余额</th>
-            <th class="hidden-xs">开牌结果</th>
-            <th class="hidden-xs">下注金额</th>
-            <th class="hidden-xs">洗码量</th>
-            <th class="hidden-xs">会员赢</th>
-            <th class="hidden-xs">洗码率%</th>
-            <th class="hidden-xs">会员码佣</th>
-            <th class="hidden-xs">抽水</th>
-            <th class="hidden-xs">状态</th>
+            <th class="hidden-xs" style="font-size: 1px;">注单号</th>
+            <th class="hidden-xs" style="font-size: 1px;">台类型</th>
+            <th class="hidden-xs" style="font-size: 1px;">台号</th>
+            <th class="hidden-xs" style="font-size: 1px;">下注时间</th>
+            <th class="hidden-xs" style="font-size: 1px;">靴号</th>
+            <th class="hidden-xs" style="font-size: 1px;">铺号</th>
+            <th class="hidden-xs" style="font-size: 1px;">会员名称[账号]</th>
+            <th class="hidden-xs" style="font-size: 1px;">下注前余额</th>
+            <th class="hidden-xs" style="font-size: 1px;">注单详情</th>
+            <th class="hidden-xs" style="font-size: 1px;">下注后余额</th>
+            <th class="hidden-xs" style="font-size: 1px;">开牌结果</th>
+            <th class="hidden-xs" style="font-size: 1px;">下注金额</th>
+            <th class="hidden-xs" style="font-size: 1px;">洗码量</th>
+            <th class="hidden-xs" style="font-size: 1px;">会员赢</th>
+            <th class="hidden-xs" style="font-size: 1px;">洗码率%</th>
+            <th class="hidden-xs" style="font-size: 1px;">会员码佣</th>
+            <th class="hidden-xs" style="font-size: 1px;">状态</th>
         </tr>
         </thead>
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs">{{$info['order_sn']}}</td>
-                <td class="hidden-xs">{{$info['game_type']}}</td>
-                <td class="hidden-xs">{{$info['desk_name']}}</td>
-                <td class="hidden-xs">{{$info['creatime']}}</td>
-                <td class="hidden-xs">{{$info['boot_num']}}</td>
-                <td class="hidden-xs">{{$info['pave_num']}}</td>
-                <td class="hidden-xs">{{$info['user']['nickname']}}[{{$info['user']['account']}}]</td>
-                <td class="hidden-xs">{{$info['bill']['bet_before']/100}}</td>
-                <td class="hidden-xs">{{$info['bet_money']/100}}</td>
-                <td class="hidden-xs">{{$info['bill']['bet_after']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['order_sn']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">
+                    @if($info['game_type']==1)
+                        百家乐
+                    @elseif($info['game_type']==2)
+                        龙虎
+                    @elseif($info['game_type']==3)
+                        牛牛
+                    @elseif($info['game_type']==4)
+                        三公
+                    @elseif($info['game_type']==5)
+                        A89
+                    @endif
+                </td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['desk_name']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['creatime']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['boot_num']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['pave_num']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['user']['nickname']}}[{{$info['user']['account']}}]</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_before']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['bet_money']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_after']/100}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==2)
                         -
@@ -117,14 +127,47 @@
                                 {{$info['result']['bankernum']}}
                             @endif
                         @endif
+                    @elseif($info['status']==3)
+                        -
                     @endif
                 </td>
-                <td class="hidden-xs">{{$info['money']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['get_money']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
+                <td class="hidden-xs">{{$info['bill']['score']/100}}</td>
+                <td class="hidden-xs">{{$info['bill']['score']/100}}</td>
+                <td class="hidden-xs">{{$info['get_money']/100}}</td>
+                <td class="hidden-xs">
+                    @if($info['status']==1)
+                        @if($info['game_type']==1)
+                            {{$info['user']['fee']['baccarat']}}
+                        @elseif($info['game_type']==2)
+                            {{$info['user']['fee']['dragonTiger']}}
+                        @elseif($info['game_type']==3)
+                            {{$info['user']['fee']['niuniu']}}
+                        @elseif($info['game_type']==4)
+                            {{$info['user']['fee']['sangong']}}
+                        @elseif($info['game_type']==5)
+                            {{$info['user']['fee']['A89']}}
+                        @endif
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['status']==1)
+                        @if($info['game_type']==1)
+                            {{($info['bill']['score']/100)*($info['user']['fee']['baccarat']/100)}}
+                        @elseif($info['game_type']==2)
+                            {{($info['bill']['score']/100)*($info['user']['fee']['dragonTiger']/100)}}
+                        @elseif($info['game_type']==3)
+                            {{($info['bill']['score']/100)*($info['user']['fee']['niuniu']/100)}}
+                        @elseif($info['game_type']==4)
+                            {{($info['bill']['score'])*($info['user']['fee']['sangong']/100)}}
+                        @elseif($info['game_type']==5)
+                            {{($info['bill']['score']/100)*($info['user']['fee']['A89']/100)}}
+                        @endif
+                    @else
+                        -
+                    @endif
+                </td>
                 <td class="hidden-xs">
                     @if($info['status']==1)
                         结算完成
