@@ -45,13 +45,19 @@
             <tr>
                 <td class="hidden-xs">{{$info['account']}}</td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['userAccount']['balance']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
+                <td class="hidden-xs">{{$info['agentName']}}[{{$info['username']}}]</td>
+                <td class="hidden-xs">{{$info['cz']['score']/100}}</td>
+                <td class="hidden-xs">{{$info['userAccount']['balance']/100}}</td>
+                <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee']['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
                 <td class="hidden-xs">{{$info['creatime']}}</td>
                 <td class="hidden-xs">{{$info['last_ip']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
+                <td class="hidden-xs">
+                    @if($info['is_online']==1)
+                        <span style="color: green;">在线</span>
+                    @else
+                        离线
+                    @endif
+                </td>
             </tr>
         @endforeach
         @if(!$list[0])
