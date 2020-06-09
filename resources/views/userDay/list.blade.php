@@ -6,9 +6,9 @@
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
-    <div class="layui-inline">
+    {{--<div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="游戏类型" autocomplete="off" class="layui-input">
-    </div>
+    </div>--}}
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="会员账号" autocomplete="off" class="layui-input">
     </div>
@@ -49,18 +49,22 @@
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
+                <td class="hidden-xs">全部</td>
+                <td class="hidden-xs">{{$info['nickname']}}</td>
+                <td class="hidden-xs">{{$info['account']}}</td>
+                <td class="hidden-xs">{{$info['balance']/100}}</td>
+                <td class="hidden-xs">{{$info['betCount']}}</td>
+                <td class="hidden-xs">{{$info['betMoney']/100}}</td>
+                <td class="hidden-xs">{{$info['betCode']/100}}</td>
+                <td class="hidden-xs">{{$info['money']/100}}</td>
+                <td class="hidden-xs">0.00</td>
+                <td class="hidden-xs">{{$info['maid']/100}}</td>
+                <td class="hidden-xs">0.00</td>
+                <td class="hidden-xs">
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-small dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">详情</i></button>
+                    </div>
+                </td>
             </tr>
         @endforeach
         @if(!$list[0])
@@ -83,8 +87,7 @@
             laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
-                $("select[name='desk_id']").val(''); 
-                $("input[name='boot']").val('');
+                $("input[name='account']").val('');
             });
             form.render();
             form.on('submit(formDemo)', function(data) {
