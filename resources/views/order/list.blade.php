@@ -100,7 +100,7 @@
                 <td class="hidden-xs">{{$info['pave_num']}}</td>
                 <td class="hidden-xs">{{$info['user']['nickname']}}[{{$info['user']['account']}}]</td>
                 <td class="hidden-xs">{{$info['bill']['bet_before']/100}}</td>
-                <td class="hidden-xs">{{$info['bet_money']}}</td>
+                <td class="hidden-xs">{{$info['bet_money']/100}}</td>
                 <td class="hidden-xs">{{$info['bill']['bet_after']/100}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==2)
