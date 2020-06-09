@@ -4,10 +4,10 @@
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="代理账号"" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="username" value="{{ $input['username'] or '' }}" name="username" placeholder="代理账号"" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="昵称" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="nickname" value="{{ $input['nickname'] or '' }}" name="nickname" placeholder="昵称" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -37,12 +37,12 @@
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
+                <td class="hidden-xs">{{$info['nickname']}}</td>
+                <td class="hidden-xs">{{$info['username']}}</td>
+                <td class="hidden-xs">0</td>
+                <td class="hidden-xs">{{$info['balance']/100}}</td>
+                <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee']['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
+                <td class="hidden-xs">{{$info['created_at']}}</td>
             </tr>
         @endforeach
         @if(!$list[0])
@@ -64,9 +64,8 @@
             ;
             laydate({istoday: true});
             $(".reset").click(function(){
-                $("input[name='begin']").val('');
-                $("select[name='desk_id']").val(''); 
-                $("input[name='boot']").val('');
+                $("input[name='username']").val('')
+                $('input[name="nickname"]').val('')
             });
             form.render();
             form.on('submit(formDemo)', function(data) {
