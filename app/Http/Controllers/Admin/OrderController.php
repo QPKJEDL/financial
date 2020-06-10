@@ -62,7 +62,51 @@ class OrderController extends Controller
         $min=config('admin.min_date');
         return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min]);
     }
+    public function getOrderListByUserId($id,$time,Request $request){
+        $request->offsetSet('begin',$time);
+        $tableName = date('Ymd',strtotime($time));
+        $map = array();
+        $map['user_id']=$id;
+        if(true==$request->has('desk_id')){
+            $map['desk_id']=$request->input('desk_id');
+        }
+        if(true==$request->has('type')){
+            $map['game_type']=$request->input('type');
+        }
+        if(true==$request->has('status')){
+            $map['status']=$request->input('status');
+        }
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        $data = $order->where($map)->paginate(10)->appends($request->all());
+        foreach($data as $key=>&$value){
+            $data[$key]['creatime']=date('Y-m-d H:m:s',$value['creatime']);
+            $data[$key]['bill']=Billflow::getBillflowByOrderSn($value['order_sn'],$tableName);
+            $data[$key]['user']=HqUser::getUserInfoByUserId($value['user_id']);
+            //下注金额
+            $data[$key]['money']=$this->getMoney($value['bet_money']);
+            //获取表名
+            $tableName=$this->getGameRecordTableNameByRecordSn($value['record_sn']);
+            $winner = $this->getGameRecordInfo($tableName,$value['record_sn']);
+            if($data[$key]['game_type']==1){
+                $data[$key]['result']=$this->getBaccaratParseJson($winner);
+                $data[$key]['bet_money']=$this->getBaccaratBetMoney($value['bet_money']);
+            }else if($data[$key]['game_type']==2){
+                $data[$key]['result']=$this->getDragonTigerJson($winner);
+                $data[$key]['bet_money']=$this->getDragonTieTiger($value['bet_money']);
+            }else if($data[$key]['game_type']==3){
+                $data[$key]['result']=$this->getFullParseJson($winner);
+                $data[$key]['bet_money'] = $this->getNiuNiuBetMoney($value['bet_money']);
+            }else if($data[$key]['game_type']==4){
 
+            }else{
+                $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
+            }
+        }
+        //dump($data);
+        $min=config('admin.min_date');
+        return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min]);
+    }
 
     /**
      * 获取所有台桌
@@ -243,6 +287,34 @@ class OrderController extends Controller
         }
         if(!empty($data['x3_double'])){
             $str = $str."闲三(翻倍)".$data['x3_double'];
+        }
+        return $str;
+    }
+
+    /**
+     * A89
+     */
+    public function getA89BetMoney($betMoney){
+        $data = json_decode($betMoney,true);
+        //{"ShunMen_Super_Double":10000,"TianMen_Super_Double":10000,"FanMen_Super_Double":10000,"ShunMen_equal":10000,"TianMen_equal":10000,"FanMen_equal":10000}
+        $str = "";
+        if(!empty($data['ShunMen_Super_Double'])){
+            $str = "顺门(超倍)".$data['ShunMen_Super_Double']/100;
+        }
+        if(!empty($data['TianMen_Super_Double'])){
+            $str =$str."天门(超倍)".$data['TianMen_Super_Double']/100;
+        }
+        if(!empty($data['FanMen_Super_Double'])){
+            $str = $str.'反门(超倍)'.$data['FanMen_Super_Double']/100;
+        }
+        if (!empty($data['ShunMen_equal'])){
+            $str = $str.'顺们'.$data['ShunMen_equal']/100;
+        }
+        if(!empty($data['TianMen_equal'])){
+            $str = $str.'天门'.$data['TianMen_equal']/100;
+        }
+        if(!empty($data['FanMen_equal'])){
+            $str = $str.'反门'.$data['FanMen_equal']/100;
         }
         return $str;
     }

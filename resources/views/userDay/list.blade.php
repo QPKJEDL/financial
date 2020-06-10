@@ -89,6 +89,26 @@
                 $("input[name='begin']").val('');
                 $("input[name='account']").val('');
             });
+            $(".dayInfo").click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                var creatTime = $("input[name='begin']").val();
+                var time;
+                if(creatTime=="" || creatTime==null){
+                    time = new Date().toLocaleDateString().split("/").join('-');
+                }else{
+                    time = creatTime;
+                }
+                var index = layer.open({
+                    type:2,
+                    title:name+'下注详情',
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/userOrderList/' + id + '/'+time
+                });
+                layer.full(index);
+            });
             form.render();
             form.on('submit(formDemo)', function(data) {
                 console.log(data);
