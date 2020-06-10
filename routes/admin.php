@@ -61,7 +61,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/agent/subordinate/{id}','AgentListController@getSubordinateAgentList');//下级代理
     Route::get('/agent/subUser/{id}','AgentListController@user');//下级会员
     Route::resource('/userDay',     'UserDayEndController');//会员日结表
-    Route::resource('/daw','DepositAndWithController');//充值提现查询
+    Route::resource('/daw','DepositAndWithController');//会员提现查询
     Route::resource('/deluser','DelUserController');//已删会员
     Route::resource('/delagent','DelAgentController');//已删代理
     Route::resource('/down','DownController');//下分请求
