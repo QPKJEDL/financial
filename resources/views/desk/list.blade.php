@@ -50,8 +50,8 @@
                 <td class="hidden-xs">0</td>
                 <td class="hidden-xs">{{$info['betMoney']/100}}</td>
                 <td class="hidden-xs">{{$info['winAndErr']/100}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
-                <td class="hidden-xs">{{$info['']}}</td>
+                <td class="hidden-xs">{{($info['money']/100) * 0.009}}</td>
+                <td class="hidden-xs">{{($info['winAndErr']/100) -(($info['money']/100) * 0.009)}}</td>
             </tr>
         @endforeach
         @if(!$list[0])
