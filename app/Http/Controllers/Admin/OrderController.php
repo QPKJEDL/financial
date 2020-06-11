@@ -271,22 +271,22 @@ class OrderController extends Controller
         $data = json_decode($betMoney,true);
         $str = "";
         if(!empty($data['x1_equal'])){
-            $str = "闲一(平倍)".$data['x1_equal'];
+            $str = "闲一(平倍)".$data['x1_equal']/100;
         }
         if(!empty($data['x1_double'])){
-            $str = $str."闲一(翻倍)".$data['x1_double'];
+            $str = $str."闲一(翻倍)".$data['x1_double']/100;
         }
         if(!empty($data['x2_equal'])){
-            $str = "闲二（平倍）".$data['x2_equal'];
+            $str = "闲二（平倍）".$data['x2_equal']/100;
         }
         if(!empty($data['x2_double'])){
-            $str = $str."闲二(翻倍)".$data['x2_double'];
+            $str = $str."闲二(翻倍)".$data['x2_double']/100;
         }
         if(!empty($data['x3_equal'])){
-            $str = "闲三（平倍）".$data['x3_equal'];
+            $str = "闲三（平倍）".$data['x3_equal']/100;
         }
         if(!empty($data['x3_double'])){
-            $str = $str."闲三(翻倍)".$data['x3_double'];
+            $str = $str."闲三(翻倍)".$data['x3_double']/100;
         }
         return $str;
     }
