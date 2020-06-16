@@ -67,6 +67,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/delagent','DelAgentController');//已删代理
     Route::resource('/down','DownController');//下分请求
     Route::get('/userOrderList/{id}','UserDayEndController@infoList');//下注详情
+    Route::resource('/live','LiveRewardController');//会员打赏记录
 });
 
 Route::get('/phpinfo',function (Request $request){

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Schema;
 class UserDayEndController extends Controller
 {
     public function index(Request $request){
+        $request->offsetSet('type',1);
         $map = array();
         $id = Auth::id();
         if (true==$request->has('account')){
