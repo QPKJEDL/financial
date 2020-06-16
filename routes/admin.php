@@ -66,7 +66,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/deluser','DelUserController');//已删会员
     Route::resource('/delagent','DelAgentController');//已删代理
     Route::resource('/down','DownController');//下分请求
-    Route::get('/userOrderList/{id}/{time}','OrderController@getOrderListByUserId');//下注详情
+    Route::get('/userOrderList/{id}','UserDayEndController@infoList');//下注详情
 });
 
 Route::get('/phpinfo',function (Request $request){

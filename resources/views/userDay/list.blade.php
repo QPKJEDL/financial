@@ -4,18 +4,25 @@
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
-    {{--<div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="游戏类型" autocomplete="off" class="layui-input">
-    </div>--}}
+    <div class="layui-inline">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['end'] or '' }}" autocomplete="off">
+    </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="会员账号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo" value="submit" name="submit">搜索</button>
         <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
         <button class="layui-btn layui-btn-normal reset" lay-submit>导出EXCEL</button>
+    </div>
+    <br>
+    <div class="layui-btn-group">
+        <button type="button" class="layui-btn" id="thisWeek">本周</button>
+        <button type="button" class="layui-btn" id="lastWeek">上周</button>
+        <button type="button" class="layui-btn" id="thisMonth">本月</button>
+        <button type="button" class="layui-btn" id="lastMonth">上月</button>
     </div>
 @endsection
 @section('table')
@@ -43,7 +50,9 @@
             <th class="hidden-xs">抽水</th>
             <th class="hidden-xs">码佣总额</th>
             <th class="hidden-xs">打赏金额</th>
-            <th class="hidden-xs">操作</th>
+            @if($input['type']==1)
+                <th class="hidden-xs">操作</th>
+            @endif
         </tr>
         </thead>
         <tbody>
@@ -53,18 +62,20 @@
                 <td class="hidden-xs">{{$info['nickname']}}</td>
                 <td class="hidden-xs">{{$info['account']}}</td>
                 <td class="hidden-xs">{{$info['balance']/100}}</td>
-                <td class="hidden-xs">{{$info['betCount']}}</td>
-                <td class="hidden-xs">{{$info['betMoney']/100}}</td>
-                <td class="hidden-xs">{{$info['betCode']/100}}</td>
-                <td class="hidden-xs">{{$info['money']/100}}</td>
+                <td class="hidden-xs">{{$info['bets_num']}}</td>
+                <td class="hidden-xs">{{$info['bets_money']/100}}</td>
+                <td class="hidden-xs">{{$info['sum_money']/100}}</td>
+                <td class="hidden-xs">{{$info['win_money']/100}}</td>
                 <td class="hidden-xs">0.00</td>
-                <td class="hidden-xs">{{$info['maid']/100}}</td>
-                <td class="hidden-xs">0.00</td>
-                <td class="hidden-xs">
-                    <div class="layui-inline">
-                        <button class="layui-btn layui-btn-small dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">详情</i></button>
-                    </div>
-                </td>
+                <td class="hidden-xs">{{($info['sum_money']/100)*0.009}}</td>
+                <td class="hidden-xs">{{$info['reward_money']}}</td>
+                @if($input['type']==1)
+                    <td class="hidden-xs">
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-small dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">详情</i></button>
+                        </div>
+                    </td>
+                @endif
             </tr>
         @endforeach
         @if(!$list[0])
@@ -87,6 +98,7 @@
             laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("input[name='end']").val('');
                 $("input[name='account']").val('');
             });
             $(".dayInfo").click(function () {
@@ -105,14 +117,83 @@
                     shadeClose:true,
                     offset:'10%',
                     area:['60%','80%'],
-                    content:'/admin/userOrderList/' + id + '/'+time
+                    content:'/admin/userOrderList/' + id
                 });
                 layer.full(index);
             });
+            //本周
+            $("#thisWeek").click(function () {
+                var now = new Date();//当前日期
+                var nowDayOfWeek = now.getDay();//今天本周的第几天
+                var nowDay = now.getDate();//当前日
+                var nowMonth = now.getMonth();//当前月
+                var nowYear = now.getFullYear();//当前年
+                var weekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek);
+                $("input[name='begin']").val(formatDate(weekStartDate))
+                $("input[name='end']").val(formatDate(now))
+            });
+            //本月
+            $("#thisMonth").click(function () {
+                var now = new Date();
+                var nowYear = now.getFullYear();
+                var nowMonth = now.getMonth();
+                var monthStartDate = new Date(nowYear, nowMonth, 1);
+                $("input[name='begin']").val(formatDate(monthStartDate))
+                $("input[name='end']").val(formatDate(now))
+            });
+            $("#lastWeek").click(function () {
+                var now = new Date();                 //当前日期
+                var nowDayOfWeek = now.getDay();        //今天本周的第几天
+                var nowDay = now.getDate();            //当前日
+                var nowMonth = now.getMonth();         //当前月
+                var nowYear = now.getFullYear();           //当前年
+                var getUpWeekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek -7);
+                var getUpWeekEndDate = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek - 7));
+                $("input[name='begin']").val(formatDate(getUpWeekStartDate))
+                $("input[name='end']").val(formatDate(getUpWeekEndDate))
+            });
+            //上月
+            $("#lastMonth").click(function () {
+                var now = new Date();
+                var nowYear = now.getFullYear();
+                var lastMonthDate = new Date(); //上月日期
+                lastMonthDate.setDate(1);
+                lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
+                var lastMonth = lastMonthDate.getMonth();
+                var lastMonthStartDate = new Date(nowYear, lastMonth, 1);
+                var lastMonthEndDate = new Date(nowYear,lastMonth,getMonthDays(lastMonth));
+                $("input[name='begin']").val(formatDate(lastMonthStartDate))
+                $("input[name='end']").val(formatDate(lastMonthEndDate))
+            });
             form.render();
             form.on('submit(formDemo)', function(data) {
-                console.log(data);
             });
+            //获得某月的天数 （与上面有重复可删除，不然本月结束日期报错）
+            function getMonthDays(nowyear){
+                var lastMonthDate = new Date(); //上月日期
+                lastMonthDate.setDate(1);
+                lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
+                var lastYear = lastMonthDate.getFullYear();
+                var lastMonth = lastMonthDate.getMonth();
+                var lastMonthStartDate = new Date(nowyear, lastMonth, 1);
+                var lastMonthEndDate= new Date(nowyear, lastMonth+ 1, 1);
+                var days = (lastMonthEndDate- lastMonthStartDate) / (1000 * 60 * 60 * 24);//格式转换
+                return days
+            }
+            //格式化日期：yyyy-MM-dd
+            function formatDate(date) {
+                var myyear = date.getFullYear();
+                var mymonth = date.getMonth()+1;
+                var myweekday = date.getDate();
+
+                if(mymonth < 10){
+                    mymonth = "0" + mymonth;
+                }
+                if(myweekday < 10){
+                    myweekday = "0" + myweekday;
+                }
+                return (myyear+"-"+mymonth + "-" + myweekday);
+            }
         });
     </script>
 @endsection
