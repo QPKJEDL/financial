@@ -110,7 +110,9 @@
                 <td class="hidden-xs" style="font-size: 1px;">{{$info['pave_num']}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{$info['user']['nickname']}}[{{$info['user']['account']}}]</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_before']/100}}</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['bet_money']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">
+                    <button type="button" data-id="{{$info['id']}}" data-value="{{$info['bet_money']}}" class="layui-btn layui-btn-small layui-btn-normal result">查看结果</button>
+                </td>
                 <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_after']/100}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==2)
@@ -123,6 +125,19 @@
                         @elseif($info['game_type']==3)
                             @if($info['result']['bankernum']=="")
                                 {{$info['result']['x1result']}}&nbsp;{{$info['result']['x2result']}}&nbsp;{{$info['result']['x3result']}}
+                            @else
+                                {{$info['result']['bankernum']}}
+                            @endif
+                        @elseif($info['game_type']==4)
+                            @if($info['result']['bankernum']=="")
+                                {{$info['result']['x1result']}}&nbsp;{{$info['result']['x2result']}}&nbsp;{{$info['result']['x3result']}}
+                                {{$info['result']['x4result']}}&nbsp;{{$info['result']['x5result']}}&nbsp;{{$info['result']['x6result']}}
+                            @else
+                                {{$info['result']['bankernum']}}
+                            @endif
+                        @elseif($info['game_type']==5)
+                            @if($info['result']['bankernum']=="")
+                                {{$info['result']['Fanresult']}} {{$info['result']['Shunresult']}} {{$info['result']['Tianresult']}}
                             @else
                                 {{$info['result']['bankernum']}}
                             @endif
@@ -201,6 +216,22 @@
             laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+            });
+            $(".result").click(function () {
+                var id = $(this).attr('data-id');
+                var value = $(this).attr('data-value');
+                layer.open({
+                    type:1,
+                    offset:'auto',
+                    id:"id"+id,
+                    content: '<div style="padding: 20px 100px;">'+value+'</div>',
+                    btn:'关闭',
+                    btnAlign: 'c',
+                    shade:0,
+                    yes:function () {
+                        layer.closeAll();
+                    }
+                });
             });
             form.render();
             form.verify({

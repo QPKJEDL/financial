@@ -54,8 +54,10 @@ class OrderController extends Controller
                 $data[$key]['result']=$this->getFullParseJson($winner);
                 $data[$key]['bet_money'] = $this->getNiuNiuBetMoney($value['bet_money']);
             }else if($data[$key]['game_type']==4){
-
+                $data[$key]['result']=$this->getSanGongResult($winner);
+                $data[$key]['bet_money']=$this->getSanGongMoney($value['bet_money']);
             }else{
+                $data[$key]['result']=$this->getA89Result($winner);
                 $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
             }
         }
@@ -98,8 +100,10 @@ class OrderController extends Controller
                 $data[$key]['result']=$this->getFullParseJson($winner);
                 $data[$key]['bet_money'] = $this->getNiuNiuBetMoney($value['bet_money']);
             }else if($data[$key]['game_type']==4){
-
+                $data[$key]['result']=$this->getSanGongResult($winner);
+                $data[$key]['bet_money']=$this->getSanGongMoney($value['bet_money']);
             }else{
+                $data[$key]['result']=$this->getA89Result($winner);
                 $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
             }
         }
@@ -210,6 +214,84 @@ class OrderController extends Controller
     }
 
     /**
+     * 三公
+     * @param $jsonStr
+     * @return array
+     */
+    public function getSanGongResult($jsonStr){
+        $arr = array();
+        //解析json
+        $data = json_decode($jsonStr,true);
+        //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
+        //判断庄是否通吃
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+            $arr['bankernum'] = "庄";
+        }else{
+            $arr['bankernum'] = "";
+        }
+        if ($data['x1result'] == "win") {
+            $arr['x1result'] = "闲1";
+        } else {
+            $arr['x1result'] = "";
+        }
+        if ($data['x2result'] == "win") {
+            $arr['x2result'] = "闲2";
+        } else {
+            $arr['x2result'] = "";
+        }
+        if ($data['x3result'] == "win") {
+            $arr['x3result'] = "闲3";
+        } else {
+            $arr['x3result'] = "";
+        }
+        if ($data['x4result'] == "win") {
+            $arr['x4result'] = "闲4";
+        } else {
+            $arr['x4result'] = "";
+        }
+        if ($data['x5result'] == "win") {
+            $arr['x5result'] = "闲5";
+        } else {
+            $arr['x5result'] = "";
+        }
+        if ($data['x6result'] == "win") {
+            $arr['x6result'] = "闲6";
+        } else {
+            $arr['x6result'] = "";
+        }
+        return $arr;
+    }
+    /**
+     * A89
+     */
+    public function getA89Result($jsonStr){
+        $data = json_decode($jsonStr,true);
+        //{"BankerNum":"5点","FanNum":"0点","Fanresult":"","ShunNum":"8点","Shunresult":"win","TianNum":"5点","Tianresult":"win"}
+        //判断庄是否通知
+        $arr = array();
+        if ($data['Fanresult']=="" && $data['Shunresult']=="" && $data['Tianresult']==""){
+            $arr['bankernum'] = "庄";
+        }else{
+            $arr['bankernum'] = "";
+        }
+        if ($data['Fanresult'] == "win") {
+            $arr['Fanresult'] = "反门";
+        } else {
+            $arr['Fanresult'] = "";
+        }
+        if ($data['Shunresult'] == "win") {
+            $arr['Shunresult'] = "顺门";
+        } else {
+            $arr['Shunresult'] = "";
+        }
+        if ($data['Tianresult']=="win"){
+            $arr['Tianresult'] = "天门";
+        }else{
+            $arr['Tianresult'] = "";
+        }
+        return $arr;
+    }
+    /**
      * 百家乐
      */
     public function getBaccaratBetMoney($betMoney){
@@ -292,7 +374,75 @@ class OrderController extends Controller
     }
 
     /**
+     * 三公
+     * @param $betMoney
+     * @return string
+     */
+    public function getSanGongMoney($betMoney)
+    {
+        $data = json_decode($betMoney,true);
+        //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double":10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
+        $str = "";
+        if (!empty($data['x1_Super_Double'])){
+            $str = "闲一(超倍)".$data['x1_Super_Double']/100;
+        }
+        if (!empty($data['x1_double'])){
+            $str = $str."闲一(翻倍)".$data['x1_double']/100;
+        }
+        if (!empty($data['x1_equal'])){
+            $str = $str."闲一(平倍)".$data['x1_equal']/100;
+        }
+        if (!empty($data['x2_Super_Double'])){
+            $str = $str."闲二(超倍)".$data['x2_Super_Double']/100;
+        }
+        if (!empty($data['x2_double'])){
+            $str = $str."闲二(翻倍)".$data['x2_double']/100;
+        }
+        if (!empty($data['x2_equal'])){
+            $str = $str.'闲二(平倍)'.$data['x2_equal']/100;
+        }
+        if (!empty($data['x3_Super_Double'])){
+            $str = $str."闲三(超倍)".$data['x3_Super_Double']/100;
+        }
+        if (!empty($data['x3_double'])){
+            $str = $str."闲三(翻倍)".$data['x3_double']/100;
+        }
+        if (!empty($data['x3_equal'])){
+            $str = $str.'闲三(平倍)'.$data['x3_equal']/100;
+        }
+        if (!empty($data['x4_Super_Double'])){
+            $str = $str."闲四(超倍)".$data['x4_Super_Double']/100;
+        }
+        if (!empty($data['x4_double'])){
+            $str = $str."闲四(翻倍)".$data['x4_double']/100;
+        }
+        if (!empty($data['x4_equal'])){
+            $str = $str.'闲四(平倍)'.$data['x4_equal']/100;
+        }
+        if (!empty($data['x5_Super_Double'])){
+            $str = $str."闲五(超倍)".$data['x5_Super_Double']/100;
+        }
+        if (!empty($data['x5_double'])){
+            $str = $str."闲五(翻倍)".$data['x5_double']/100;
+        }
+        if (!empty($data['x5_equal'])){
+            $str = $str.'闲五(平倍)'.$data['x5_equal']/100;
+        }
+        if (!empty($data['x6_Super_Double'])){
+            $str = $str."闲六(超倍)".$data['x6_Super_Double']/100;
+        }
+        if (!empty($data['x6_double'])){
+            $str = $str."闲六(翻倍)".$data['x6_double']/100;
+        }
+        if (!empty($data['x6_equal'])){
+            $str = $str.'闲六(平倍)'.$data['x6_equal']/100;
+        }
+        return $str;
+    }
+    /**
      * A89
+     * @param $betMoney
+     * @return string
      */
     public function getA89BetMoney($betMoney){
         $data = json_decode($betMoney,true);
