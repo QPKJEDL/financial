@@ -66,6 +66,9 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/deluser','DelUserController');//已删会员
     Route::resource('/delagent','DelAgentController');//已删代理
     Route::resource('/down','DownController');//下分请求
+    Route::post('/down/lockDataById','DownController@lockDataById');//锁定数据
+    Route::post('/down/approveData','DownController@approveData');//确认数据
+    Route::post('/down/obsoleteData','DownController@obsoleteData');//作废数据
     Route::get('/userOrderList/{id}','UserDayEndController@infoList');//下注详情
     Route::resource('/live','LiveRewardController');//会员打赏记录
 });

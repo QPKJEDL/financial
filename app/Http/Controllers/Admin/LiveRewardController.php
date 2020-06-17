@@ -49,9 +49,12 @@ class LiveRewardController extends Controller
         }
         return view('live.list',['list'=>$data,'desk'=>Desk::getDeskList(),'min'=>config('admin.min_date'),'input'=>$request->all()]);
     }
-    /*
-         * 递归查询直属一级
-         */
+
+    /**
+     * 获取直属一级代理
+     * @param $agent_id
+     * @return mixed
+     */
     private function get_direct_agent($agent_id){
         $agentlist=Agent::select('id','username','nickname','parent_id','proportion')->get()->toArray();
         foreach ($agentlist as $key=>&$value){
