@@ -42,10 +42,10 @@ return [
 
         'mysql' => [
             'read' => [
-                'host' => ['129.211.114.135'],
+                'host' => ['101.32.22.231'],
             ],
             'write' => [
-                'host' => ['129.211.114.135'],
+                'host' => ['101.32.22.231'],
             ],
 
             'sticky'    => false,
@@ -105,7 +105,7 @@ return [
         'default' => [
 
             'host' => "127.0.0.1",
-            //'password' => "lcf2954626",
+            'password' => "lcf2954626",
             'port' => '6379',
             'database' => 0,
             'prefix' => "hq_",
