@@ -11,6 +11,7 @@ use App\Models\Draw;
 use App\Models\UserAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * 下分请求
@@ -90,6 +91,7 @@ class DownController extends Controller
         $count = Draw::where('id','=',$id)->update($data);
         if ($count){
             $info = $id?Draw::find($id):[];
+            DB::table('user_account')->increment('balance',$info['money']);
             $this->insertBillFlowByToDay($info['user_id'],$info['money']);
             return ['msg'=>'操作成功','status'=>1];
         }else{
