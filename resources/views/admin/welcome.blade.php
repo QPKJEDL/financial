@@ -12,7 +12,7 @@
     <link href="/static/admin/summernote/summernote.min.css">
 </head>
 <body>
-<div class="wrap-container welcome-container">
+{{--<div class="wrap-container welcome-container">
     <div class="row">
         <div class="welcome-left-container col-lg-9">
             <div class="data-show">
@@ -87,7 +87,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>--}}
 <script src="/static/admin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
 <script src="/static/admin/js/jquery-2.1.1.js" type="text/javascript" charset="utf-8"></script>
 <script src="/static/admin/js/Chart.min.js" type="text/javascript" charset="utf-8"></script>
