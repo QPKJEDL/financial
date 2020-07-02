@@ -8,8 +8,10 @@ use App\Models\Desk;
 use App\Models\Game;
 use App\Models\GameRecord;
 use App\Models\HqUser;
+use App\Models\Maintain;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -17,52 +19,105 @@ class OrderController extends Controller
      * 数据列表
      */
     public function index(Request $request){
-        if(true==$request->has('begin')){
-            $tableName = date('Ymd',strtotime($request->input('begin')));
+        if (true==$request->has('pageNum')){
+            $curr = $request->input('pageNum');
         }else{
-            $tableName = date('Ymd',strtotime('-1day'));
+            $curr =1;
         }
-        $map = array();
-        if(true==$request->has('desk_id')){
-            $map['desk_id']=$request->input('desk_id');
-        }
-        if(true==$request->has('type')){
-            $map['game_type']=$request->input('type');
-        }
-        if(true==$request->has('status')){
-            $map['status']=$request->input('status');
-        }
-        $order = new Order();
-        $order->setTable('order_'.$tableName);
-        $data = $order->where($map)->paginate(10)->appends($request->all());
-        foreach($data as $key=>&$value){
-            $data[$key]['creatime']=date('Y-m-d H:m:s',$value['creatime']);
-            $data[$key]['bill']=Billflow::getBillflowByOrderSn($value['order_sn'],$tableName);
-            $data[$key]['user']=HqUser::getUserInfoByUserId($value['user_id']);
-            //下注金额
-            $data[$key]['money']=$this->getMoney($value['bet_money']);
-            //获取表名
-            $tableName=$this->getGameRecordTableNameByRecordSn($value['record_sn']);
-            $winner = $this->getGameRecordInfo($tableName,$value['record_sn']);
-            if($data[$key]['game_type']==1){
-                $data[$key]['result']=$this->getBaccaratParseJson($winner);
-                $data[$key]['bet_money']=$this->getBaccaratBetMoney($value['bet_money']);
-            }else if($data[$key]['game_type']==2){
-                $data[$key]['result']=$this->getDragonTigerJson($winner);
-                $data[$key]['bet_money']=$this->getDragonTieTiger($value['bet_money']);
-            }else if($data[$key]['game_type']==3){
-                $data[$key]['result']=$this->getFullParseJson($winner);
-                $data[$key]['bet_money'] = $this->getNiuNiuBetMoney($value['bet_money']);
-            }else if($data[$key]['game_type']==4){
-                $data[$key]['result']=$this->getSanGongResult($winner);
-                $data[$key]['bet_money']=$this->getSanGongMoney($value['bet_money']);
+        //获取开始时间和结束时间
+        if (true==$request->has('begin')){
+            $begin = strtotime($request->input('begin'));
+            $startDate = $request->input('begin');
+            if (true==$request->has('end')){
+                $endTime = strtotime($request->input('end'));
+                $endDate = $request->input('end');
+                $request->offsetSet('end',$request->input('end'));
             }else{
-                $data[$key]['result']=$this->getA89Result($winner);
-                $data[$key]['bet_money']=$this->getA89BetMoney($value['bet_money']);
+                $endTime = time();
+                $endDate = date('Y-m-d',$endTime);
+                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
+            }
+        }else{
+            //获取上次维护完成时间
+            $start = Maintain::getAtLastOutDate();
+            $end = Maintain::getAtLastMaintainDate();
+            if ($start['create_time'] > $end['create_time']){   //如果最后一次维护完成时间大于最后一个得维护开始时间 那么默认找昨天得数据
+                //获取昨天的开始和结束的时间戳
+                $begin = $this->getYesterdayBeginTime();
+                $endTime = $this->getYesterdayEndTime($begin);
+                $startDate = date('Y-m-d',$begin);
+                $endDate = date('Y-m-d',$endTime);
+                $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
+                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
+            }else{
+                $begin = $start['create_time'];
+                $endTime = $end['create_time'];
+                $startDate = date('Y-m-d',$start['create_time']);
+                $endDate = date('Y-m-d',$end['create_time']);
+                $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
+                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
             }
         }
-        $min=config('admin.min_date');
-        return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min]);
+        //获取到开始时间和结束时间的时间段数组
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        $sql = '';
+        for ($i=0;$i<count($dateArr);$i++)
+        {
+            if ($sql==""){
+                $sql = "select * from hq_order_".$dateArr[$i];
+            }else{
+                $sql = $sql.' union all select * from hq_order_'.$dateArr[$i];
+            }
+            if (true==$request->has('desk_id')){
+                $sql = $sql.' and desk_id ='.$request->input('desk_id');
+            }
+            if (true==$request->has('type')){
+                $sql = $sql.' and game_type='.$request->input('type');
+            }
+            if (true==$request->has('status')){
+                $sql = $sql.' and status='.$request->input('status');
+            }
+            if (true==$request->has('boot_num')){
+                $sql = $sql.' and boot_num='.$request->input('boot_num');
+            }
+            if (true==$request->has('pave_num')){
+                $sql = $sql.' and pave_num='.$request->input('pave_num');
+            }
+            if (true==$request->has('orderSn')){
+                $sql = $sql.' and order_sn='.$request->input('orderSn');
+            }
+        }
+        $dataSql = 'select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * 10).',10';
+        $countSql = 'select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime;
+        $count = DB::select($countSql);
+        $data = DB::select($dataSql);
+        foreach ($data as $key=>$value){
+            $data[$key]->user = HqUser::getUserInfoByUserId($value->user_id);
+            $data[$key]->money = $this->getSumBetMoney($value);
+            //获取表名
+            $tableName = $this->getGameRecordTableNameByRecordSn($value->record_sn);
+            $winner = $this->getGameRecordInfo($tableName,$value->record_sn);
+            $data[$key]->bill=Billflow::getBillflowByOrderSn($value->order_sn,$tableName);
+            if ($data[$key]->game_type==1){
+                $data[$key]->result=$this->getBaccaratParseJson($winner);
+                $data[$key]->bet_money=$this->getBaccaratBetMoney($value->bet_money);
+            }else if($data[$key]->game_type==2){
+                $data[$key]->result=$this->getDragonTigerJson($winner);
+                $data[$key]->bet_money=$this->getDragonTieTiger($value->bet_money);
+            }else if($data[$key]->game_type==3){
+                $data[$key]->result=$this->getFullParseJson($winner);
+                $data[$key]->bet_money=$this->getNiuNiuBetMoney($value->bet_money);
+            }else if($data[$key]->game_type==4){
+                $data[$key]->result = $this->getSanGongResult($winner);
+                $data[$key]->bet_money=$this->getSanGongMoney($value->bet_money);
+            }else if($data[$key]->game_type==5){
+                $data[$key]->result=$this->getA89Result($winner);
+                $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
+            }
+            $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
+        }
+        $min = config('admin.min_date');
+        return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
     }
     public function getOrderListByUserId($id,$time,Request $request){
         $request->offsetSet('begin',$time);
@@ -467,5 +522,159 @@ class OrderController extends Controller
             $str = $str.'反门'.$data['FanMen_equal']/100;
         }
         return $str;
+    }
+    /**
+     * 获取昨天的开始时间
+     * @return false|int
+     */
+    public function getYesterdayBeginTime(){
+        return strtotime(date("Y-m-d",strtotime("-1 day")));
+    }
+
+    /**
+     * 根据昨天的开始时间获取到结束时间
+     * @param $time 昨天的开始时间
+     * @return float|int
+     */
+    public function getYesterdayEndTime($time){
+        return $time+24 * 60 * 60-1;
+    }
+    /**
+     * 根据开始时间结束时间获取中间得时间段
+     * @param $startDate
+     * @param $endDate
+     * @return array
+     */
+    public function getDateTimePeriodByBeginAndEnd($startDate,$endDate){
+        $arr = array();
+        $start_date = date("Y-m-d",strtotime($startDate));
+        $end_date = date("Y-m-d",strtotime($endDate));
+        for ($i = strtotime($start_date); $i <= strtotime($end_date);$i += 86400){
+            $arr[] = date('Ymd',$i);
+        }
+        return $arr;
+    }
+    /**
+     * 获取总下注金额
+     * @param $data
+     * @return float|int|mixed
+     */
+    public function getSumBetMoney($value){
+        $money = 0;
+        if ($value->game_type==1){//百家乐
+            $bjl = json_decode($value->bet_money,true);
+            $money = $money + array_sum($bjl);
+        }else if ($value->game_type==2){
+            $lh = json_decode($value->bet_money,true);
+            $money = $money + array_sum($lh);
+        }else if($value->game_type==3){
+            $nn = json_decode($value->bet_money,true);
+            if (!empty($nn['x1_Super_Double'])){
+                $money = $money + $nn['x1_Super_Double'] * 10;
+            }
+            if (!empty($nn['x2_Super_Double'])){
+                $money = $money + $nn['x2_Super_Double'] * 10;
+            }
+            if (!empty($nn['x3_Super_Double'])){
+                $money = $money + $nn['x3_Super_Double'] * 10;
+            }
+            if (!empty($nn['x1_double'])){
+                $money = $money + $nn['x1_double'] * 3;
+            }
+            if (!empty($nn['x2_double'])){
+                $money = $money + $nn['x2_double'] * 3;
+            }
+            if (!empty($nn['x3_double'])){
+                $money = $money + $nn['x3_double'] * 3;
+            }
+            if (!empty($nn['x1_equal'])){
+                $money = $money + $nn['x1_equal'];
+            }
+            if (!empty($nn['x2_equal'])){
+                $money = $money + $nn['x2_equal'];
+            }
+            if (!empty($nn['x3_equal'])){
+                $money = $money + $nn['x3_equal'];
+            }
+        }else if ($value->game_type==4){
+            $sg = json_decode($value->bet_money,true);
+            //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double":10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
+            if (!empty($sg['x1_Super_Double'])){
+                $money = $money + $sg['x1_Super_Double'] * 10;
+            }
+            if (!empty($sg['x2_Super_Double'])){
+                $money = $money + $sg['x2_Super_Double'] * 10;
+            }
+            if (!empty($sg['x3_Super_Double'])){
+                $money = $money + $sg['x3_Super_Double'] * 10;
+            }
+            if (!empty($sg['x4_Super_Double'])){
+                $money = $money + $sg['x4_Super_Double'] * 10;
+            }
+            if (!empty($sg['x5_Super_Double'])){
+                $money = $money + $sg['x5_Super_Double'] * 10;
+            }
+            if (!empty($sg['x6_Super_Double'])){
+                $money = $money + $sg['x6_Super_Double'] * 10;
+            }
+            if (!empty($sg['x1_double'])){
+                $money = $money + $sg['x1_double'] * 3;
+            }
+            if (!empty($sg['x2_double'])){
+                $money = $money + $sg['x2_double'] * 3;
+            }
+            if (!empty($sg['x3_double'])){
+                $money = $money + $sg['x3_double'] * 3;
+            }
+            if (!empty($sg['x4_double'])){
+                $money = $money + $sg['x4_double'] * 3;
+            }
+            if (!empty($sg['x5_double'])){
+                $money = $money + $sg['x5_double'] * 3;
+            }
+            if (!empty($sg['x6_double'])){
+                $money = $money + $sg['x6_double'] * 3;
+            }
+            if (!empty($sg['x1_equal'])){
+                $money = $money + $sg['x1_equal'];
+            }
+            if (!empty($sg['x2_equal'])){
+                $money = $money + $sg['x2_equal'];
+            }
+            if (!empty($sg['x3_equal'])){
+                $money = $money + $sg['x3_equal'];
+            }
+            if (!empty($sg['x4_equal'])){
+                $money = $money + $sg['x4_equal'];
+            }
+            if (!empty($sg['x5_equal'])){
+                $money = $money + $sg['x5_equal'];
+            }
+            if (!empty($sg['x6_equal'])){
+                $money = $money + $sg['x6_equal'];
+            }
+        }else if($value->game_type==5){
+            $a89 = json_decode($value->bet_money,true);
+            if (!empty($a89['ShunMen_Super_Double'])){
+                $money = $money + $a89['ShunMen_Super_Double'] * 10;
+            }
+            if (!empty($a89['TianMen_Super_Double'])){
+                $money = $money + $a89['TianMen_Super_Double'] * 10;
+            }
+            if (!empty($a89['FanMen_Super_Double'])){
+                $money = $money + $a89['FanMen_Super_Double'] * 10;
+            }
+            if (!empty($a89['ShunMen_equal'])){
+                $money = $money + $a89['ShunMen_equal'];
+            }
+            if (!empty($a89['TianMen_equal'])){
+                $money = $money + $a89['TianMen_equal'];
+            }
+            if (!empty($a89['FanMen_equal'])){
+                $money = $money + $a89['FanMen_equal'];
+            }
+        }
+
+        return $money;
     }
 }

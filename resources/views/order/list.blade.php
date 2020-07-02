@@ -4,7 +4,10 @@
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+    </div>
+    <div class="layui-inline">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{$input['end'] or ''}}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <select name="desk_id">
@@ -31,13 +34,13 @@
         </select>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="" value="" name="boot" placeholder="靴号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="" value="" name="pave" placeholder="铺号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="" value="{{$input['pave_num'] or ''}}" name="pave_num" placeholder="铺号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="" value="" name="orderSn" placeholder="注单号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="" value="{{$input['orderSn'] or ''}}" name="orderSn" placeholder="注单号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -90,132 +93,159 @@
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['order_sn']}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->order_sn}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">
-                    @if($info['game_type']==1)
+                    @if($info->game_type==1)
                         百家乐
-                    @elseif($info['game_type']==2)
+                    @elseif($info->game_type==2)
                         龙虎
-                    @elseif($info['game_type']==3)
+                    @elseif($info->game_type==3)
                         牛牛
-                    @elseif($info['game_type']==4)
+                    @elseif($info->game_type==4)
                         三公
-                    @elseif($info['game_type']==5)
+                    @elseif($info->game_type==5)
                         A89
                     @endif
                 </td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['desk_name']}}</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['creatime']}}</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['boot_num']}}</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['pave_num']}}</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['user']['nickname']}}[{{$info['user']['account']}}]</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_before']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->desk_name}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->creatime}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->boot_num}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->pave_num}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->user['nickname']}}[{{$info->user['account']}}]</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->bill['bet_before']/100}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">
-                    <button type="button" data-id="{{$info['id']}}" data-value="{{$info['bet_money']}}" class="layui-btn layui-btn-small layui-btn-normal result">查看结果</button>
+                    <button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-small layui-btn-normal result">查看结果</button>
                 </td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info['bill']['bet_after']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{$info->bill['bet_after']/100}}</td>
                 <td class="hidden-xs">
-                    @if($info['status']==2)
+                    @if($info->status==2)
                         -
-                    @elseif($info['status']==1)
-                        @if($info['game_type']==1)
-                            {{$info['result']['game']}}&nbsp;{{$info['result']['playerPair']}} {{$info['result']['bankerPair']}}
-                        @elseif($info['game_type']==2)
-                            {{$info['result']}}
-                        @elseif($info['game_type']==3)
-                            @if($info['result']['bankernum']=="")
-                                {{$info['result']['x1result']}}&nbsp;{{$info['result']['x2result']}}&nbsp;{{$info['result']['x3result']}}
+                    @elseif($info->status==1)
+                        @if($info->game_type==1)
+                            {{$info->result['game']}}&nbsp;{{$info->result['playerPair']}} {{$info->result['bankerPair']}}
+                        @elseif($info->game_type==2)
+                            {{$info->result}}
+                        @elseif($info->game_type==3)
+                            @if($info->result['bankernum']=="")
+                                {{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
                             @else
-                                {{$info['result']['bankernum']}}
+                                {{$info->result['bankernum']}}
                             @endif
-                        @elseif($info['game_type']==4)
-                            @if($info['result']['bankernum']=="")
-                                {{$info['result']['x1result']}}&nbsp;{{$info['result']['x2result']}}&nbsp;{{$info['result']['x3result']}}
-                                {{$info['result']['x4result']}}&nbsp;{{$info['result']['x5result']}}&nbsp;{{$info['result']['x6result']}}
+                        @elseif($info->game_type==4)
+                            @if($info->result['bankernum']=="")
+                                {{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
+                                {{$info->result['x4result']}}&nbsp;{{$info->result['x5result']}}&nbsp;{{$info->result['x6result']}}
                             @else
-                                {{$info['result']['bankernum']}}
+                                {{$info->result['bankernum']}}
                             @endif
-                        @elseif($info['game_type']==5)
-                            @if($info['result']['bankernum']=="")
-                                {{$info['result']['Fanresult']}} {{$info['result']['Shunresult']}} {{$info['result']['Tianresult']}}
+                        @elseif($info->game_type==5)
+                            @if($info->result['bankernum']=="")
+                                {{$info->result['Fanresult']}} {{$info->result['Shunresult']}} {{$info->result['Tianresult']}}
                             @else
-                                {{$info['result']['bankernum']}}
+                                {{$info->result['bankernum']}}
                             @endif
                         @endif
-                    @elseif($info['status']==3)
+                    @elseif($info->status==3)
                         -
                     @endif
                 </td>
-                <td class="hidden-xs">{{$info['bill']['score']/100}}</td>
-                <td class="hidden-xs">{{$info['bill']['score']/100}}</td>
-                <td class="hidden-xs">{{$info['get_money']/100}}</td>
+                <td class="hidden-xs">{{$info->money/100}}</td>
+                <td class="hidden-xs">{{$info->money/100}}</td>
+                <td class="hidden-xs">{{$info->get_money/100}}</td>
                 <td class="hidden-xs">
-                    @if($info['status']==1)
-                        @if($info['game_type']==1)
-                            {{$info['user']['fee']['baccarat']}}
-                        @elseif($info['game_type']==2)
-                            {{$info['user']['fee']['dragonTiger']}}
-                        @elseif($info['game_type']==3)
-                            {{$info['user']['fee']['niuniu']}}
-                        @elseif($info['game_type']==4)
-                            {{$info['user']['fee']['sangong']}}
-                        @elseif($info['game_type']==5)
-                            {{$info['user']['fee']['A89']}}
-                        @endif
-                    @else
-                        -
-                    @endif
-                </td>
-                <td class="hidden-xs">
-                    @if($info['status']==1)
-                        @if($info['game_type']==1)
-                            {{($info['bill']['score']/100)*($info['user']['fee']['baccarat']/100)}}
-                        @elseif($info['game_type']==2)
-                            {{($info['bill']['score']/100)*($info['user']['fee']['dragonTiger']/100)}}
-                        @elseif($info['game_type']==3)
-                            {{($info['bill']['score']/100)*($info['user']['fee']['niuniu']/100)}}
-                        @elseif($info['game_type']==4)
-                            {{($info['bill']['score'])*($info['user']['fee']['sangong']/100)}}
-                        @elseif($info['game_type']==5)
-                            {{($info['bill']['score']/100)*($info['user']['fee']['A89']/100)}}
+                    @if($info->status==1)
+                        @if($info->game_type==1)
+                            {{$info->user['fee']['baccarat']}}
+                        @elseif($info->game_type==2)
+                            {{$info->user['fee']['dragonTiger']}}
+                        @elseif($info->game_type==3)
+                            {{$info->user['fee']['niuniu']}}
+                        @elseif($info->game_type==4)
+                            {{$info->user['fee']['sangong']}}
+                        @elseif($info->game_type==5)
+                            {{$info->user['fee']['A89']}}
                         @endif
                     @else
                         -
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info['status']==1)
+                    @if($info->status==1)
+                        @if($info->game_type==1)
+                            {{($info->money/100)*($info->user['fee']['baccarat']/100)}}
+                        @elseif($info->game_type==2)
+                            {{($info->money/100)*($info->user['fee']['dragonTiger']/100)}}
+                        @elseif($info->game_type==3)
+                            {{($info->money/100)*($info->user['fee']['niuniu']/100)}}
+                        @elseif($info->game_type==4)
+                            {{($info->money/100)*($info->user['fee']['sangong']/100)}}
+                        @elseif($info->game_type==5)
+                            {{($info->money/100)*($info->user['fee']['A89']/100)}}
+                        @endif
+                    @else
+                        0.00
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info->status ==1)
                         结算完成
-                    @elseif($info['status']==2)
+                    @elseif($info->status==2)
                         玩家取消
-                    @elseif($info['status']==0)
+                    @elseif($info->status==0)
                         等待开牌
-                    @elseif($info['status']==3)
+                    @elseif($info->status==3)
                         作废
                     @endif
                 </td>
             </tr>
         @endforeach
-        @if(!$list[0])
+        @if(count($list)==0)
             <tr><td colspan="18" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
     <div class="page-wrap">
-        {{$list->render()}}
+        <div id="demo1"></div>
     </div>
 @endsection
 @section('js')
     <script>
-        layui.use(['form', 'jquery','laydate', 'layer'], function() {
+        layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
             var form = layui.form(),
                 $ = layui.jquery,
                 laydate = layui.laydate,
-                layer = layui.layer
+                layer = layui.layer,
+                laypage = layui.laypage
             ;
+            var pages = {{$pages}};
+
+            var curr = {{$curr}};
+            var url = "";
+            laypage({
+                cont: 'demo1'
+                ,pages: pages //总页数
+                ,curr:curr
+                ,groups: 5 //连续显示分页数
+                ,jump:function (obj,first) {
+                    if(url.indexOf("?") >= 0){
+                        url = url.split("?")[0] + "?pageNum=" + obj.curr;
+                    }else{
+                        url = url + "?pageNum=" + obj.curr;
+                    }
+                    if (!first){
+                        location.href = url;
+                    }
+                }
+            });
             laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("select[name='desk_id']").val('');
+                $("select[name='type']").val('');
+                $("select[name='status']").val('');
+                $("input[name='boot_num']").val('');
+                $("input[name='pave_num']").val('');
+                $("input[name='orderSn']").val('');
             });
             $(".result").click(function () {
                 var id = $(this).attr('data-id');
