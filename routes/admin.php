@@ -57,6 +57,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/gameRecord','GameRecordController');//台桌游戏查询
     Route::resource('/online',      'OnlineController');//在线用户管理
     Route::resource('/agentDay',    'AgentDayEndController');//代理日结表
+    Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getIndexByParentId');//下级代理日结
     Route::resource('/agent',       'AgentListController');//代理列表
     Route::get('/agent/subordinate/{id}','AgentListController@getSubordinateAgentList');//下级代理
     Route::get('/agent/subUser/{id}','AgentListController@user');//下级会员

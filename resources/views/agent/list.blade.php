@@ -101,7 +101,7 @@
                     shadeClose:true,
                     offset:'10%',
                     area:['60%','80%'],
-                    content:'/admin/agent/subordinate/'+id
+                    content:'/admin/agentDays/'+id
                 });
                 layer.full(index)
             });

@@ -85,8 +85,8 @@
                 </td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button type="button" class="layui-btn layui-btn-small dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
-                        <button type="button" class="layui-btn layui-btn-small dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-small agentDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-small userDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
                     </div>
                 </td>
             </tr>
@@ -157,6 +157,22 @@
                 var lastMonthEndDate = new Date(nowYear,lastMonth,getMonthDays(lastMonth));
                 $("input[name='begin']").val(formatDate(lastMonthStartDate))
                 $("input[name='end']").val(formatDate(lastMonthEndDate))
+            });
+            $(".agentDayInfo").click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                console.log(name);
+                var begin = $("input[name='begin']").val();
+                var end = $("input[name='end']").val();
+                var index = layer.open({
+                    type:2,
+                    title:name+'的下级代理',
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/agentDays/'+id + '/' + begin + '/' + end
+                });
+                layer.full(index)
             });
             form.render();
             form.on('submit(formDemo)', function(data) {

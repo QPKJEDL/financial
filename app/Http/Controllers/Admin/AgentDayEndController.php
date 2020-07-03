@@ -9,13 +9,21 @@ use App\Models\HqUser;
 use App\Models\LiveReward;
 use App\Models\Maintain;
 use App\Models\User;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use App\Models\Desk;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
 
 class AgentDayEndController extends Controller
 {
+    /**
+     * 代理日结
+     * @param Request $request
+     * @return Factory|Application|View
+     */
     public function index(Request $request){
         $map = array();
         $map['agent_users.parent_id']=0;
@@ -72,6 +80,56 @@ class AgentDayEndController extends Controller
         $data = Agent::where($map)->paginate(10)->appends($request->all());
         foreach ($data as $key=>$value){
             $sql = 'select t1.* from (select * from('.$dateSql.') s where s.creatime between '.strtotime($startDate).' and '.strtotime($endDate).') t1 
+            left join hq_user u on t1.user_id = u.user_id
+            inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id
+            ';
+            $asql = 'select ifnull(sum(l.money),0) as money from hq_live_reward l
+                left join hq_user u on u.user_id = l.user_id
+                inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id';
+            $data[$key]['reward']=DB::select($asql);
+            $data[$key]['fee']=json_decode($value['fee'],true);
+            if ($sql!="" || $sql!=null){
+                $userData = DB::select($sql);;
+                $data[$key]['sum_betMoney'] = $this->getSumBetMoney($userData);
+                $data[$key]['win_money']=$this->getWinMoney($userData);
+                $data[$key]['code']=$this->getSumCode($userData);
+                $data[$key]['pump']=$this->getSumPump($userData,$value['id']);
+            }
+        }
+        return view('agentDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all()]);
+    }
+
+    /**
+     * 下级代理日结
+     * @param $id
+     * @param $begin
+     * @param $end
+     * @param Request $request
+     * @return Factory|Application|View
+     */
+    public function getIndexByParentId($id,$begin,$end,Request $request){
+        $request->offsetSet('begin',$begin);
+        $request->offsetSet('end',$end);
+        $map = array();
+        $map['parent_id']=$id;
+        if (true == $request->has('account')){
+            $map['username']=$request->input('account');
+        }
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($begin,$end);
+        $dataSql = '';
+        for ($i=0;$i<count($dateArr);$i++)
+        {
+            if (Schema::hasTable('order_'.$dateArr[$i])){
+                if ($dataSql==""){
+                    $dataSql = "select * from hq_order_".$dateArr[$i];
+                }else{
+                    $dataSql = $dataSql.' union all select * from hq_order_'.$dateArr[$i];
+                }
+            }
+        }
+        $data = Agent::where($map)->paginate(10)->appends($request->all());
+        foreach ($data as $key=>$value){
+            $sql = 'select t1.* from (select * from('.$dataSql.') s where s.creatime between '.strtotime($begin).' and '.strtotime($end).') t1 
             left join hq_user u on t1.user_id = u.user_id
             inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id
             ';
