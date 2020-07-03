@@ -21,32 +21,6 @@ use Illuminate\Support\Facades\Schema;
  */
 class UserDayEndController extends Controller
 {
-    /*public function index(Request $request){
-        $request->offsetSet("type",1);
-        $map = array();
-        $id = Auth::id();
-        //$map['user.agent_id']=$id;
-        if (true==$request->has('account')){
-            $map['user.account']=$request->input('account');
-        }
-        $sql = UserDayEnd::query();
-        $sql->leftJoin("user",'user.user_id','=','user_day_end.user_id')
-            ->leftJoin('user_account','user.user_id','=','user_account.user_id')
-            ->select('user_day_end.id','user_day_end.user_id',DB::raw('sum(bets_money) as bets_money'),DB::raw('sum(bets_num) as bets_num'),DB::raw('sum(sum_money) as sum_money'),DB::raw('sum(win_money) as win_money'),DB::raw('sum(pump) as pump'),DB::raw('sum(reward_money) as reward_money'),'user.nickname','user.account','user_account.balance');
-        if (true==$request->has('begin')){
-            $time = strtotime($request->input('begin'));
-            if (true==$request->has('end')){
-                $end = strtotime('+1day',strtotime($request->input('end')))-1;
-            }else{
-                $end = strtotime('+1day',strtotime($request->input('begin')))-1;
-            }
-        }else{
-            $time = strtotime(date('Y-m-d'),time());
-            $end = strtotime('+1day',$time)-1;
-        }
-        $data = $sql->where($map)->whereBetween('user_day_end.create_time',[$time,$end])->groupBy('user_day_end.user_id')->paginate(10)->appends($request->all());
-        return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all()]);
-    }*/
     public function index(Request $request){
         if (true==$request->has('pageNum')){
             $curr = $request->input('pageNum');
@@ -145,6 +119,81 @@ class UserDayEndController extends Controller
                 $data[$key]->betMoney=$this->getSumBetMoney($userData);
                 $data[$key]->code = $this->getWashCode($userData);
                 $data[$key]->reward = LiveReward::getSumMoney($value->user_id,$begin,$endTime);//count($data)/10==0?count($data)/10:count($data)/10 +1]
+            }
+            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
+        }else{
+            $data= array();
+            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>1]);
+        }
+    }
+    public function getUserDayEndByAgentId($id,$begin,$end,Request $request)
+    {
+        $request->offsetSet('begin',$begin);
+        $request->offsetSet('end',$end);
+        if (true==$request->has('pageNum'))
+        {
+            $curr = $request->input('pageNum');
+        }else{
+            $curr=1;
+        }
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($begin,$end);
+        $sql='';
+        for ($i=0;$i<count($dateArr);$i++){
+            //效验数据表是否存在
+            if (Schema::hasTable('order_'.$dateArr[$i])){
+                if ($sql==""){
+                    $sql = "select * from hq_order_".$dateArr[$i];
+                }else{
+                    $sql = $sql.' union all select * from hq_order_'.$dateArr[$i];
+                }
+            }
+        }
+        if ($sql!="" || $sql!=null){
+            if (true==$request->has('account')){
+                $dataSql = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' ) t1 
+        left join hq_user u on t1.user_id = u.user_id
+        left join hq_user_account ua on ua.user_id = u.user_id
+        where u.account = "'.$request->input('account').'" and u.agent_id='.$id.'
+        group by t1.user_id
+        LIMIT '.(($curr - 1) * 10).',10
+        ';
+                //查询分页总页数
+                $dataPages = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' ) t1 
+        left join hq_user u on t1.user_id = u.user_id
+        left join hq_user_account ua on ua.user_id = u.user_id
+        where u.account = "'.$request->input('account').'" and u.agent_id='.$id.'
+        group by t1.user_id';
+            }else{
+                $dataSql = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' ) t1 
+        left join hq_user u on t1.user_id = u.user_id
+        left join hq_user_account ua on ua.user_id = u.user_id
+        where u.agent_id = '.$id.'
+        group by t1.user_id
+        LIMIT '.(($curr - 1) * 10).',10
+        ';
+                $dataPages = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' ) t1 
+        left join hq_user u on t1.user_id = u.user_id
+        left join hq_user_account ua on ua.user_id = u.user_id
+        where u.agent_id = '.$id.'
+        group by t1.user_id';
+            }
+            $pages = Db::select($dataPages);
+            $data = DB::select($dataSql);
+            foreach ($data as $key=>&$value){
+                $userDataSql = "";
+                for ($i=0;$i<count($dateArr);$i++){
+                    if (Schema::hasTable('order_'.$dateArr[$i])){
+                        if ($userDataSql==""){
+                            $userDataSql = "select user_id,bet_money,game_type,status,creatime from hq_order_".$dateArr[$i];
+                        }else{
+                            $userDataSql = $userDataSql.' union all select user_id,bet_money,game_type,status,creatime from hq_order_'.$dateArr[$i];
+                        }
+                    }
+                }
+                $userData = DB::select('select * from (select * from ('.$userDataSql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).') t1 where t1.user_id=?',[$value->user_id]);
+                $data[$key]->betMoney=$this->getSumBetMoney($userData);
+                $data[$key]->code = $this->getWashCode($userData);
+                $data[$key]->reward = LiveReward::getSumMoney($value->user_id,strtotime($begin),strtotime($end));//count($data)/10==0?count($data)/10:count($data)/10 +1]
             }
             return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
         }else{

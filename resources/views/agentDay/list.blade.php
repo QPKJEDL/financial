@@ -161,7 +161,6 @@
             $(".agentDayInfo").click(function () {
                 var id = $(this).attr('data-id');
                 var name = $(this).attr('data-name');
-                console.log(name);
                 var begin = $("input[name='begin']").val();
                 var end = $("input[name='end']").val();
                 var index = layer.open({
@@ -171,6 +170,21 @@
                     offset:'10%',
                     area:['60%','80%'],
                     content:'/admin/agentDays/'+id + '/' + begin + '/' + end
+                });
+                layer.full(index)
+            });
+            $(".userDayInfo").click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                var begin = $("input[name='begin']").val();
+                var end = $("input[name='end']").val();
+                var index = layer.open({
+                    type:2,
+                    title:name+'的下级会员',
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/userDays/'+id + '/' + begin + '/' + end
                 });
                 layer.full(index)
             });
