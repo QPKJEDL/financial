@@ -24,14 +24,16 @@ class AgentDayEndController extends Controller
      * @param Request $request
      * @return Factory|Application|View
      */
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $map = array();
         $map['agent_users.parent_id']=0;
         if (true==$request->has('account')){
             $map['user.username']=$request->input('account');
         }
         //获取开始时间和结束时间
-        if (true==$request->has('begin')){
+        if (true==$request->has('begin'))
+        {
             $begin = strtotime($request->input('begin'));
             $startDate = $request->input('begin');
             if (true==$request->has('end')){
@@ -89,11 +91,14 @@ class AgentDayEndController extends Controller
             $data[$key]['reward']=DB::select($asql);
             $data[$key]['fee']=json_decode($value['fee'],true);
             if ($sql!="" || $sql!=null){
-                $userData = DB::select($sql);;
+                $userData = DB::select($sql);
                 $data[$key]['sum_betMoney'] = $this->getSumBetMoney($userData);
                 $data[$key]['win_money']=$this->getWinMoney($userData);
                 $data[$key]['code']=$this->getSumCode($userData);
                 $data[$key]['pump']=$this->getSumPump($userData,$value['id']);
+                if ($value['win_money']<0){
+                    dump(number_format(abs((($value['win_money']*($value['proportion']/100))/100)),2));
+                }
             }
         }
         return view('agentDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all()]);
@@ -107,7 +112,8 @@ class AgentDayEndController extends Controller
      * @param Request $request
      * @return Factory|Application|View
      */
-    public function getIndexByParentId($id,$begin,$end,Request $request){
+    public function getIndexByParentId($id,$begin,$end,Request $request)
+    {
         $request->offsetSet('begin',$begin);
         $request->offsetSet('end',$end);
         $map = array();
@@ -139,11 +145,14 @@ class AgentDayEndController extends Controller
             $data[$key]['reward']=DB::select($asql);
             $data[$key]['fee']=json_decode($value['fee'],true);
             if ($sql!="" || $sql!=null){
-                $userData = DB::select($sql);;
+                $userData = DB::select($sql);
                 $data[$key]['sum_betMoney'] = $this->getSumBetMoney($userData);
                 $data[$key]['win_money']=$this->getWinMoney($userData);
                 $data[$key]['code']=$this->getSumCode($userData);
                 $data[$key]['pump']=$this->getSumPump($userData,$value['id']);
+                if ($value['win_money']<0){
+                    dump(abs(($value['win_money']*($value['proportion']/100))/100));
+                }
             }
         }
         return view('agentDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all()]);
@@ -994,5 +1003,22 @@ class AgentDayEndController extends Controller
             $arr[] = date('Ymd',$i);
         }
         return $arr;
+    }
+
+    /**
+     * 获取昨天的开始时间
+     * @return false|int
+     */
+    public function getYesterdayBeginTime(){
+        return strtotime(date("Y-m-d",strtotime("-1 day")));
+    }
+
+    /**
+     * 根据昨天的开始时间获取到结束时间
+     * @param $time 昨天的开始时间
+     * @return float|int
+     */
+    public function getYesterdayEndTime($time){
+        return $time+24 * 60 * 60-1;
     }
 }
