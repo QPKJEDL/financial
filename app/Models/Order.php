@@ -13,6 +13,8 @@ class Order extends Model
 
     /**
      * 根据时间获取那天所有游戏的下注记录
+     * @param $tableName
+     * @return
      */
     public static function getOrderDataByTableName($tableName)
     {

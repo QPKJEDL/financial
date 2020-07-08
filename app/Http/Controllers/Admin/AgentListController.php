@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRequest;
 use App\Models\Agent;
 use App\Models\Czrecord;
 use App\Models\Desk;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AgentListController extends Controller
 {
@@ -133,6 +135,31 @@ class AgentListController extends Controller
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
         }
         return view('agent.userList',['list'=>$data,'input'=>$request->all()]);
+    }
+
+    /**
+     * 充值界面
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function czEdit($id){
+        $info = $id?Agent::find($id):[];
+        return view('agent.cz',['info'=>$info,'id'=>$id]);
+    }
+
+    public function updateBalance(StoreRequest $request)
+    {
+        $data = $request->all();
+        unset($data['_token']);
+        $id = $data['id'];
+        unset($data['id']);
+        $data['balance']=$data['balance']*100;
+        $bool = Agent::where('id','=',$id)->increment('balance',$data['balance']);
+        if ($bool!==false){
+            return ['msg'=>'操作成功','status'=>1];
+        }else{
+            return ['msg'=>'操作失败','status'=>0];
+        }
     }
     public function getGroupBalance($agentId){
         $agentList = Agent::get();

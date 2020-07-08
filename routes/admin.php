@@ -57,7 +57,11 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/gameRecord','GameRecordController');//台桌游戏查询
     Route::resource('/online',      'OnlineController');//在线用户管理
     Route::resource('/agentDay',    'AgentDayEndController');//代理日结表
+    Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getIndexByParentId');//下级代理日结
+    Route::get('/userDays/{id}/{begin}/{end}','UserDayEndController@getUserDayEndByAgentId');//下级会员日结
     Route::resource('/agent',       'AgentListController');//代理列表
+    Route::get('/czEdit/{id}','AgentListController@czEdit');//充值界面
+    Route::post('/updateBalance','AgentListController@updateBalance');//上分
     Route::get('/agent/subordinate/{id}','AgentListController@getSubordinateAgentList');//下级代理
     Route::get('/agent/subUser/{id}','AgentListController@user');//下级会员
     Route::resource('/userDay',     'UserDayEndController');//会员日结表
@@ -69,7 +73,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::post('/down/lockDataById','DownController@lockDataById');//锁定数据
     Route::post('/down/approveData','DownController@approveData');//确认数据
     Route::post('/down/obsoleteData','DownController@obsoleteData');//作废数据
-    Route::get('/userOrderList/{id}','UserDayEndController@infoList');//下注详情
+    Route::get('/userOrderList/{id}/{begin}/{end}','OrderController@getOrderListByUserId');//下注详情
     Route::resource('/live','LiveRewardController');//会员打赏记录
 });
 
