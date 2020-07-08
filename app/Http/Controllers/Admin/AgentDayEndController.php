@@ -94,7 +94,7 @@ class AgentDayEndController extends Controller
                 inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id';
             $data[$key]['reward']=DB::select($asql);
             $data[$key]['fee']=json_decode($value['fee'],true);
-            if ($sql!="" || $sql!=null){
+            if ($dateSql!="" || $dateSql!=null){
                 $money=0;
                 $moneyData = DB::select($ssql);
                 $userData = DB::select($sql);
