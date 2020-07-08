@@ -60,6 +60,8 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getIndexByParentId');//下级代理日结
     Route::get('/userDays/{id}/{begin}/{end}','UserDayEndController@getUserDayEndByAgentId');//下级会员日结
     Route::resource('/agent',       'AgentListController');//代理列表
+    Route::get('/czEdit/{id}','AgentListController@czEdit');//充值界面
+    Route::post('/updateBalance','AgentListController@updateBalance');//上分
     Route::get('/agent/subordinate/{id}','AgentListController@getSubordinateAgentList');//下级代理
     Route::get('/agent/subUser/{id}','AgentListController@user');//下级会员
     Route::resource('/userDay',     'UserDayEndController');//会员日结表
