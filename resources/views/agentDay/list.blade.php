@@ -41,6 +41,7 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="300">
         </colgroup>
         <thead>
@@ -52,6 +53,7 @@
             <th class="hidden-xs">总赢</th>
             <th class="hidden-xs">总洗码</th>
             <th class="hidden-xs">总抽水</th>
+            <th class="hidden-xs">客损</th>
             <th class="hidden-xs">打赏金额</th>
             <th class="hidden-xs">百/龙/牛/三/A</th>
             <th class="hidden-xs">洗码费</th>
@@ -72,6 +74,7 @@
                 <td class="hidden-xs">{{number_format($info['win_money']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['code']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['pump']/100,2)}}</td><!--number_format-->
+                <td class="hidden-xs">{{number_format(abs($info['kesun']/100),2)}}</td>
                 <td class="hidden-xs">{{number_format($info['reward'][0]->money/100,2)}}</td>
                 <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee'] ['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
                 <td class="hidden-xs">{{number_format($info['win_money']/100*0.009,2)}}</td>
