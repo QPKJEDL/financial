@@ -635,7 +635,7 @@ class OrderController extends Controller
             }
         }else if ($value->game_type==4){
             $sg = json_decode($value->bet_money,true);
-            //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double":10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
+            //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double" :10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
             if (!empty($sg['x1_Super_Double'])){
                 $money = $money + $sg['x1_Super_Double'] * 10;
             }
