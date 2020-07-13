@@ -91,7 +91,9 @@ class OrderController extends Controller
             }
         }
         if ($sql!="" || $sql!=null){
-            $dataSql = 'select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * 10).',10';
+            $dataSql = 'select t.* from ('.$sql.') t 
+            left join hq_user u on u.user_id = t.user_id
+            where u.user_type =2 and t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * 10).',10';
             $countSql = 'select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime;
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
@@ -409,7 +411,6 @@ class OrderController extends Controller
     {
         $sum = 0;
         $data = json_decode($betMoney,true);
-        $data = json_decode($betMoney,true);
         foreach($data as $key=>$value){
             $sum += $data[$key];
         }
@@ -421,13 +422,16 @@ class OrderController extends Controller
         $str = '';
         foreach($data as $key=>$value){
             if($data['dragon']>0){
-                $str = "龙".$data['dragon'];
+                $str = "龙".$data['dragon']/100;
+                break;
             }
             if($data['tie']>0){
-                $str = $str." 和".$data['tie'];
+                $str = $str." 和".$data['tie']/100;
+                break;
             }
             if($data['tiger']>0){
-                $str = $str." 虎".$data['tiger'];
+                $str = $str." 虎".$data['tiger']/100;
+                break;
             }
         }
         return $str;
