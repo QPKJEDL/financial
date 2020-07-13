@@ -27,6 +27,7 @@ class AgentDayEndController extends Controller
     public function index(Request $request)
     {
         $map = array();
+        $map['agent_users.userType']=1;
         $map['agent_users.parent_id']=0;
         if (true==$request->has('account')){
             $map['user.username']=$request->input('account');
