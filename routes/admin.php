@@ -76,6 +76,14 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/userOrderList/{id}/{begin}/{end}','OrderController@getOrderListByUserId');//下注详情
     Route::resource('/live','LiveRewardController');//会员打赏记录
 });
+Route::group(['namespace' => "Online",'middleware' => ['auth','permission']],function (){
+    Route::resource('/onAgentDay','OnAgentDayController');//线上代理日结
+    Route::get('/onAgentDayEnd/{id}/{begin}/{end}','OnAgentDayController@getIndexByParentId');//下级代理
+    Route::resource('/onOrder','OnOrderController');//线上会员注单查询
+    Route::resource('/onUserDay','OnUserDayController');//线上会员日结
+    Route::get('/onUserDayEnd/{id}/{begin}/{end}','OnUserDayController@getUserDayEndByAgentId');//线上会员日结
+    Route::get('/onUserOrderList/{id}/{begin}/{end}','OnOrderController@getOrderListByUserId');//线上会员下注详情
+});
 
 Route::get('/phpinfo',function (Request $request){
    phpinfo();

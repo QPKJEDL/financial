@@ -1,25 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+
+namespace App\Http\Controllers\Online;
+
 
 use App\Http\Controllers\Controller;
-use App\Models\Desk;
-use App\Models\HqUser;
 use App\Models\LiveReward;
 use App\Models\Maintain;
-use App\Models\Order;
-use App\Models\UserDayEnd;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * 会员日结表
- * Class UserDayEndController
- * @package App\Http\Controllers\Admin
- */
-class UserDayEndController extends Controller
+class OnUserDayController extends Controller
 {
     public function index(Request $request){
         if (true==$request->has('pageNum')){
@@ -80,7 +72,7 @@ class UserDayEndController extends Controller
                 $dataSql = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' ) t1 
         left join hq_user u on t1.user_id = u.user_id
         left join hq_user_account ua on ua.user_id = u.user_id
-        where u.account = "'.$request->input('account').'"
+        where u.account = "'.$request->input('account').'" and u.user_type=1
         group by t1.user_id
         LIMIT '.(($curr - 1) * 10).',10
         ';
@@ -88,20 +80,20 @@ class UserDayEndController extends Controller
                 $dataPages = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' ) t1 
         left join hq_user u on t1.user_id = u.user_id
         left join hq_user_account ua on ua.user_id = u.user_id
-        where u.account = "'.$request->input('account').'" and u.user_type=2
+        where u.account = "'.$request->input('account').'" and u.user_type=1
         group by t1.user_id';
             }else{
                 $dataSql = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' ) t1 
         left join hq_user u on t1.user_id = u.user_id
         left join hq_user_account ua on ua.user_id = u.user_id
-        where u.account = "'.$request->input('account').'" and u.user_type=2
+        where u.user_type=1
         group by t1.user_id
         LIMIT '.(($curr - 1) * 10).',10
         ';
                 $dataPages = 'select t1.user_id,sum(t1.get_money) as getMoney,count(t1.user_id) as `count`,u.nickname,u.account,ua.balance from ( select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime.' ) t1 
         left join hq_user u on t1.user_id = u.user_id
         left join hq_user_account ua on ua.user_id = u.user_id
-        where u.account = "'.$request->input('account').'" and u.user_type=2
+        where u.user_type=1
         group by t1.user_id';
             }
             $pages = Db::select($dataPages);
@@ -122,12 +114,13 @@ class UserDayEndController extends Controller
                 $data[$key]->code = $this->getWashCode($userData);
                 $data[$key]->reward = LiveReward::getSumMoney($value->user_id,$begin,$endTime);//count($data)/10==0?count($data)/10:count($data)/10 +1]
             }
-            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
+            return view('onAgent.userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
         }else{
             $data= array();
-            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>1]);
+            return view('onAgent.userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>1]);
         }
     }
+
     public function getUserDayEndByAgentId($id,$begin,$end,Request $request)
     {
         $request->offsetSet('begin',$begin);
@@ -197,136 +190,13 @@ class UserDayEndController extends Controller
                 $data[$key]->code = $this->getWashCode($userData);
                 $data[$key]->reward = LiveReward::getSumMoney($value->user_id,strtotime($begin),strtotime($end));//count($data)/10==0?count($data)/10:count($data)/10 +1]
             }
-            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
+            return view('onAgent.userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>ceil(count($pages)/10)]);
         }else{
             $data= array();
-            return view('userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>1]);
+            return view('onAgent.userDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'curr'=>$curr,'pages'=>1]);
         }
     }
-    /**
-     * 获取总下注金额
-     * @param $data
-     * @return float|int|mixed
-     */
-    public function getSumBetMoney($data){
-        $money = 0;
-        foreach ($data as $key=>$value){
-            if ($value->game_type==1){//百家乐
-                $bjl = json_decode($value->bet_money,true);
-                $money = $money + array_sum($bjl);
-            }else if ($value->game_type==2){
-                $lh = json_decode($value->bet_money,true);
-                $money = $money + array_sum($lh);
-            }else if($value->game_type==3){
-                $nn = json_decode($value->bet_money,true);
-                if (!empty($nn['x1_Super_Double'])){
-                    $money = $money + $nn['x1_Super_Double'] * 10;
-                }
-                if (!empty($nn['x2_Super_Double'])){
-                    $money = $money + $nn['x2_Super_Double'] * 10;
-                }
-                if (!empty($nn['x3_Super_Double'])){
-                    $money = $money + $nn['x3_Super_Double'] * 10;
-                }
-                if (!empty($nn['x1_double'])){
-                    $money = $money + $nn['x1_double'] * 3;
-                }
-                if (!empty($nn['x2_double'])){
-                    $money = $money + $nn['x2_double'] * 3;
-                }
-                if (!empty($nn['x3_double'])){
-                    $money = $money + $nn['x3_double'] * 3;
-                }
-                if (!empty($nn['x1_equal'])){
-                    $money = $money + $nn['x1_equal'];
-                }
-                if (!empty($nn['x2_equal'])){
-                    $money = $money + $nn['x2_equal'];
-                }
-                if (!empty($nn['x3_equal'])){
-                    $money = $money + $nn['x3_equal'];
-                }
-            }else if ($value->game_type==4){
-                $sg = json_decode($value->bet_money,true);
-                //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double":10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
-                if (!empty($sg['x1_Super_Double'])){
-                    $money = $money + $sg['x1_Super_Double'] * 10;
-                }
-                if (!empty($sg['x2_Super_Double'])){
-                    $money = $money + $sg['x2_Super_Double'] * 10;
-                }
-                if (!empty($sg['x3_Super_Double'])){
-                    $money = $money + $sg['x3_Super_Double'] * 10;
-                }
-                if (!empty($sg['x4_Super_Double'])){
-                    $money = $money + $sg['x4_Super_Double'] * 10;
-                }
-                if (!empty($sg['x5_Super_Double'])){
-                    $money = $money + $sg['x5_Super_Double'] * 10;
-                }
-                if (!empty($sg['x6_Super_Double'])){
-                    $money = $money + $sg['x6_Super_Double'] * 10;
-                }
-                if (!empty($sg['x1_double'])){
-                    $money = $money + $sg['x1_double'] * 3;
-                }
-                if (!empty($sg['x2_double'])){
-                    $money = $money + $sg['x2_double'] * 3;
-                }
-                if (!empty($sg['x3_double'])){
-                    $money = $money + $sg['x3_double'] * 3;
-                }
-                if (!empty($sg['x4_double'])){
-                    $money = $money + $sg['x4_double'] * 3;
-                }
-                if (!empty($sg['x5_double'])){
-                    $money = $money + $sg['x5_double'] * 3;
-                }
-                if (!empty($sg['x6_double'])){
-                    $money = $money + $sg['x6_double'] * 3;
-                }
-                if (!empty($sg['x1_equal'])){
-                    $money = $money + $sg['x1_equal'];
-                }
-                if (!empty($sg['x2_equal'])){
-                    $money = $money + $sg['x2_equal'];
-                }
-                if (!empty($sg['x3_equal'])){
-                    $money = $money + $sg['x3_equal'];
-                }
-                if (!empty($sg['x4_equal'])){
-                    $money = $money + $sg['x4_equal'];
-                }
-                if (!empty($sg['x5_equal'])){
-                    $money = $money + $sg['x5_equal'];
-                }
-                if (!empty($sg['x6_equal'])){
-                    $money = $money + $sg['x6_equal'];
-                }
-            }else if($value->game_type==5){
-                $a89 = json_decode($value->bet_money,true);
-                if (!empty($a89['ShunMen_Super_Double'])){
-                    $money = $money + $a89['ShunMen_Super_Double'] * 10;
-                }
-                if (!empty($a89['TianMen_Super_Double'])){
-                    $money = $money + $a89['TianMen_Super_Double'] * 10;
-                }
-                if (!empty($a89['FanMen_Super_Double'])){
-                    $money = $money + $a89['FanMen_Super_Double'] * 10;
-                }
-                if (!empty($a89['ShunMen_equal'])){
-                    $money = $money + $a89['ShunMen_equal'];
-                }
-                if (!empty($a89['TianMen_equal'])){
-                    $money = $money + $a89['TianMen_equal'];
-                }
-                if (!empty($a89['FanMen_equal'])){
-                    $money = $money + $a89['FanMen_equal'];
-                }
-            }
-        }
-        return $money;
-    }
+
     /**
      * 获取有效下注金额
      * @param $data
@@ -453,6 +323,132 @@ class UserDayEndController extends Controller
         }
         return $money;
     }
+
+    /**
+     * 获取总下注金额
+     * @param $data
+     * @return float|int|mixed
+     */
+    public function getSumBetMoney($data){
+        $money = 0;
+        foreach ($data as $key=>$value){
+            if ($value->game_type==1){//百家乐
+                $bjl = json_decode($value->bet_money,true);
+                $money = $money + array_sum($bjl);
+            }else if ($value->game_type==2){
+                $lh = json_decode($value->bet_money,true);
+                $money = $money + array_sum($lh);
+            }else if($value->game_type==3){
+                $nn = json_decode($value->bet_money,true);
+                if (!empty($nn['x1_Super_Double'])){
+                    $money = $money + $nn['x1_Super_Double'] * 10;
+                }
+                if (!empty($nn['x2_Super_Double'])){
+                    $money = $money + $nn['x2_Super_Double'] * 10;
+                }
+                if (!empty($nn['x3_Super_Double'])){
+                    $money = $money + $nn['x3_Super_Double'] * 10;
+                }
+                if (!empty($nn['x1_double'])){
+                    $money = $money + $nn['x1_double'] * 3;
+                }
+                if (!empty($nn['x2_double'])){
+                    $money = $money + $nn['x2_double'] * 3;
+                }
+                if (!empty($nn['x3_double'])){
+                    $money = $money + $nn['x3_double'] * 3;
+                }
+                if (!empty($nn['x1_equal'])){
+                    $money = $money + $nn['x1_equal'];
+                }
+                if (!empty($nn['x2_equal'])){
+                    $money = $money + $nn['x2_equal'];
+                }
+                if (!empty($nn['x3_equal'])){
+                    $money = $money + $nn['x3_equal'];
+                }
+            }else if ($value->game_type==4){
+                $sg = json_decode($value->bet_money,true);
+                //{"x1_Super_Double":10000,"x1_double":10000,"x1_equal":10000,"x2_Super_Double":10000,"x2_double":10000,"x2_equal":10000,"x3_Super_Double":10000,"x3_double":10000,"x3_equal":10000,"x4_Super_Double":10000,"x4_double":10000,"x4_equal":10000,"x5_Super_Double":10000,"x5_double":10000,"x5_equal":10000,"x6_Super_Double":10000,"x6_double":10000,"x6_equal":10000}
+                if (!empty($sg['x1_Super_Double'])){
+                    $money = $money + $sg['x1_Super_Double'] * 10;
+                }
+                if (!empty($sg['x2_Super_Double'])){
+                    $money = $money + $sg['x2_Super_Double'] * 10;
+                }
+                if (!empty($sg['x3_Super_Double'])){
+                    $money = $money + $sg['x3_Super_Double'] * 10;
+                }
+                if (!empty($sg['x4_Super_Double'])){
+                    $money = $money + $sg['x4_Super_Double'] * 10;
+                }
+                if (!empty($sg['x5_Super_Double'])){
+                    $money = $money + $sg['x5_Super_Double'] * 10;
+                }
+                if (!empty($sg['x6_Super_Double'])){
+                    $money = $money + $sg['x6_Super_Double'] * 10;
+                }
+                if (!empty($sg['x1_double'])){
+                    $money = $money + $sg['x1_double'] * 3;
+                }
+                if (!empty($sg['x2_double'])){
+                    $money = $money + $sg['x2_double'] * 3;
+                }
+                if (!empty($sg['x3_double'])){
+                    $money = $money + $sg['x3_double'] * 3;
+                }
+                if (!empty($sg['x4_double'])){
+                    $money = $money + $sg['x4_double'] * 3;
+                }
+                if (!empty($sg['x5_double'])){
+                    $money = $money + $sg['x5_double'] * 3;
+                }
+                if (!empty($sg['x6_double'])){
+                    $money = $money + $sg['x6_double'] * 3;
+                }
+                if (!empty($sg['x1_equal'])){
+                    $money = $money + $sg['x1_equal'];
+                }
+                if (!empty($sg['x2_equal'])){
+                    $money = $money + $sg['x2_equal'];
+                }
+                if (!empty($sg['x3_equal'])){
+                    $money = $money + $sg['x3_equal'];
+                }
+                if (!empty($sg['x4_equal'])){
+                    $money = $money + $sg['x4_equal'];
+                }
+                if (!empty($sg['x5_equal'])){
+                    $money = $money + $sg['x5_equal'];
+                }
+                if (!empty($sg['x6_equal'])){
+                    $money = $money + $sg['x6_equal'];
+                }
+            }else if($value->game_type==5){
+                $a89 = json_decode($value->bet_money,true);
+                if (!empty($a89['ShunMen_Super_Double'])){
+                    $money = $money + $a89['ShunMen_Super_Double'] * 10;
+                }
+                if (!empty($a89['TianMen_Super_Double'])){
+                    $money = $money + $a89['TianMen_Super_Double'] * 10;
+                }
+                if (!empty($a89['FanMen_Super_Double'])){
+                    $money = $money + $a89['FanMen_Super_Double'] * 10;
+                }
+                if (!empty($a89['ShunMen_equal'])){
+                    $money = $money + $a89['ShunMen_equal'];
+                }
+                if (!empty($a89['TianMen_equal'])){
+                    $money = $money + $a89['TianMen_equal'];
+                }
+                if (!empty($a89['FanMen_equal'])){
+                    $money = $money + $a89['FanMen_equal'];
+                }
+            }
+        }
+        return $money;
+    }
+
     /**
      * 根据开始时间结束时间获取中间得时间段
      * @param $startDate
