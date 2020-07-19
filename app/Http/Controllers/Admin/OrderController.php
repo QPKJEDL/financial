@@ -61,6 +61,7 @@ class OrderController extends Controller
         }
         //获取到开始时间和结束时间的时间段数组
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        dump($dateArr);
         $sql = '';
         for ($i=0;$i<count($dateArr);$i++)
         {
@@ -122,12 +123,14 @@ class OrderController extends Controller
                 }
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
+            $min = config('admin.min_date');
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
         }else{
             $data = array();
             $count= array();
+            $min = config('admin.min_date');
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
         }
-        $min = config('admin.min_date');
-        return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
     }
     public function getOrderListByUserId($id,$begin,$end,Request $request){
         if (true==$request->has('pageNum')){

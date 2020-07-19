@@ -160,7 +160,7 @@ class OnAgentDayController extends Controller
                 $data[$key]['sum_betMoney'] = $this->getSumBetMoney($userData);
                 $data[$key]['win_money']=$this->getWinMoney($userData);
                 $data[$key]['code']=$this->getSumCode($userData);
-                //$data[$key]['pump']=$this->getSumPump($userData,$value['id']);
+                $data[$key]['pumpMoney']=$this->getSumPumpMoney($value,$userData);
                 foreach ($moneyData as $k=>$datum){
                     if ($datum->money<0){
                         $money = $money + $datum->money * $value['proportion']/100;

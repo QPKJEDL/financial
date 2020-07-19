@@ -75,6 +75,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::post('/down/obsoleteData','DownController@obsoleteData');//作废数据
     Route::get('/userOrderList/{id}/{begin}/{end}','OrderController@getOrderListByUserId');//下注详情
     Route::resource('/live','LiveRewardController');//会员打赏记录
+    Route::resource('/agentDrawAndCz','AgentDrawAndCzController');//代理充值提现查询
 });
 Route::group(['namespace' => "Online",'middleware' => ['auth','permission']],function (){
     Route::resource('/onAgentDay','OnAgentDayController');//线上代理日结
