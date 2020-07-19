@@ -61,7 +61,6 @@ class OrderController extends Controller
         }
         //获取到开始时间和结束时间的时间段数组
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
-        dump($dateArr);
         $sql = '';
         for ($i=0;$i<count($dateArr);$i++)
         {
