@@ -51,7 +51,8 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::post('/saveinfo/{type}',     'UserController@saveInfo');
     Route::resource('/roles',           'RoleController');
     Route::resource('/permissions',     'PermissionController');
-    Route::resource('/hquser', 'HqUserController');//会员管理
+    Route::resource('/hquser', 'HqUserController');//线下会员管理
+    Route::resource('/onUser','OnHqUserController');//线上会员管理
     Route::get('/hquser/topCode/{id}','HqUserController@topCode');//会员上分页面
     Route::post('/hquser/saveTopCode','HqUserController@saveTopCode');//会员上下分操作
     Route::resource('/desk', 'DeskController');//台桌输赢记录
