@@ -26,6 +26,7 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
@@ -38,6 +39,7 @@
             <th class="hidden-xs">创建日期</th>
             <th class="hidden-xs">最近登录IP</th>
             <th class="hidden-xs">在线</th>
+            <th class="hidden-xs">操作</th>
         </tr>
         </thead>
         <tbody>
@@ -57,6 +59,9 @@
                     @else
                         离线
                     @endif
+                </td>
+                <td class="hidden-xs">
+                    <button class="layui-btn layui-btn-small layui-btn-normal code" data-id="{{$info['user_id']}}"><i class="layui-icon">上分</i></button>
                 </td>
             </tr>
         @endforeach
@@ -81,6 +86,17 @@
             $(".reset").click(function(){
                 $("input[name='account']").val('');
                 $("input[name='nickname']").val(''); 
+            });
+            $(".code").click(function () {
+                var id = $(this).attr('data-id');
+                layer.open({
+                    type: 2,
+                    title: name + '会员上下分',
+                    shadeClose: true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/hquser/topCode/' + id
+                });
             });
             form.render();
             form.on('submit(formDemo)', function(data) {

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserAccount extends Model
 {
     protected $table = "user_account";
-
+    public $timestamps = false;
     /** 
      * 根据userId获取用户余额
      * */   
