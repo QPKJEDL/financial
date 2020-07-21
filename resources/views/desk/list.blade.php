@@ -48,10 +48,16 @@
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
                 <td class="hidden-xs">0</td>
-                <td class="hidden-xs">{{$info['betMoney']/100}}</td>
-                <td class="hidden-xs">{{$info['winAndErr']/100}}</td>
-                <td class="hidden-xs">{{($info['money']/100) * 0.009}}</td>
-                <td class="hidden-xs">{{($info['winAndErr']/100) -(($info['money']/100) * 0.009)}}</td>
+                <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['winAndErr']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format(($info['money']/100) * 0.009,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info['winAndErr']/100>0)
+                    {{number_format(($info['winAndErr']/100) -(($info['money']/100) * 0.009),2)}}
+                    @else
+                    {{number_format(abs(($info['winAndErr']/100) -(($info['money']/100) * 0.009)),2)}}
+                    @endif
+                </td>
             </tr>
         @endforeach
         @if(!$list[0])
