@@ -123,31 +123,31 @@ class DeskController extends Controller
             //把游戏结果转成数组
             $winner = json_decode($recordInfo['winner'],true);
             //{"x3_Super_Double":2000,"x3_double":2000} {"x3_equal":5000}
-            if (empty($winner['x1_Super_Double'])){
+            if (!empty($winner['x1_Super_Double'])){
                 $money = $money + ($winner['x1_Super_Double']*3);
             }
-            if (empty($winner['x2_Super_Double'])){
+            if (!empty($winner['x2_Super_Double'])){
                 $money = $money + ($winner['x2_Super_Double']*3);
             }
-            if (empty($winner['x3_Super_Double'])){
+            if (!empty($winner['x3_Super_Double'])){
                 $money = $money + ($winner['x3_Super_Double']*3);
             }
-            if (empty($winner['x1_double'])){
+            if (!empty($winner['x1_double'])){
                 $money = $money + ($winner['x1_double']*2);
             }
-            if (empty($winner['x2_double'])){
+            if (!empty($winner['x2_double'])){
                 $money = $money + ($winner['x2_double']*2);
             }
-            if (empty($winner['x3_double'])){
+            if (!empty($winner['x3_double'])){
                 $money = $money + ($winner['x3_double']*2);
             }
-            if (empty($winner['x1_equal'])){
+            if (!empty($winner['x1_equal'])){
                 $money = $money + $winner['x1_equal'];
             }
-            if (empty($winner['x2_equal'])){
+            if (!empty($winner['x2_equal'])){
                 $money = $money + $winner['x2_equal'];
             }
-            if (empty($winner['x3_equal'])){
+            if (!empty($winner['x3_equal'])){
                 $money = $money + $winner['x3_equal'];
             }
         }
