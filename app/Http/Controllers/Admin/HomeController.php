@@ -8,15 +8,17 @@
  */
 namespace App\Http\Controllers\Admin;
 use App\Models\Admin;
+use App\Models\Adminrole;
+use App\Models\AgentRoleMenu;
 use App\Models\Buscount;
+use App\Models\Menu;
 use App\Models\Order;
-
+use Illuminate\Support\Facades\Auth;
 use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Auth;
 //use App\Http\Controllers\Controller;
 class HomeController extends BaseController
 {
@@ -26,8 +28,58 @@ class HomeController extends BaseController
     public function index() {
         $menu = new Admin();
         //dump($menu->menus());
-        return view('admin.index',['menus'=>$menu->menus(),'mid'=>$menu->getMenuId(),'parent_id'=>$menu->getParentMenuId()]);
+        return view('admin.index',['menus'=>$this->getUserMenu(),'mid'=>$menu->getMenuId(),'parent_id'=>$menu->getParentMenuId()]);
     }
+
+    public function getUserMenu()
+    {
+        //得到当前用户
+        $user = Auth::id();
+        //判断当前用户是不是管理员
+        //获取到全部菜单
+        $menuAllList = Menu::get();
+        if ($user==1){
+            return $this->getTreeMenu($menuAllList);
+        }else{
+            //根据userId来查询角色
+            $role = Adminrole::where('user_id','=',$user)->first();
+            //根据角色获取到当前角色菜单
+            $menuList = AgentRoleMenu::where('role_id','=',$role['role_id'])->get();
+            $menu = array();
+            foreach ($menuList as $key=>$value){
+                foreach ($menuAllList as $k=>$v){
+                    if ($value['menu_id']==$v['id']){
+                        $menu[] = $menuAllList[$k];
+                        continue;
+                    }
+                }
+            }
+            return $this->getTreeMenu($menu);
+        }
+    }
+
+    public function getTreeMenu($menu)
+    {
+        //获取到父级菜单
+        $parentMenu = $this->getParentMenu($menu,0);
+        foreach ($parentMenu as $key=>&$value){
+            $parentMenu[$key]['children']=$this->getParentMenu($menu,$value['id']);
+        }
+        return $parentMenu;
+    }
+
+    public function getParentMenu($menu,$parentId)
+    {
+        $menuList = array();
+        foreach ($menu as $key=>$value)
+        {
+            if ($value['parent_id']==$parentId){
+                $menuList[] = $menu[$key];
+            }
+        }
+        return $menuList;
+    }
+
     /**
      * 验证码
      */
