@@ -60,6 +60,19 @@
                         @else
                             {{$info['result']['bankernum']}}
                         @endif
+                    @elseif($info['type']==4)
+                        @if($info['result']['bankernum']=="")
+                            {{$info['result']['x1result']}}&nbsp;{{$info['result']['x2result']}}&nbsp;{{$info['result']['x3result']}}
+                            {{$info['result']['x4result']}}&nbsp;{{$info['result']['x5result']}}&nbsp;{{$info['result']['x6result']}}
+                        @else
+                            {{$info['result']['bankernum']}}
+                        @endif
+                    @elseif($info['type']==5)
+                        @if($info['result']['bankernum']=="")
+                            {{$info['result']['Fanresult']}} {{$info['result']['Shunresult']}} {{$info['result']['Tianresult']}}
+                        @else
+                            {{$info['result']['bankernum']}}
+                        @endif
                     @endif
                 </td>
                 <td class="hidden-xs">

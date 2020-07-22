@@ -47,9 +47,17 @@ class GameRecordController extends Controller
                     $data[$key]['afterResult'] = $this->getFullParseJson($data[$key]['update_result_before']);
                 }
             } else if ($data[$key]['type'] == 4) {
-
+                $data[$key]['result'] = $this->getSanGongResult($data[$key]['winner']);
+                if ($data[$key]['update_result_before']!= '')
+                {
+                    $data[$key]['afterResult'] = $this->getSanGongResult($data[$key]['update_result_before']);
+                }
             } else {
-
+                $data[$key]['result'] = $this->getA89Result($data[$key]['winner']);
+                if ($data[$key]['update_result_before']!='')
+                {
+                    $data[$key]['afterResult'] = $this->getA89Result($data[$key]['update_result_before']);
+                }
             }
         }
         $min=config('admin.min_date');
@@ -128,7 +136,86 @@ class GameRecordController extends Controller
         if ($data['x3result'] == "win") {
             $arr['x3result'] = "闲3";
         } else {
+            $arr['x3result'] = "";
+        }
+        return $arr;
+    }
+    /**
+     * 三公
+     * @param $jsonStr
+     * @return array
+     */
+    public function getSanGongResult($jsonStr){
+        $arr = array();
+        //解析json
+        $data = json_decode($jsonStr,true);
+        //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
+        //判断庄是否通吃
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+            $arr['bankernum'] = "庄";
+        }else{
+            $arr['bankernum'] = "";
+        }
+        if ($data['x1result'] == "win") {
+            $arr['x1result'] = "闲1";
+        } else {
+            $arr['x1result'] = "";
+        }
+        if ($data['x2result'] == "win") {
+            $arr['x2result'] = "闲2";
+        } else {
+            $arr['x2result'] = "";
+        }
+        if ($data['x3result'] == "win") {
+            $arr['x3result'] = "闲3";
+        } else {
+            $arr['x3result'] = "";
+        }
+        if ($data['x4result'] == "win") {
+            $arr['x4result'] = "闲4";
+        } else {
             $arr['x4result'] = "";
+        }
+        if ($data['x5result'] == "win") {
+            $arr['x5result'] = "闲5";
+        } else {
+            $arr['x5result'] = "";
+        }
+        if ($data['x6result'] == "win") {
+            $arr['x6result'] = "闲6";
+        } else {
+            $arr['x6result'] = "";
+        }
+        return $arr;
+    }
+
+    /**
+     * A89
+     */
+    public function getA89Result($jsonStr){
+        $data = json_decode($jsonStr,true);
+        //{"BankerNum":"5点","FanNum":"0点","Fanresult":"","ShunNum":"8点","Shunresult":"win","TianNum":"5点","Tianresult":"win"}
+        //判断庄是否通知
+        $arr = array();
+        if ($data['Fanresult']=="" && $data['Shunresult']=="" && $data['Tianresult']==""){
+            $arr['bankernum'] = "庄";
+        }else{
+            $arr['bankernum'] = "";
+        }
+        if ($data['Fanresult'] == "win") {
+            $arr['Fanresult'] = "反门";
+        } else {
+            $arr['Fanresult'] = "";
+        }
+        if ($data['Shunresult'] == "win") {
+            $arr['Shunresult'] = "顺门";
+        } else {
+            $arr['Shunresult'] = "";
+        }
+        if ($data['Tianresult']=="win"){
+            $arr['Tianresult'] = "天门";
+        }else{
+            $arr['Tianresult'] = "";
         }
         return $arr;
     }
