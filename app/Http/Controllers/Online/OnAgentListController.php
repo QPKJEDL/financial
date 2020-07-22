@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+
+namespace App\Http\Controllers\Online;
+
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRequest;
@@ -8,29 +10,23 @@ use App\Models\Agent;
 use App\Models\AgentRole;
 use App\Models\AgentRoleUser;
 use App\Models\Czrecord;
-use App\Models\Desk;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
-class AgentListController extends Controller
+class OnAgentListController extends Controller
 {
-    /**
-     * 数据列表
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
-     */
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $map = array();
         $map['parent_id']=0;
-        $map['userType']=2;
+        $map['userType']=1;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');
         }
         $sql = Agent::query();
         if (true==$request->has('nickname')) {
-           $sql->where('nickname','like','%'.$request->input('nickname').'%');
+            $sql->where('nickname','like','%'.$request->input('nickname').'%');
         }
         if (true==$request->has('excel') && true==$request->input('excel')){
             $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
@@ -55,114 +51,47 @@ class AgentListController extends Controller
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
             }
         }
-        return view('agent.list',['list'=>$data,'input'=>$request->all()]);
+        return view('onAgent.agent.list',['list'=>$data,'input'=>$request->all()]);
     }
+
     /**
      * 编辑页
+     * @param int $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
      */
-    public function edit($id=0){
-        $data = $id? Agent::find($id):[];
-        $info = AgentRoleUser::where('user_id','=',$id)->first();
-        if($id!=0){
-            $data['fee']=json_decode($data['fee'],true);
-            $data['limit']=json_decode($data['limit'],true);
-            $data['bjlbets_fee']=json_decode($data['bjlbets_fee'],true);
-            $data['lhbets_fee']=json_decode($data['lhbets_fee'],true);
-            $data['nnbets_fee']=json_decode($data['nnbets_fee'],true);
-            $data['a89bets_fee']=json_decode($data['a89bets_fee'],true);
-            $data['sgbets_fee']=json_decode($data['sgbets_fee'],true);
-        }
-        return view('agent.edit',['id'=>$id,'roles'=>AgentRole::all(),'info'=>$data,'userRole'=>$info]);
+    public function edit($id=0)
+    {
+        $info = $id?Agent::find($id):[];
+        return view('onAgent.agent.edit',['id'=>$id,'info'=>$info,'roles'=>AgentRole::all()]);
     }
 
     public function store(StoreRequest $request)
     {
-        $data = $request->all();
         $roleId = $request->input('user_role');
-        unset($data['id']);
-        unset($data['_token']);
-        unset($data['user_role']);
-        //判断两次密码是否相同
-        if($data['pwd']!=$data['pwd_confirmation']){
-            return ['msg'=>'两次密码不同','status'=>0];
-        }
-        //密码加密
-        $data['password']=bcrypt($data['pwd']);
+        $data = $request->all();
+        $newPwd = $data['pwd_confirmation'];
+        $data['password']=$data['pwd'];
         unset($data['pwd']);
         unset($data['pwd_confirmation']);
-        $data['created_at']=date('Y-m-d H:i:s',time());
-        $data['fee']=json_encode($data['fee']);
-        $data['limit']=json_encode($data['limit']);
-        $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
-        $data['lhbets_fee']=json_encode($data['lhbets_fee']);
-        $data['nnbets_fee']=json_encode($data['nnbets_fee']);
-        $data['a89bets_fee']=json_encode($data['a89bets_fee']);
-        $data['sgbets_fee']=json_encode($data['sgbets_fee']);
-        $data["ancestors"]=0;
-        $count = Agent::insertGetId($data);
-        if ($count){
-            $this->insertUserRole($count,$roleId);
-            return ['msg'=>'操作成功','status'=>1];
-        }else{
-            return ['msg'=>'操作失败','status'=>0];
-        }
-
-    }
-    /*
-     * 编辑
-     */
-    public function update(StoreRequest $request){
-        $id = $request->input('id');
-        $data = $request->all();
-        $roleId = $request->input('user_role');
         unset($data['_token']);
         unset($data['id']);
         unset($data['user_role']);
-        if(empty($data["pwd"])){
-            unset($data['pwd']);
-            unset($data['pwd_confirmation']);
-        }
-        $data['fee']=json_encode($data['fee']);
-        $data['limit']=json_encode($data['limit']);
-        $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
-        $data['lhbets_fee']=json_encode($data['lhbets_fee']);
-        $data['nnbets_fee']=json_encode($data['nnbets_fee']);
-        $data['a89bets_fee']=json_encode($data['a89bets_fee']);
-        $data['sgbets_fee']=json_encode($data['sgbets_fee']);
-        $up=Agent::where('id',$id)->update($data);
-        if($up!==false){
-            AgentRoleUser::where('user_id',$id)->update(array('role_id'=>$roleId));
-            return ['msg'=>'修改成功','status'=>1];
+        if ($data['password']==$newPwd){
+            $data['password']=bcrypt($data['password']);
+            $data['userType']=2;
+            $data["ancestors"]=0;
+            $data['limit']=json_encode($data['limit']);
+            $count = Agent::insertGetId($data);
+            if ($count){
+                $this->insertUserRole($count,$roleId);
+                return ['msg'=>'操作成功','status'=>1];
+            }else{
+                return ['msg'=>'操作失败','status'=>0];
+            }
         }else{
-            return ['msg'=>'修改失败','status'=>0];
+            return ['msg'=>'两次密码不一致','status'=>0];
         }
     }
-
-    /*
-     * 停用
-     */
-    public function stop(StoreRequest $request){
-        $id=$request->input('id');
-        $stop = Agent::where('id','=',$id)->update(array("status"=>1));
-        if($stop){
-            return ['msg'=>'停用成功','status'=>1];
-        }else{
-            return ['msg'=>'停用失败','status'=>0];
-        }
-    }
-    /*
-     * 启用
-     */
-    public function start(StoreRequest $request){
-        $id=$request->input('id');
-        $stop = Agent::where('id','=',$id)->update(array("status"=>0));
-        if($stop){
-            return ['msg'=>'启用成功','status'=>1];
-        }else{
-            return ['msg'=>'启用失败','status'=>0];
-        }
-    }
-
     /*
     * 添加代理
     */
@@ -202,7 +131,7 @@ class AgentListController extends Controller
         if (true==$request->has('nickname')) {
             $sql->where('nickname','like','%'.$request->input('nickname').'%');
         }
-        if (true==$request->has('excel') && true==$request->input('excel')){
+        /*if (true==$request->has('excel') && true==$request->input('excel')){
             $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
                 ->where($map)->get()->toArray();
             foreach ($excel as $key=>$value){
@@ -216,14 +145,14 @@ class AgentListController extends Controller
             } catch (\PHPExcel_Reader_Exception $e) {
             } catch (\PHPExcel_Exception $e) {
             }
-        }else{
+        }else{*/
             $data = $sql->where($map)->paginate(10)->appends($request->all());
             foreach ($data as $key=>$value){
                 $data[$key]['fee']=json_decode($value['fee'],true);
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
             }
-        }
-        return view('agent.list',['list'=>$data,'input'=>$request->all()]);
+        //}
+        return view('onAgent.agent.list',['list'=>$data,'input'=>$request->all()]);
     }
 
     /**
@@ -251,7 +180,7 @@ class AgentListController extends Controller
             $data[$key]['fee']=json_decode($data[$key]['fee'],true);
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
         }
-        return view('agent.userList',['list'=>$data,'input'=>$request->all()]);
+        return view('onAgent.agent.userList',['list'=>$data,'input'=>$request->all()]);
     }
 
     /**
@@ -261,7 +190,7 @@ class AgentListController extends Controller
      */
     public function czEdit($id){
         $info = $id?Agent::find($id):[];
-        return view('agent.cz',['info'=>$info,'id'=>$id]);
+        return view('onAgent.agent.cz',['info'=>$info,'id'=>$id]);
     }
 
     public function updateBalance(StoreRequest $request)

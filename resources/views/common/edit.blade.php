@@ -10,6 +10,8 @@
     <link rel="stylesheet" type="text/css" href="/static/admin/css/admin.css" />
     <link href="/static/admin/summernote/summernote.css" rel="stylesheet">
     <link href="/static/admin/summernote/summernote-bs3.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin/css/zTreeStyle/zTreeStyle.css"/>
+    <link rel="stylesheet" href="/static/admin/tree/css/iconfont.css"/>
     <script src="/static/admin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
     <script src="/static/admin/js/common.js" type="text/javascript" charset="utf-8"></script>
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -17,6 +19,9 @@
     <script src="/static/admin/summernote/summernote.min.js"></script>
     <!--引入中文JS包-->
     <script src="/static/admin/summernote/summernote-zh-CN.js"></script>
+    <script src="/static/admin/js/jquery.ztree.all.js" type="text/javascript"></script>
+    <script src="/static/admin/tree/leg-tree.js" type="text/javascript"></script>
+    <script src="/static/admin/js/select.js" type="text/javascript"></script>
 </head>
 <body>
 <div class="wrap-container">
