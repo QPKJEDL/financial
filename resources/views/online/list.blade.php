@@ -4,16 +4,18 @@
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="username" value="{{ $input['username'] or '' }}" name="username" placeholder="代理账号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="会员账号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="台号" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
-        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="客户端" autocomplete="off" class="layui-input">
+        <select name="deskId" lay-search="">
+            <option value="">请选择台桌</option>
+            @foreach($desk as $d)
+                <option value="{{$d['id']}}" {{isset($input['deskId'])&&$input['deskId']==$d['id']?'selected':''}}>{{$d['desk_name']}}</option>
+            @endforeach
+        </select>
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -47,12 +49,38 @@
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
-                <td class="hidden-xs"></td>
+                <td class="hidden-xs">{{$info['account']}}</td>
+                <td class="hidden-xs">{{$info['nickname']}}</td>
+                <td class="hidden-xs">
+                    @if($info['username']==null || $info['username']=='')
+                        归属公司
+                    @else
+                        {{$info['username']}}
+                    @endif
+                </td>
+                <td class="hidden-xs">{{$info['balance']/100}}</td>
+                <td class="hidden-xs">{{$info['last_ip']}}</td>
+                <td class="hidden-xs">
+                    @if($info['desk_id']==0)
+                        未入台
+                    @else
+                        {{$info['desk_name']}}
+                    @endif
+                </td>
+                <td class="hidden-xs">{{$info['savetime']}}</td>
+                <td class="hidden-xs">
+                    @if($info['online_type']==1)
+                        电脑版
+                    @elseif($info['online_type']==2)
+                        苹果版
+                    @elseif($info['online_type']==3)
+                        安卓版
+                    @elseif($info['online_type']==4)
+                        网页版
+                    @else
+                        未知
+                    @endif
+                </td>
             </tr>
         @endforeach
         @if(!$list[0])
