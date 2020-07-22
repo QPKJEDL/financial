@@ -45,19 +45,28 @@ class UserDayEndController extends Controller
             //获取上次维护完成时间
             $start = Maintain::getAtLastOutDate();
             $end = Maintain::getAtLastMaintainDate();
-            if ($start['create_time'] > $end['create_time']){   //如果最后一次维护完成时间大于最后一个得维护开始时间 那么默认找昨天得数据
-                //获取昨天的开始和结束的时间戳
+            if ($start['create_time']!="" && $end['create_time']==""){
+                if ($start['create_time'] > $end['create_time']){   //如果最后一次维护完成时间大于最后一个得维护开始时间 那么默认找昨天得数据
+                    //获取昨天的开始和结束的时间戳
+                    $begin = $this->getYesterdayBeginTime();
+                    $endTime = $this->getYesterdayEndTime($begin);
+                    $startDate = date('Y-m-d',$begin);
+                    $endDate = date('Y-m-d',$endTime);
+                    $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
+                    $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
+                }else{
+                    $begin = $start['create_time'];
+                    $endTime = $end['create_time'];
+                    $startDate = date('Y-m-d',$start['create_time']);
+                    $endDate = date('Y-m-d',$end['create_time']);
+                    $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
+                    $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
+                }
+            }else{
                 $begin = $this->getYesterdayBeginTime();
                 $endTime = $this->getYesterdayEndTime($begin);
                 $startDate = date('Y-m-d',$begin);
                 $endDate = date('Y-m-d',$endTime);
-                $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
-                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
-            }else{
-                $begin = $start['create_time'];
-                $endTime = $end['create_time'];
-                $startDate = date('Y-m-d',$start['create_time']);
-                $endDate = date('Y-m-d',$end['create_time']);
                 $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
                 $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
             }
