@@ -54,9 +54,9 @@
                         -
                     @endif
                 </td>
-                <td class="hidden-xs">{{number_format($info['bet_before'],2)}}</td>
-                <td class="hidden-xs">{{number_format($info['money'],2)}}</td>
-                <td class="hidden-xs">{{number_format($info['bet_after'],2)}}</td>
+                <td class="hidden-xs">{{number_format($info['bet_before']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['money']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['bet_after']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==1)
                         充值
