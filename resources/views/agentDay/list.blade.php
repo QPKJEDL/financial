@@ -124,7 +124,7 @@
                 var nowDay = now.getDate();//当前日
                 var nowMonth = now.getMonth();//当前月
                 var nowYear = now.getFullYear();//当前年
-                var weekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek);
+                var weekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek + 1);
                 $("input[name='begin']").val(formatDate(weekStartDate))
                 $("input[name='end']").val(formatDate(now))
             });
@@ -143,8 +143,8 @@
                 var nowDay = now.getDate();            //当前日
                 var nowMonth = now.getMonth();         //当前月
                 var nowYear = now.getFullYear();           //当前年
-                var getUpWeekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek -7);
-                var getUpWeekEndDate = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek - 7));
+                var getUpWeekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek -7 + 1);
+                var getUpWeekEndDate = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek - 7) + 1);
                 $("input[name='begin']").val(formatDate(getUpWeekStartDate))
                 $("input[name='end']").val(formatDate(getUpWeekEndDate))
             });
