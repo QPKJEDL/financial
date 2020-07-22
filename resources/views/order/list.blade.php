@@ -218,7 +218,6 @@
                 laypage = layui.laypage
             ;
             var pages = {{$pages}};
-
             var curr = {{$curr}};
             var url = "";
             laypage({
@@ -228,13 +227,14 @@
                 ,groups: 5 //连续显示分页数
                 ,jump:function (obj,first) {
                     if(url.indexOf("?") >= 0){
-                        url = url.split("?")[0] + "?pageNum=" + obj.curr;
+                        url = url.split("?")[0] + "?pageNum=" + obj.curr + "&" +$("form").serialize();
                     }else{
                         url = url + "?pageNum=" + obj.curr;
                     }
                     if (!first){
                         location.href = url;
                     }
+                    //console.log(window.location.href);
                 }
             });
             laydate({istoday: true});

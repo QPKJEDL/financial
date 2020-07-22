@@ -190,7 +190,7 @@
                 ,groups: 5 //连续显示分页数
                 ,jump:function (obj,first) {
                     if(url.indexOf("?") >= 0){
-                        url = url.split("?")[0] + "?pageNum=" + obj.curr;
+                        url = url.split("?")[0] + "?pageNum=" + obj.curr + "&" + $("form").serialize();
                     }else{
                         url = url + "?pageNum=" + obj.curr;
                     }

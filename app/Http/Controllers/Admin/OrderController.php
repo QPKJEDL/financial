@@ -94,7 +94,9 @@ class OrderController extends Controller
             $dataSql = 'select t.* from ('.$sql.') t 
             left join hq_user u on u.user_id = t.user_id
             where u.user_type =2 and t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * 10).',10';
-            $countSql = 'select * from ('.$sql.') t where t.creatime between '.$begin.' and '.$endTime;
+            $countSql = 'select t.* from ('.$sql.') t
+             left join hq_user u on u.user_id = t.user_id
+             where u.user_type=2 and t.creatime between '.$begin.' and '.$endTime;
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
@@ -168,8 +170,8 @@ class OrderController extends Controller
             }
         }
         if ($sql!='' || $sql!=null){
-            $dataSql = 'select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' limit '.(($curr-1) * 10).',10';
-            $countSql = 'select * from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end);
+            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' limit '.(($curr-1) * 10).',10';
+            $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end);
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
@@ -300,7 +302,7 @@ class OrderController extends Controller
         if ($data['x3result'] == "win") {
             $arr['x3result'] = "闲3";
         } else {
-            $arr['x4result'] = "";
+            $arr['x3result'] = "";
         }
         return $arr;
     }
@@ -389,23 +391,21 @@ class OrderController extends Controller
     public function getBaccaratBetMoney($betMoney){
         $data = json_decode($betMoney,true);
         $str = '';
-        foreach ($data as $key=>$value) {
             if ($data['banker']>0) {
-                $str = "庄".$data['banker'];
+                $str = "庄".$data['banker']/100;
             }
             if ($data['bankerPair']>0) {
-                $str = $str."庄对".$data['bankerPair'];
+                $str = $str."庄对".$data['bankerPair']/100;
             }
             if ($data['player']>0) {
-                $str = $str."闲".$data['player'];
+                $str = $str."闲".$data['player']/100;
             }
             if ($data['playerPair']>0) {
-                $str = $str."庄对".$data['playerPair'];
+                $str = $str."庄对".$data['playerPair']/100;
             }
             if ($data['tie']>0) {
-                $str = $str."和".$data['tie'];
+                $str = $str."和".$data['tie']/100;
             }
-        }
         return $str;
     }
 
