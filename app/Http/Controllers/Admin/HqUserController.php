@@ -23,7 +23,7 @@ class HqUserController extends Controller
     public function index(Request $request){
         $map = array();
         $map['user.del_flag']=0;
-        $map['user.user_type']=2;
+        $map['user.user_type']=1;
         if(true==$request->has('account')){
             $map['user.account']=$request->input('account');
         }

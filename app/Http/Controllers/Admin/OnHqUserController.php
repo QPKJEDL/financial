@@ -16,7 +16,7 @@ class OnHqUserController extends Controller
     {
         $map = array();
         $map['user.del_flag']=0;
-        $map['user.user_type']=1;
+        $map['user.user_type']=2;
         if(true==$request->has('account')){
             $map['user.account']=$request->input('account');
         }
