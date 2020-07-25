@@ -28,6 +28,8 @@ use Illuminate\Http\Request;
 Route::get('/verify',                   'Admin\HomeController@verify');
 //登陆模块
 Route::group(['namespace'  => "Auth"], function () {
+    Route::get('/agentRegister/{id}',        'OnAgentActController@actAgent');//代理激活页面
+    Route::post('/actAgent','OnAgentActController@actSave');//代理激活
     Route::get('/register',             'BindController@index');    //绑定谷歌验证码
     Route::post('/valAccount',          'BindController@checkAccount'); //效验账号是否存在
     Route::post('/valUser',             'BindController@checkUserLogin');//效验账号密码的真实性
@@ -92,6 +94,7 @@ Route::group(['namespace' => "Online",'middleware' => ['auth','permission']],fun
     Route::get('/onUserDayEnd/{id}/{begin}/{end}','OnUserDayController@getUserDayEndByAgentId');//线上会员日结
     Route::get('/onUserOrderList/{id}/{begin}/{end}','OnOrderController@getOrderListByUserId');//线上会员下注详情
     Route::resource('/onAgent',       'OnAgentListController');//代理列表
+    Route::get('/onAgentList/qrCode/{id}','OnAgentListController@qrCodeShow');//显示未激活代理的二维码
     Route::get('/czOnEdit/{id}','OnAgentListController@czEdit');//充值界面
     Route::post('/updateOnBalance','OnAgentListController@updateBalance');//上分
     Route::get('/onAgent/subordinate/{id}','OnAgentListController@getSubordinateAgentList');//下级代理

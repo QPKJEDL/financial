@@ -14,34 +14,49 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="200">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="500">
         </colgroup>
         <thead>
         <tr>
-            <th class="hidden-xs">ID</th>
-            <th class="hidden-xs">用户名</th>
-            <th class="hidden-xs">名称</th>
-            <th class="hidden-xs">IP白名单</th>
-            <th class="hidden-xs">状态</th>
+            <th class="hidden-xs">代理账号</th>
+            <th class="hidden-xs">姓名</th>
+            <th class="hidden-xs">账户余额</th>
+            <th class="hidden-xs">群组余额</th>
+            <th class="hidden-xs">抽水比例</th>
+            <th class="hidden-xs">占成</th>
             <th class="hidden-xs">创建时间</th>
+            <th class="hidden-xs">是否激活</th>
+            <th class="hidden-xs">状态</th>
             <th class="hidden-xs">操作</th>
         </tr>
         </thead>
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs">{{$info['id']}}</td>
-                <td class="hidden-xs">{{$info['username']}}</td>
+                <td class="hidden-xs"><a class="a" data-id="{{$info['id']}}">{{$info['username']}}</a></td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
-                <td class="hidden-xs">{{$info['ip_config']}}</td>
+                <td class="hidden-xs">{{number_format($info['balance']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['groupBalance']/100,2)}}</td>
+                <td class="hidden-xs">{{$info['pump']}}%</td>
+                <td class="hidden-xs">{{$info['proportion']}}%</td>
+                <td class="hidden-xs">{{$info['created_at']}}</td>
                 <td class="hidden-xs">
-                    @if($info['status']==0)
-                        <span class="layui-btn layui-btn-mini layui-btn-danger">正常</span>
-                    @elseif($info['status']==1)
-                        <span class="layui-btn layui-btn-mini layui-btn-warm">停用</span>
+                    @if($info['is_act']==0)
+                        <span class="layui-btn layui-btn-mini layui-btn-danger act" data-id="{{$info['id']}}">未激活</span>
+                    @elseif($info['is_act']==1)
+                        <span class="layui-btn layui-btn-mini layui-btn-warm">激活</span>
                     @endif
                 </td>
-                <td class="hidden-xs">{{$info['created_at']}}</td>
+                <td class="hidden-xs">
+                    @if($info['status']==0)
+                        <input type="checkbox" checked="" name="open" value="{{$info['id']}}" lay-skin="switch" lay-filter="switchTest" lay-text="正常|停用">
+                    @else
+                        <input type="checkbox" name="close" lay-skin="switch" value="{{$info['id']}}" lay-filter="switchTest" lay-text="正常|停用">
+                    @endif
+                </td>
                 <td class="hidden-xs">
                     <button class="layui-btn layui-btn-small layui-btn-normal edit-btn" data-id="{{$info['id']}}" data-desc="修改代理" data-url="{{url('/admin/onAgent/'. $info['id'] .'/edit')}}">编辑</button>
                     @if($info['status']==0)
@@ -77,6 +92,17 @@
             $(".reset").click(function(){
                 $('input[name="username"]').val('')
                 $('input[name="nickname"]').val('')
+            });
+            $('.act').click(function () {
+                var id = $(this).attr('data-id');
+                layer.open({
+                    type:2,
+                    title:"激活二维码",
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['30%','50%'],
+                    content:'/admin/onAgentList/qrCode/' + id
+                });
             });
             //停用
             $('.stop').click(function () {

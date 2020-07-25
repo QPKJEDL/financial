@@ -41,6 +41,17 @@ class OnAgentListController extends Controller
     }
 
     /**
+     * 未激活代理二维码
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function qrCodeShow($id)
+    {
+        return view('onAgent.agent.qrocde',['id'=>$id]);
+    }
+
+
+    /**
      * 编辑页
      * @param int $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
