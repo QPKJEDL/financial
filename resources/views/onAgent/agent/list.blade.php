@@ -15,14 +15,12 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
             <th class="hidden-xs">ID</th>
             <th class="hidden-xs">用户名</th>
             <th class="hidden-xs">名称</th>
-            <th class="hidden-xs">角色</th>
             <th class="hidden-xs">IP白名单</th>
             <th class="hidden-xs">状态</th>
             <th class="hidden-xs">创建时间</th>
@@ -35,7 +33,6 @@
                 <td class="hidden-xs">{{$info['id']}}</td>
                 <td class="hidden-xs">{{$info['username']}}</td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
-                <td class="hidden-xs">{{$info['agent_roles'][0]['display_name'] or '已删除'}}</td>
                 <td class="hidden-xs">{{$info['ip_config']}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==0)
