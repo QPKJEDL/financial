@@ -129,6 +129,7 @@ class AgentListController extends Controller
         $data['nnbets_fee']=json_encode($data['nnbets_fee']);
         $data['a89bets_fee']=json_encode($data['a89bets_fee']);
         $data['sgbets_fee']=json_encode($data['sgbets_fee']);
+        $data['userType']=1;
         $up=Agent::where('id',$id)->update($data);
         if($up!==false){
             AgentRoleUser::where('user_id',$id)->update(array('role_id'=>$roleId));
