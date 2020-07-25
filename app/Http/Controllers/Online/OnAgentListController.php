@@ -28,21 +28,7 @@ class OnAgentListController extends Controller
         if (true==$request->has('nickname')) {
             $sql->where('nickname','like','%'.$request->input('nickname').'%');
         }
-        if (true==$request->has('excel') && true==$request->input('excel')){
-            $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
-                ->where($map)->get()->toArray();
-            foreach ($excel as $key=>$value){
-                $excel[$key]['ancestors'] = $this->getGroupBalance($value['id']);
-                $data = json_decode($value['fee'],true);
-                $excel[$key]['fee']=$data['baccarat'].'%/'.$data['dragonTiger'].'%/'.$data['niuniu'].'%/'.$data['sangong'].'%/'.$data['A89'].'%';
-            }
-            $head = array('ID','代理账号','姓名','账户余额','群组余额','百/龙/牛/三/A','占成(%)','创建时间');
-            try {
-                exportExcel($head, $excel, '代理列表', '', true);
-            } catch (\PHPExcel_Reader_Exception $e) {
-            } catch (\PHPExcel_Exception $e) {
-            }
-        }else{
+
             $data = $sql->where($map)->paginate(10)->appends($request->all());
             foreach ($data as $key=>$value){
                 $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
@@ -50,7 +36,7 @@ class OnAgentListController extends Controller
                 $data[$key]['fee']=json_decode($value['fee'],true);
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
             }
-        }
+
         return view('onAgent.agent.list',['list'=>$data,'input'=>$request->all()]);
     }
 
@@ -211,8 +197,8 @@ class OnAgentListController extends Controller
         $agentList = Agent::get();
         $userList = $this->getHqUserList();
         $userMoney = $this->getAgentUserMoney($agentId,$userList);
-        $info = $this->getAgentInfo($agentId,$agentList);
-        return $info + $userMoney + $this->getRecursiveBalance($agentId,$agentList,$userList);
+        $info = $agentId?Agent::find($agentId):[];
+        return $info['balance'] + $userMoney + $this->getRecursiveBalance($agentId,$agentList,$userList);
     }
 
     public function getRecursiveBalance($agentId,$agentList,$userList){
