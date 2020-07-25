@@ -1,11 +1,23 @@
 @section('title', '用户编辑')
 @section('content')
-    <div class="layui-form-item">
-        <label class="layui-form-label">用户名：</label>
-        <div class="layui-input-block">
-            <input type="text" value="{{$info['username'] or ''}}" name="username" required lay-verify="user_name" placeholder="请输入用户名(请不要出现汉字)" autocomplete="off" class="layui-input" @if($id!=0) readonly @endif>
+    @if($id==0)
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="username" lay-verify="username" lay autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-input-inline">
+                <button type="button" class="layui-btn" id="account">系统生成</button>
+            </div>
         </div>
-    </div>
+    @else
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号：</label>
+            <div class="layui-input-block">
+                <input type="text" value="{{$info['username'] or ''}}" name="username" required lay-verify="user_name" placeholder="请输入用户名" autocomplete="off" class="layui-input" @if($id!=0) readonly @endif>
+            </div>
+        </div>
+    @endif
     <div class="layui-form-item">
         <label class="layui-form-label">名称：</label>
         <div class="layui-input-block">
@@ -319,7 +331,12 @@
                     }
                 }
             });
-
+            $("#account").click(function(){
+                //console.log(Math.random().toString().slice(-6));
+                //清空数据
+                $("input[name='username']").val('');
+                $("input[name='username']").val(Math.floor(Math.random() * (999999-100000)) + 100000);
+            });
             var id = $("input[name='id']").val();
             if(id==0){
                 form.on('submit(formDemo)', function() {
