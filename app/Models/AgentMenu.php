@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class AgentMenu extends Model
 {
     use AgentMenuTrait;
-    protected $table = "business_menus";
+    protected $table = "agent_menus";
 
     protected $primaryKey = 'id';
     protected $hidden = ['icon', 'uri','routes','created_at','updated_at'];
