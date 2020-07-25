@@ -67,6 +67,7 @@ class OnAgentListController extends Controller
             $data['userType']=2;
             $data["ancestors"]=0;
             $data['limit']=json_encode($data['limit']);
+            $data['is_act']=0;
             $count = Agent::insertGetId($data);
             if ($count){
                 $this->insertUserRole($count,$roleId);
