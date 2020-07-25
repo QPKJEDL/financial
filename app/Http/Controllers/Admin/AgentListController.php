@@ -282,8 +282,8 @@ class AgentListController extends Controller
         $agentList = Agent::get();
         $userList = $this->getHqUserList();
         $userMoney = $this->getAgentUserMoney($agentId,$userList);
-        $info = $this->getAgentInfo($agentId,$agentList);
-        return $info + $userMoney + $this->getRecursiveBalance($agentId,$agentList,$userList);
+        $info = $agentId?Agent::find($agentId):[];
+        return $info['balance'] + $userMoney + $this->getRecursiveBalance($agentId,$agentList,$userList);
     }
 
     public function getRecursiveBalance($agentId,$agentList,$userList){
