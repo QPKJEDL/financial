@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AgentRoleMenu extends Model
 {
-    protected $table = "business_role_menu";
+    protected $table = "agent_role_menu";
 
     public $timestamps = false;
 

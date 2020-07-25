@@ -69,6 +69,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::post('/agentStop',       'AgentListController@stop');//代理账号停用
     Route::post('/agentStart',       'AgentListController@start');//代理账号启用
     Route::resource('/agentRole',       'AgentRoleController');//代理角色管理
+    Route::post('/agentRole/update','AgentRoleController@update');
     Route::get('/czEdit/{id}','AgentListController@czEdit');//充值界面
     Route::post('/updateBalance','AgentListController@updateBalance');//上分
     Route::get('/agent/subordinate/{id}','AgentListController@getSubordinateAgentList');//下级代理
