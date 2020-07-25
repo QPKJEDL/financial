@@ -23,7 +23,7 @@ class AgentListController extends Controller
     public function index(Request $request){
         $map = array();
         $map['parent_id']=0;
-        $map['userType']=2;
+        $map['userType']=1;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');

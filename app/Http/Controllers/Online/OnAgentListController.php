@@ -19,7 +19,7 @@ class OnAgentListController extends Controller
     {
         $map = array();
         $map['parent_id']=0;
-        $map['userType']=1;
+        $map['userType']=2;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');
