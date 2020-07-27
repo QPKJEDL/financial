@@ -104,7 +104,7 @@ class HqUserController extends Controller
                         return ['msg'=>'操作失败2','status'=>0];
                     }
                 }else{//下分
-                    $balance = UserAccount::where('user_id','=',$id)->first()->lockForUpdate();
+                    $balance = UserAccount::where('user_id','=',$id)->lockForUpdate()->first();
                     if ($balance['balance'] < abs($data['balance']*100)){
                         return ['msg'=>'金额不足，不能提现','status'=>0];
                     }else{

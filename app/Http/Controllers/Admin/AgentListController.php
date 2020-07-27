@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRequest;
 use App\Models\Agent;
+use App\Models\AgentBill;
 use App\Models\AgentRole;
 use App\Models\AgentRoleUser;
 use App\Models\Czrecord;
@@ -12,6 +13,8 @@ use App\Models\Desk;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class AgentListController extends Controller
 {
@@ -268,16 +271,102 @@ class AgentListController extends Controller
     public function updateBalance(StoreRequest $request)
     {
         $data = $request->all();
-        unset($data['_token']);
-        $id = $data['id'];
-        unset($data['id']);
-        $data['balance']=$data['balance']*100;
-        $bool = Agent::where('id','=',$id)->increment('balance',$data['balance']);
-        if ($bool!==false){
-            return ['msg'=>'操作成功','status'=>1];
+        $redisLock = $this->redissionLock($data['id']);
+        if ($redisLock){
+            unset($data['_token']);
+            $id = $data['id'];
+            unset($data['id']);
+            $data['balance']=$data['balance']*100;
+            DB::beginTransaction();
+            try {
+                $bool = Agent::where('id','=',$id)->lockForUpdate()->first();
+                if ($bool){
+                    $count = Agent::where('id','=',$id)->increment('balance',$data['balance']);
+                    if ($count){
+                        $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],"财务后台直接充值");
+                        if ($result){
+                            DB::commit();
+                            $this->unRedissLock($id);
+                            return ['msg'=>'操作成功','status'=>1];
+                        }else{
+                            DB::rollBack();
+                            $this->unRedissLock($id);
+                            return ['msg'=>'操作失败','status'=>0];
+                        }
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }else{
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                }else{
+                    DB::rollBack();
+                    $this->unRedissLock($id);
+                    return ['msg'=>'操作失败','status'=>0];
+                }
+            }catch (\Exception $e)
+            {
+                DB::rollBack();
+                $this->unRedissLock($id);
+                return ['msg'=>'操作失败','status'=>0];
+            }
         }else{
-            return ['msg'=>'操作失败','status'=>0];
+            return ['msg'=>'请忽频繁提交','status'=>0];
         }
+    }
+
+    /**
+     * 插入代理流水
+     * @param $agentId 代理id
+     * @param $userId  用户id
+     * @param $money   操作金额
+     * @param $before  操作前金额
+     * @param $after   操作后金额
+     * @param $status  操作类型
+     * @param $type    充值类型
+     * @param $remark  备注
+     * @return bool
+     */
+    public function insertAgentBillFlow($agentId,$userId,$money,$before,$after,$status,$type,$remark){
+        $data['agent_id']=$agentId;
+        $data['user_id']=$userId;
+        $data['money']=$money;
+        $data['bet_before']=$before;
+        $data['bet_after']=$after;
+        $data['status']=$status;
+        $data['type']=$type;
+        $data['remark']=$remark;
+        $data['creatime']=time();
+        return AgentBill::insert($data);
+    }
+    /**
+     * redis队列锁
+     * @param $userId
+     * @return bool
+     */
+    public function redissionLock($userId){
+        $code=time().rand(100000,999999);
+        //锁入列
+        Redis::rPush('cz_cw_agent_lock_'.$userId,$code);
+
+        //锁出列
+        $codes = Redis::LINDEX('cz_cw_agent_lock_'.$userId,0);
+        if ($code!=$codes){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    /**
+     * 解锁
+     * @param $userId
+     */
+    public function unRedissLock($userId)
+    {
+        Redis::del('cz_cw_agent_lock_'.$userId);
     }
     public function getGroupBalance($agentId){
         $agentList = Agent::get();
