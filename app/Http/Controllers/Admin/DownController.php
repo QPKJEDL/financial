@@ -12,6 +12,7 @@ use App\Models\UserAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 /**
  * 下分请求
@@ -88,18 +89,78 @@ class DownController extends Controller
         $data['status']=2;
         $user = Auth::user();
         $data['lock_by']=$user['username'];
-        $count = Draw::where('id','=',$id)->update($data);
-        if ($count){
-            $info = $id?Draw::find($id):[];
-            DB::table('user_account')->increment('balance',$info['money']);
-            $this->insertBillFlowByToDay($info['user_id'],$info['money']);
-            return ['msg'=>'操作成功','status'=>1];
+        $redisLock = $this->redissionLock($id);
+        if ($redisLock){
+            DB::beginTransaction();
+            try {
+                $bool = Draw::where('id','=',$id)->lockForUpdate()->first();
+                if ($bool['status']==2){
+                    DB::rollBack();
+                    $this->unRedissLock($id);
+                    return ['msg'=>'该数据已经被操作过了','status'=>0];
+                }else{
+                    $count = Draw::where('id','=',$id)->update($data);
+                    if ($count){
+                        $result = DB::table('user_account')->increment('balance',$bool['money']);
+                        if ($result){
+                            $this->insertBillFlowByToDay($bool['user_id'],$bool['money']);
+                            DB::commit();
+                            $this->unRedissLock($id);
+                            return ['msg'=>'操作成功','status'=>1];
+                        }else{
+                            DB::rollBack();
+                            $this->unRedissLock($id);
+                            return ['msg'=>'操作失败','status'=>0];
+                        }
+                    }else{
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                }
+            }catch (\Exception $e)
+            {
+                DB::rollBack();
+                $this->unRedissLock($id);
+                return ['msg'=>'操作失败','status'=>0];
+            }
         }else{
-            return ['msg'=>'操作失败','status'=>0];
+            return ['msg'=>'请忽频繁提交','status'=>0];
         }
     }
+
+    /**
+     * redis队列锁
+     * @param $userId
+     * @return bool
+     */
+    public function redissionLock($userId){
+        $code=time().rand(100000,999999);
+        //锁入列
+        Redis::rPush('zf_cw_hq_user_draw_lock_'.$userId,$code);
+
+        //锁出列
+        $codes = Redis::LINDEX('zf_cw_hq_user_draw_lock_'.$userId,0);
+        if ($code!=$codes){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    /**
+     * 解锁
+     * @param $userId
+     */
+    public function unRedissLock($userId)
+    {
+        Redis::del('zf_cw_hq_user_draw_lock_'.$userId);
+    }
+
     /**
      * 插入流水
+     * @param $userId
+     * @param $score
      */
     public function insertBillFlowByToDay($userId,$score){
         $tableName = date('Ymd',time());
@@ -109,7 +170,7 @@ class DownController extends Controller
         $data['order_sn']=$this->getrequestId();
         $data['score']=$score;
         //获取用户现在余额
-        $info = $userId?UserAccount::find($userId):[];
+        $info = UserAccount::where('user_id','=',$userId)->lockForUpdate()->first();
         $data['bet_before']=$info['balance'];
         $data['bet_after']=$info['balance'] + $score;
         $data['status']=3;
