@@ -104,22 +104,27 @@ class HqUserController extends Controller
                         return ['msg'=>'操作失败2','status'=>0];
                     }
                 }else{//下分
-                    $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -abs($data['balance'] * 100)]);
-                    if ($res){
-                        $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'remark'=>'财务后台直接下分','creatime'=>time()]);
-                        if ($result){
-                            DB::commit();
-                            $this->unRedisUserLock($id);
-                            return ['msg'=>'操作成功','status'=>1];
+                    $balance = UserAccount::where('user_id','=',$id)->first()->lockForUpdate();
+                    if ($balance['balance'] < abs($data['balance']*100)){
+                        return ['msg'=>'金额不足，不能提现','status'=>0];
+                    }else{
+                        $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -abs($data['balance'] * 100)]);
+                        if ($res){
+                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'remark'=>'财务后台直接下分','creatime'=>time()]);
+                            if ($result){
+                                DB::commit();
+                                $this->unRedisUserLock($id);
+                                return ['msg'=>'操作成功','status'=>1];
+                            }else{
+                                DB::rollBack();
+                                $this->unRedisUserLock($id);
+                                return ['msg'=>'操作失败','status'=>0];
+                            }
                         }else{
                             DB::rollBack();
                             $this->unRedisUserLock($id);
                             return ['msg'=>'操作失败','status'=>0];
                         }
-                    }else{
-                        DB::rollBack();
-                        $this->unRedisUserLock($id);
-                        return ['msg'=>'操作失败','status'=>0];
                     }
                 }
             }catch (Exception $e){
