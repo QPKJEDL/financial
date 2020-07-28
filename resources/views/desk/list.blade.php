@@ -38,6 +38,7 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
@@ -45,6 +46,7 @@
             <th class="hidden-xs">台桌类型</th>
             <th class="hidden-xs">台桌名称</th>
             <th class="hidden-xs">靴号</th>
+            <th class="hidden-xs">铺号</th>
             <th class="hidden-xs">总下注</th>
             <th class="hidden-xs">下注输赢</th>
             <th class="hidden-xs">洗码费</th>
@@ -58,6 +60,7 @@
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
                 <td class="hidden-xs">{{$input['boot_num'] or 0}}</td>
+                <td class="hidden-xs">{{$input['pave_num' or 0]}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['winAndErr']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format(($info['money']/100) * 0.009,2)}}</td>
