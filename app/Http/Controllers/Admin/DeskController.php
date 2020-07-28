@@ -25,29 +25,33 @@ class DeskController extends Controller
         $data = Desk::where($map)->paginate(10)->appends($request->all());
         foreach($data as $key=>$value)
         {
-            $mapWhere = array();
-            $mapWhere['desk_id'] = $value['id'];
-            $mapWhere['game_type']=$value['game_id'];
-            $mapWhere['status']=1;
+            if (true==$request->has('boot_num'))
+            {
+                $bootNum = $request->input('boot_num');
+            }
+            else
+            {
+                $bootNum = 0;
+            }
             $data[$key]['time']=$tableName;
             if($value['game_id']==1){//百家乐
-                $data[$key]['money'] = $this->getBaccaratMoney($value['id'],$value['game_id'],$tableName);
-                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$tableName);
+                $data[$key]['money'] = $this->getBaccaratMoney($value['id'],$value['game_id'],$bootNum,$tableName);
+                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$tableName);
             }else if($value['game_id']==2){//龙虎
-                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$tableName);
-                $data[$key]['money'] = $this->getDragonTieTigerMoney($value['id'],$value['game_id'],$tableName);
+                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$tableName);
+                $data[$key]['money'] = $this->getDragonTieTigerMoney($value['id'],$value['game_id'],$bootNum,$tableName);
             }else if($value['game_id']==3){//牛牛
-                $data[$key]['betMoney'] = $this->getNiuNiuMoney($value['id'],$value['game_id'],$tableName);
+                $data[$key]['betMoney'] = $this->getNiuNiuMoney($value['id'],$value['game_id'],$bootNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==4){//三公
-                $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$tableName);
+                $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$bootNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==5){//A89
-                $data[$key]['betMoney']=$this->getA89Money($value['id'],$value['game_id'],$tableName);
+                $data[$key]['betMoney']=$this->getA89Money($value['id'],$value['game_id'],$bootNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
-            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$tableName);
+            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$bootNum,$tableName);
         }
         $min=config('admin.min_date');
         return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'min'=>$min]);
@@ -57,14 +61,19 @@ class DeskController extends Controller
      * 获取龙虎台桌的总下注金额
      * @param $deskId 台桌id
      * @param $gameId 游戏类型
+     * @param $bootNum
      * @param $tableName 表名
      * @return float|int|mixed
      */
-    public function getDragonTieTigerMoney($deskId,$gameId,$tableName){
+    public function getDragonTieTigerMoney($deskId,$gameId,$bootNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
+        $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$datum){
             //获取游戏记录表表名
             $recordTName = $this->getGameRecordTableName($datum['record_sn']);
@@ -86,14 +95,19 @@ class DeskController extends Controller
      * 获取百家乐台桌的总下注金额
      * @param $deskId 台桌id
      * @param $gameId 游戏id
+     * @param $bootNum
      * @param $tableName 表名
      * @return float|int|mixed
      */
-    public function getBaccaratMoney($deskId,$gameId,$tableName){
+    public function getBaccaratMoney($deskId,$gameId,$bootNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
+        $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$datum){
             //获取游戏记录表名
             $recordTName = $this->getGameRecordTableName($datum['record_sn']);
@@ -115,14 +129,19 @@ class DeskController extends Controller
      * 获取牛牛全部下注金额
      * @param $deskId
      * @param $gameId
+     * @param $bootNum
      * @param $tableName
      * @return int
      */
-    public function getNiuNiuMoney($deskId,$gameId,$tableName){
+    public function getNiuNiuMoney($deskId,$gameId,$bootNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
+        $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$datum){
             $winner = json_decode($datum['bet_money'],true);
             //{"x3_Super_Double":2000,"x3_double":2000} {"x3_equal":5000}
@@ -164,12 +183,16 @@ class DeskController extends Controller
      * @param $tableName
      * @return int
      */
-    public function getSanGongMoney($deskId,$gameId,$tableName)
+    public function getSanGongMoney($deskId,$gameId,$bootNum,$tableName)
     {
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
+        $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$value)
         {
             $winner = json_decode($value['bet_money'],true);
@@ -231,12 +254,17 @@ class DeskController extends Controller
         return $money;
     }
 
-    public function getA89Money($deskId,$gameId,$tableName)
+    public function getA89Money($deskId,$gameId,$bootNum,$tableName)
     {
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where('desk_id','=',$deskId)->where('status','=',1)->get();
+        $sql=$order->where('desk_id','=',$deskId)->where('game_id','=',$gameId)->where('status','=',1);
+        if ($bootNum!=0)
+        {
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$value)
         {
             $betMoney = json_decode($value['bet_money'],true);
@@ -266,18 +294,23 @@ class DeskController extends Controller
         return $money;
     }
 
-   /**
+    /**
      * 解析order表中得bet_money获取总金额
      * @param $deskId
+     * @param $bootNum
      * @param $tableName
      * @return float|int
      */
-    public function getCalculationMoney($deskId,$tableName)
+    public function getCalculationMoney($deskId,$bootNum,$tableName)
     {
         $sum=0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where('desk_id','=',$deskId)->where('status','=',1)->get();
+        $sql = $order->where('desk_id','=',$deskId)->where('status','=',1);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        $data = $sql->get();
         foreach ($data as $key=>$datum){
             $bet = json_decode($datum['bet_money'],true);
             $sum = $sum + array_sum($bet);
@@ -305,11 +338,15 @@ class DeskController extends Controller
      * @param $tableName
      * @return int|mixed
      */
-    public function getWinAndErrMoney($deskId,$tableName)
+    public function getWinAndErrMoney($deskId,$bootNum,$tableName)
     {
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        return $order->where('desk_id','=',$deskId)->where('status','=',1)->sum('get_money');
+        $sql = $order->where('desk_id','=',$deskId)->where('status','=',1);
+        if ($bootNum!=0){
+            $sql->where('boot_num','=',$bootNum);
+        }
+        return $sql->sum('get_money');
     }
 
     /**
