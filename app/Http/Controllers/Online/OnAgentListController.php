@@ -19,6 +19,7 @@ class OnAgentListController extends Controller
     {
         $map = array();
         $map['parent_id']=0;
+        $map['del_flag']=0;
         $map['userType']=2;
         if (true==$request->has('username'))
         {
@@ -119,6 +120,7 @@ class OnAgentListController extends Controller
     public function getSubordinateAgentList($id,Request $request){
         $map = array();
         $map['parent_id']=$id;
+        $map['del_flag']=0;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');

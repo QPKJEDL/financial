@@ -27,6 +27,7 @@ class AgentListController extends Controller
         $map = array();
         $map['parent_id']=0;
         $map['userType']=1;
+        $map['del_flag']=0;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');
@@ -181,6 +182,17 @@ class AgentListController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        $count = Agent::where('id','=',$id)->update(['del_flag'=>1]);
+        if ($count!==false)
+        {
+            return ['msg'=>'操作成功','status'=>1];
+        }else{
+            return ['msg'=>'操作失败','status'=>0];
+        }
+    }
+
     /*
      * 停用
      */
@@ -237,6 +249,7 @@ class AgentListController extends Controller
     public function getSubordinateAgentList($id,Request $request){
         $map = array();
         $map['parent_id']=$id;
+        $map['del_flag']=0;
         if (true==$request->has('username'))
         {
             $map['username']=$request->input('username');
