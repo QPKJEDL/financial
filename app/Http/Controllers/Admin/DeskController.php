@@ -17,11 +17,18 @@ class DeskController extends Controller
         }else{
             $tableName = date('Ymd',strtotime('-1day'));
         }
-        $list = Order::getOrderDataByTableName($tableName);
         $map = array();
+        if (true==$request->has('deskId'))
+        {
+            $map['id']=$request->input('deskId');
+        }
         $data = Desk::where($map)->paginate(10)->appends($request->all());
         foreach($data as $key=>$value)
         {
+            $mapWhere = array();
+            $mapWhere['desk_id'] = $value['id'];
+            $mapWhere['game_type']=$value['game_id'];
+            $mapWhere['status']=1;
             $data[$key]['time']=$tableName;
             if($value['game_id']==1){//百家乐
                 $data[$key]['money'] = $this->getBaccaratMoney($value['id'],$value['game_id'],$tableName);
@@ -43,7 +50,7 @@ class DeskController extends Controller
             $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$tableName);
         }
         $min=config('admin.min_date');
-        return view('desk.list',['list'=>$data,'input'=>$request->all(),'min'=>$min]);
+        return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'min'=>$min]);
     }
 
     /**
