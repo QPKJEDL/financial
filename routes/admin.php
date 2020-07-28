@@ -65,6 +65,8 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getIndexByParentId');//下级代理日结
     Route::get('/userDays/{id}/{begin}/{end}','UserDayEndController@getUserDayEndByAgentId');//下级会员日结
     Route::resource('/agent',       'AgentListController');//代理列表
+    Route::get('/agent/resetPwd/{id}','AgentListController@resetPwd');//修改密码页面
+    Route::post('/agent/saveResetPwd','AgentListController@saveResetPwd');//保存修改密码
     Route::post('/agentUpdate',       'AgentListController@update');//代理账号编辑
     Route::post('/agentStop',       'AgentListController@stop');//代理账号停用
     Route::post('/agentStart',       'AgentListController@start');//代理账号启用
@@ -95,6 +97,7 @@ Route::group(['namespace' => "Online",'middleware' => ['auth','permission']],fun
     Route::get('/onUserDayEnd/{id}/{begin}/{end}','OnUserDayController@getUserDayEndByAgentId');//线上会员日结
     Route::get('/onUserOrderList/{id}/{begin}/{end}','OnOrderController@getOrderListByUserId');//线上会员下注详情
     Route::resource('/onAgent',       'OnAgentListController');//代理列表
+    Route::post('/onAgent/update','OnAgentListController@update');//编辑保存
     Route::get('/onAgentList/qrCode/{id}','OnAgentListController@qrCodeShow');//显示未激活代理的二维码
     Route::get('/czOnEdit/{id}','OnAgentListController@czEdit');//充值界面
     Route::post('/updateOnBalance','OnAgentListController@updateBalance');//上分

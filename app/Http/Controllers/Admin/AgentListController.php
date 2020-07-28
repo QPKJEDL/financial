@@ -60,11 +60,50 @@ class AgentListController extends Controller
         }
         return view('agent.list',['list'=>$data,'input'=>$request->all()]);
     }
+
+    /**
+     * 修改密码编辑页
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function resetPwd($id)
+    {
+        return view('agent.resetpwd',['id'=>$id]);
+    }
+
+    /**
+     * 修改保存密码
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function saveResetPwd(StoreRequest $request)
+    {
+        $data = $request->all();
+        $id = $data['id'];
+        if ($data['password']!=$data['newPwd'])
+        {
+            return ['msg'=>'两次密码输入不一致','status'=>0];
+        }
+        else
+        {
+            $password = bcrypt($data['password']);
+            $count = Agent::where('id','=',$id)->update(['password'=>$password]);
+            if ($count!==false)
+            {
+                return ['msg'=>'操作成功','status'=>1];
+            }
+            else
+            {
+                return ['msg'=>'操作失败','status'=>0];
+            }
+        }
+    }
+
     /**
      * 编辑页
      */
     public function edit($id=0){
-        $data = $id? Agent::find($id):[];
+        $data = $id?Agent::find($id):[];
         $info = AgentRoleUser::where('user_id','=',$id)->first();
         if($id!=0){
             $data['fee']=json_decode($data['fee'],true);

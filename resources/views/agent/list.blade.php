@@ -25,7 +25,7 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="350">
         </colgroup>
         <thead>
         <tr>
@@ -59,6 +59,7 @@
                     <button class="layui-btn layui-btn-small cz" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">上分</i></button>
                     <button class="layui-btn layui-btn-small @if($info['userCount']==0) layui-btn-disabled @else layui-btn-normal @endif user" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">下级会员</i></button>
                     <button class="layui-btn layui-btn-small @if($info['agentCount']==0) layui-btn-disabled @else layui-btn-normal @endif agent" data-id="{{$info['id']}}"data-name="{{$info['nickname']}}" data-desc="下级代理"><i class="layui-icon">下级代理</i></button>
+                    <button class="layui-btn layui-btn-small resetPwd" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">修改密码</i></button>
                 </td>
             </tr>
         @endforeach
@@ -143,6 +144,19 @@
                         });
                     }
                 );
+            });
+            //修改密码
+            $('.resetPwd').click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                layer.open({
+                    type:2,
+                    title: name + "修改密码",
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/agent/resetPwd/' + id
+                });
             });
             $(".reset").click(function(){
                 $('input[name="username"]').val('')

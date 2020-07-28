@@ -174,7 +174,7 @@
             }else{
                 form.on('submit(formDemo)', function(data) {
                     $.ajax({
-                        url:"{{url('/admin/optionsUpdate')}}",
+                        url:"{{url('/admin/onAgent/update')}}",
                         data:$('form').serialize(),
                         type:'post',
                         dataType:'json',

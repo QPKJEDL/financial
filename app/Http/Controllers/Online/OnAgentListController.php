@@ -180,6 +180,29 @@ class OnAgentListController extends Controller
     }
 
     /**
+     * 编辑保存
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function update(StoreRequest $request)
+    {
+        $data = $request->all();
+        $id = $data['id'];
+        $roleId = $data['user_role'];
+        unset($data['_token']);
+        unset($data['user_role']);
+        unset($data['id']);
+        $data['limit']=json_encode($data['limit']);
+        $count = Agent::where('id','=',$id)->update($data);
+        if ($count!==false){
+            AgentRoleUser::where('user_id',$id)->update(array('role_id'=>$roleId));
+            return ['msg'=>'操作成功','status'=>1];
+        }else{
+            return ['msg'=>'操作失败','status'=>0];
+        }
+    }
+
+    /**
      * 充值界面
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
