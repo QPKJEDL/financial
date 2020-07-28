@@ -54,7 +54,7 @@
                 <td class="hidden-xs">{{$info['time']}}</td>
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
-                <td class="hidden-xs">{{$input['boot_num']}}</td>
+                <td class="hidden-xs">{{$input['boot_num'] or 0}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['winAndErr']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format(($info['money']/100) * 0.009,2)}}</td>
