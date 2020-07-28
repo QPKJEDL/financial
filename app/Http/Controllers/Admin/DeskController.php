@@ -33,7 +33,8 @@ class DeskController extends Controller
                 $data[$key]['betMoney'] = $this->getNiuNiuMoney($value['id'],$value['game_id'],$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==4){//三公
-
+                $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$tableName);
+                $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==5){//A89
 
             }
@@ -153,6 +154,86 @@ class DeskController extends Controller
         }
         return $money;
     }
+
+    /**
+     * 获取三公总下注
+     * @param $deskId
+     * @param $gameId
+     * @param $tableName
+     * @return int
+     */
+    public function getSanGongMoney($deskId,$gameId,$tableName)
+    {
+        $money = 0;
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
+        foreach ($data as $key=>$value)
+        {
+            //获取游戏记录表名
+            $recordTName = $this->getGameRecordTableName($value['record_sn']);
+            //获取游戏详情
+            $recordInfo = GameRecord::getGameRecordInfo($value['record_sn'],$recordTName);
+            //把游戏结果转成数组
+            $winner = json_decode($recordInfo['winner'],true);
+            if (!empty($winner['x1_Super_Double'])){
+                $money = $money + $winner['x1_Super_Double']*10;
+            }
+            if (!empty($winner['x2_Super_Double'])){
+                $money = $money + $winner['x2_Super_Double']*10;
+            }
+            if (!empty($winner['x3_Super_Double'])){
+                $money = $money + $winner['x3_Super_Double']*10;
+            }
+            if (!empty($winner['x4_Super_Double'])){
+                $money = $money + $winner['x4_Super_Double']*10;
+            }
+            if (!empty($winner['x5_Super_Double'])){
+                $money = $money + $winner['x5_Super_Double']*10;
+            }
+            if (!empty($winner['x6_Super_Double'])){
+                $money = $money + $winner['x6_Super_Double']*10;
+            }
+            if (!empty($winner['x1_double'])){
+                $money = $money + $winner['x1_double'] * 3;
+            }
+            if (!empty($winner['x2_double'])){
+                $money = $money + $winner['x2_double'] * 3;
+            }
+            if (!empty($winner['x3_double'])){
+                $money = $money + $winner['x3_double'] * 3;
+            }
+            if (!empty($winner['x4_double'])){
+                $money = $money + $winner['x4_double'] * 3;
+            }
+            if (!empty($winner['x5_double'])){
+                $money = $money + $winner['x5_double'] * 3;
+            }
+            if (!empty($winner['x6_double'])){
+                $money = $money + $winner['x6_double'] * 3;
+            }
+            if (!empty($winner['x1_equal'])){
+                $money = $money + $winner['x1_equal'];
+            }
+            if (!empty($winner['x2_equal'])){
+                $money = $money + $winner['x2_equal'];
+            }
+            if (!empty($winner['x3_equal'])){
+                $money = $money + $winner['x3_equal'];
+            }
+            if (!empty($winner['x4_equal'])){
+                $money = $money + $winner['x4_equal'];
+            }
+            if (!empty($winner['x5_equal'])){
+                $money = $money + $winner['x5_equal'];
+            }
+            if (!empty($winner['x6_equal'])){
+                $money = $money + $winner['x6_equal'];
+            }
+        }
+        return $money;
+    }
+
    /**
      * 解析order表中得bet_money获取总金额
      * @param $deskId
