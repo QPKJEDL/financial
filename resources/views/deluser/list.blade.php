@@ -22,7 +22,6 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
@@ -30,7 +29,6 @@
             <th class="hidden-xs">会员账号</th>
             <th class="hidden-xs">最近充值</th>
             <th class="hidden-xs">账户余额</th>
-            <th class="hidden-xs">百/龙/牛/三/A洗码率</th>
             <th class="hidden-xs">创建日期</th>
         </tr>
         </thead>
@@ -39,9 +37,8 @@
             <tr>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
                 <td class="hidden-xs">{{$info['account']}}</td>
-                <td class="hidden-xs">{{$info['cz']['score']/100}}</td>
-                <td class="hidden-xs">{{$info['balance']/100}}</td>
-                <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee']['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
+                <td class="hidden-xs">{{number_format($info['cz']['score']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['balance']/100,2)}}</td>
                 <td class="hidden-xs">{{$info['creatime']}}</td>
             </tr>
         @endforeach

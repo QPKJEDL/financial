@@ -59,6 +59,7 @@
                 </td>
                 <td class="hidden-xs">
                     <button class="layui-btn layui-btn-small layui-btn-normal code" data-id="{{$info['user_id']}}"><i class="layui-icon">上分</i></button>
+                    <button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/hquser/'.$info['user_id'])}}"><i class="layui-icon">删除</i></button>
                 </td>
             </tr>
         @endforeach

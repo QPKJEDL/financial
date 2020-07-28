@@ -172,8 +172,16 @@ class HqUserController extends Controller
     public function getrequestId(){
         @date_default_timezone_set("PRC");
         $requestId  =	date("YmdHis").rand(11111111,99999999);
-
         return $requestId;
+    }
 
+    public function destroy($id)
+    {
+        $count = HqUser::where('user_id','=',$id)->update(['del_flag'=>1]);
+        if ($count!==false){
+            return ['msg'=>'操作成功','status'=>1];
+        }else{
+            return ['msg'=>'操作失败','status'=>0];
+        }
     }
 }
