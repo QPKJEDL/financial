@@ -259,7 +259,7 @@ class DeskController extends Controller
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $sql=$order->where('desk_id','=',$deskId)->where('game_id','=',$gameId)->where('status','=',1);
+        $sql=$order->where('desk_id','=',$deskId)->where('game_type','=',$gameId)->where('status','=',1);
         if ($bootNum!=0)
         {
             $sql->where('boot_num','=',$bootNum);
