@@ -80,7 +80,7 @@
                 <td class="hidden-xs">{{number_format($info['win_money']/100*0.009,2)}}</td>
                 <td class="hidden-xs">{{$info['proportion']}}%</td>
                 <td class="hidden-xs">
-                    {{number_format(((-$info['win_money']/100)-number_format($info['win_money']/100*0.009,2)) * ($info['proportion']/100),2)}}
+                    {{number_format(((-$info['win_money']/100)-($info['win_money']/100*0.009)) * ($info['proportion']/100),2)}}
                 </td>
                 <td class="hidden-xs">{{number_format($info['pump']/100 + $info['win_money']/100*0.009 + (-$info['win_money']/100 - $info['win_money']/100*0.009) * $info['proportion']/100,2)}}</td>
                 <td class="hidden-xs">
