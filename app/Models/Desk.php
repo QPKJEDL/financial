@@ -14,4 +14,13 @@ class Desk extends Model{
         $data = $deskId?Desk::find($deskId):[];
         return $data;
     }
+
+    /**
+     * 获取所有台桌
+     * @return Desk[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public static function getAllDesk()
+    {
+        return Desk::get();
+    }
 }
