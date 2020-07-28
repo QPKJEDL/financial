@@ -4,6 +4,16 @@
         <button class="layui-btn layui-btn-small layui-btn-normal addBtn" id="addAgent" data-desc="添加代理" data-url="{{url('/admin/agent/0/edit')}}"><i class="layui-icon">&#xe654;</i></button>
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="username" value="{{ $input['username'] or '' }}" name="username" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="nickname" value="{{ $input['nickname'] or '' }}" name="nickname" placeholder="请输入代理昵称" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+    </div>
 @endsection
 @section('table')
     <table class="layui-table" lay-even lay-skin="nob">
@@ -180,7 +190,6 @@
             });
             form.render();
             form.on('submit(formDemo)', function(data) {
-                console.log(data);
             });
         });
     </script>
