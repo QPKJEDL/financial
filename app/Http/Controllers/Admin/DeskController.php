@@ -36,12 +36,12 @@ class DeskController extends Controller
                 $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==5){//A89
-
+                $data[$key]['betMoney']=$this->getA89Money($value['id'],$value['game_id'],$tableName);
+                $data[$key]['money']=$value['betMoney'];
             }
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
             $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$tableName);
         }
-        //dump($this->getDragonTieTigerMoney(16,2,"20200602"));
         $min=config('admin.min_date');
         return view('desk.list',['list'=>$data,'input'=>$request->all(),'min'=>$min]);
     }
@@ -117,12 +117,7 @@ class DeskController extends Controller
         $order->setTable('order_'.$tableName);
         $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
         foreach ($data as $key=>$datum){
-            //获取游戏记录表名
-            $recordTName = $this->getGameRecordTableName($datum['record_sn']);
-            //获取游戏详情
-            $recordInfo = GameRecord::getGameRecordInfo($datum['record_sn'],$recordTName);
-            //把游戏结果转成数组
-            $winner = json_decode($recordInfo['winner'],true);
+            $winner = json_decode($datum['bet_money'],true);
             //{"x3_Super_Double":2000,"x3_double":2000} {"x3_equal":5000}
             if (!empty($winner['x1_Super_Double'])){
                 $money = $money + ($winner['x1_Super_Double']*3);
@@ -170,12 +165,7 @@ class DeskController extends Controller
         $data = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1])->get();
         foreach ($data as $key=>$value)
         {
-            //获取游戏记录表名
-            $recordTName = $this->getGameRecordTableName($value['record_sn']);
-            //获取游戏详情
-            $recordInfo = GameRecord::getGameRecordInfo($value['record_sn'],$recordTName);
-            //把游戏结果转成数组
-            $winner = json_decode($recordInfo['winner'],true);
+            $winner = json_decode($value['bet_money'],true);
             if (!empty($winner['x1_Super_Double'])){
                 $money = $money + $winner['x1_Super_Double']*10;
             }
@@ -234,6 +224,41 @@ class DeskController extends Controller
         return $money;
     }
 
+    public function getA89Money($deskId,$gameId,$tableName)
+    {
+        $money = 0;
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        $data = $order->where('desk_id','=',$deskId)->where('status','=',1)->get();
+        foreach ($data as $key=>$value)
+        {
+            $betMoney = json_decode($value['bet_money'],true);
+            if (!empty($betMoney['ShunMen_Super_Double'])){
+                $money = $money + $betMoney['ShunMen_Super_Double']*10;
+            }
+            if (!empty($betMoney['TianMen_Super_Double']))
+            {
+                $money = $money + $betMoney['TianMen_Super_Double'] *10;
+            }
+            if (!empty($betMoney['FanMen_Super_Double']))
+            {
+                $money = $money + $betMoney['FanMen_Super_Double'] * 10;
+            }
+            if (!empty($betMoney['ShunMen_equal'])){
+                $money = $money + $betMoney['ShunMen_equal'];
+            }
+            if (!empty($betMoney['TianMen_equal']))
+            {
+                $money = $money + $betMoney['TianMen_equal'];
+            }
+            if (!empty($betMoney['FanMen_equal']))
+            {
+                $money = $money + $betMoney['FanMen_equal'];
+            }
+        }
+        return $money;
+    }
+
    /**
      * 解析order表中得bet_money获取总金额
      * @param $deskId
@@ -277,7 +302,7 @@ class DeskController extends Controller
     {
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        return $order->where('desk_id','=',$deskId)->sum('get_money');
+        return $order->where('desk_id','=',$deskId)->where('status','=',1)->sum('get_money');
     }
 
     /**
