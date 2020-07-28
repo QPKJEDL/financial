@@ -33,25 +33,33 @@ class DeskController extends Controller
             {
                 $bootNum = 0;
             }
+            if (true==$request->has('pave_num'))
+            {
+                $paveNum = $request->input('pave_num');
+            }
+            else
+            {
+                $paveNum = 0;
+            }
             $data[$key]['time']=$tableName;
             if($value['game_id']==1){//百家乐
-                $data[$key]['money'] = $this->getBaccaratMoney($value['id'],$value['game_id'],$bootNum,$tableName);
-                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$tableName);
+                $data[$key]['money'] = $this->getBaccaratMoney($value['id'],$value['game_id'],$bootNum,$paveNum,$tableName);
+                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$paveNum,$tableName);
             }else if($value['game_id']==2){//龙虎
-                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$tableName);
-                $data[$key]['money'] = $this->getDragonTieTigerMoney($value['id'],$value['game_id'],$bootNum,$tableName);
+                $data[$key]['betMoney']=$this->getCalculationMoney($data[$key]['id'],$bootNum,$paveNum,$tableName);
+                $data[$key]['money'] = $this->getDragonTieTigerMoney($value['id'],$value['game_id'],$bootNum,$paveNum,$tableName);
             }else if($value['game_id']==3){//牛牛
-                $data[$key]['betMoney'] = $this->getNiuNiuMoney($value['id'],$value['game_id'],$bootNum,$tableName);
+                $data[$key]['betMoney'] = $this->getNiuNiuMoney($value['id'],$value['game_id'],$bootNum,$paveNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==4){//三公
-                $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$bootNum,$tableName);
+                $data[$key]['betMoney']=$this->getSanGongMoney($value['id'],$value['game_id'],$bootNum,$paveNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }else if($value['game_id']==5){//A89
-                $data[$key]['betMoney']=$this->getA89Money($value['id'],$value['game_id'],$bootNum,$tableName);
+                $data[$key]['betMoney']=$this->getA89Money($value['id'],$value['game_id'],$bootNum,$paveNum,$tableName);
                 $data[$key]['money']=$value['betMoney'];
             }
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
-            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$bootNum,$tableName);
+            $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$bootNum,$paveNum,$tableName);
         }
         $min=config('admin.min_date');
         return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'min'=>$min]);
@@ -62,16 +70,20 @@ class DeskController extends Controller
      * @param $deskId 台桌id
      * @param $gameId 游戏类型
      * @param $bootNum
+     * @param $paveNum
      * @param $tableName 表名
      * @return float|int|mixed
      */
-    public function getDragonTieTigerMoney($deskId,$gameId,$bootNum,$tableName){
+    public function getDragonTieTigerMoney($deskId,$gameId,$bootNum,$paveNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
         $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0){
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$datum){
@@ -96,16 +108,20 @@ class DeskController extends Controller
      * @param $deskId 台桌id
      * @param $gameId 游戏id
      * @param $bootNum
+     * @param $paveNum
      * @param $tableName 表名
      * @return float|int|mixed
      */
-    public function getBaccaratMoney($deskId,$gameId,$bootNum,$tableName){
+    public function getBaccaratMoney($deskId,$gameId,$bootNum,$paveNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
         $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0){
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$datum){
@@ -130,16 +146,21 @@ class DeskController extends Controller
      * @param $deskId
      * @param $gameId
      * @param $bootNum
+     * @param $paveNum
      * @param $tableName
      * @return int
      */
-    public function getNiuNiuMoney($deskId,$gameId,$bootNum,$tableName){
+    public function getNiuNiuMoney($deskId,$gameId,$bootNum,$paveNum,$tableName){
         $money = 0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
         $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0)
+        {
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$datum){
@@ -180,10 +201,12 @@ class DeskController extends Controller
      * 获取三公总下注
      * @param $deskId
      * @param $gameId
+     * @param $bootNum
+     * @param $paveNum
      * @param $tableName
      * @return int
      */
-    public function getSanGongMoney($deskId,$gameId,$bootNum,$tableName)
+    public function getSanGongMoney($deskId,$gameId,$bootNum,$paveNum,$tableName)
     {
         $money = 0;
         $order = new Order();
@@ -191,6 +214,9 @@ class DeskController extends Controller
         $sql = $order->where(['desk_id'=>$deskId,'game_type'=>$gameId,'status'=>1]);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0){
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$value)
@@ -254,7 +280,7 @@ class DeskController extends Controller
         return $money;
     }
 
-    public function getA89Money($deskId,$gameId,$bootNum,$tableName)
+    public function getA89Money($deskId,$gameId,$bootNum,$paveNum,$tableName)
     {
         $money = 0;
         $order = new Order();
@@ -263,6 +289,10 @@ class DeskController extends Controller
         if ($bootNum!=0)
         {
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0)
+        {
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$value)
@@ -298,10 +328,11 @@ class DeskController extends Controller
      * 解析order表中得bet_money获取总金额
      * @param $deskId
      * @param $bootNum
+     * @param $paveNum
      * @param $tableName
      * @return float|int
      */
-    public function getCalculationMoney($deskId,$bootNum,$tableName)
+    public function getCalculationMoney($deskId,$bootNum,$paveNum,$tableName)
     {
         $sum=0;
         $order = new Order();
@@ -309,6 +340,9 @@ class DeskController extends Controller
         $sql = $order->where('desk_id','=',$deskId)->where('status','=',1);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0){
+            $sql->where('pave_num','=',$paveNum);
         }
         $data = $sql->get();
         foreach ($data as $key=>$datum){
@@ -319,32 +353,23 @@ class DeskController extends Controller
     }
 
     /**
-     * 根据deskId获取到每桌得下注总金额
-     */
-    public function getDeskAllBetMoney($deskId,$data)
-    {
-        $sum=0;
-        foreach($data as $key=>$value){
-            if($data[$key]['desk_id']==$deskId){
-                $sum += $this->getCalculationMoney($data[$key]);
-            }
-        }
-        return $sum;
-    }
-
-    /**
      * 获取游戏输赢情况
      * @param $deskId
+     * @param $bootNum
+     * @param $paveNum
      * @param $tableName
      * @return int|mixed
      */
-    public function getWinAndErrMoney($deskId,$bootNum,$tableName)
+    public function getWinAndErrMoney($deskId,$bootNum,$paveNum,$tableName)
     {
         $order = new Order();
         $order->setTable('order_'.$tableName);
         $sql = $order->where('desk_id','=',$deskId)->where('status','=',1);
         if ($bootNum!=0){
             $sql->where('boot_num','=',$bootNum);
+        }
+        if ($paveNum!=0){
+            $sql->where('pave_num','=',$paveNum);
         }
         return $sql->sum('get_money');
     }

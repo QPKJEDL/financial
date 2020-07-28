@@ -20,6 +20,9 @@
         <input type="text" lay-verify="boot_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号(不填就是0)" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
+        <input type="text" lay-verify="pave_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{$input['pave_num'] or ''}}" name="pave_num" placeholder="铺号(不填就是0)" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
@@ -97,6 +100,14 @@
                     var nowTime = (new Date()).getTime();
                     if(begin>nowTime){
                         return "选择的日期不能大于今天的日期";
+                    }
+                },
+                pave_num:function (value) {
+                    var v = $("input[name='boot_num']").val();
+                    if(value!="" || value!=null){
+                        if (v ==""){
+                            return '请填写靴号'
+                        }
                     }
                 }
             });
