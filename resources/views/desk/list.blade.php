@@ -7,10 +7,17 @@
     <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <!--<input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">-->
+        <div class="layui-inline">
+            <select name="deskId">
+                <option value="">请选择台桌</option>
+                @foreach($desk as $d)
+                    <option value="{{$d['id']}}" {{isset($input['deskId'])&&$input['deskId']==$d['id']?'selected':''}}>{{$d['desk_name']}}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="" value="" name="" placeholder="靴号" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="boot_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号(不填就是0)" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -80,6 +87,7 @@
             laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("select[name='deskId']").val('');
             });
             form.render();
             form.verify({
