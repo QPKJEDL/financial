@@ -28,15 +28,13 @@ class OnAgentListController extends Controller
         if (true==$request->has('nickname')) {
             $sql->where('nickname','like','%'.$request->input('nickname').'%');
         }
-
-            $data = $sql->where($map)->paginate(10)->appends($request->all());
-            foreach ($data as $key=>$value){
-                $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
-                $data[$key]['userCount']=$this->getHqUserCount($value['id']);
-                $data[$key]['fee']=json_decode($value['fee'],true);
-                $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
-            }
-
+        $data = $sql->where($map)->paginate(10)->appends($request->all());
+        foreach ($data as $key=>$value){
+            $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
+            $data[$key]['userCount']=$this->getHqUserCount($value['id']);
+            $data[$key]['fee']=json_decode($value['fee'],true);
+            $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
+        }
         return view('onAgent.agent.list',['list'=>$data,'input'=>$request->all()]);
     }
 
