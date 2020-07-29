@@ -67,6 +67,24 @@
         </tr>
         </thead>
         <tbody>
+            <tr>
+                <td class="hidden-xs">全部</td>
+                <td class="hidden-xs">总公司</td>
+                <td class="hidden-xs">admin</td>
+                <td class="hidden-xs">{{number_format($sumBet/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($sumMoney/100,2)}}</td>
+                <td class="hidden-xs">{{number_format(-$sumCode/100,2)}}</td>
+                <td class="hidden-xs">{{number_format(-$sumPump/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($sumKeSun/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($sumReward/100,2)}}</td>
+                <td class="hidden-xs">0.9/0.9/0.9/0.9/0.9</td>
+                <td class="hidden-xs">{{number_format(-$sumCodeMoney,2)}}</td>
+                <td class="hidden-xs">100%</td>
+                <td class="hidden-xs">{{number_format($sumZanGu,2)}}</td>
+                <td class="hidden-xs">{{number_format($sumShouYi,2)}}</td>
+                <td class="hidden-xs">{{number_format($sumGongShiShouYi,2)}}</td>
+                <td class="hidden-xs"></td>
+            </tr>
         @foreach($list as $info)
             <tr>
                 <td class="hidden-xs">全部</td>
@@ -79,7 +97,7 @@
                 <td class="hidden-xs">{{number_format(abs($info['kesun']/100),2)}}</td>
                 <td class="hidden-xs">{{number_format($info['reward'][0]->money/100,2)}}</td>
                 <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee'] ['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
-                <td class="hidden-xs">{{number_format($info['win_money']/100*0.009,2)}}</td>
+                <td class="hidden-xs">{{number_format(abs($info['win_money']/100*0.009),2)}}</td>
                 <td class="hidden-xs">{{$info['proportion']}}%</td>
                 <td class="hidden-xs">
                     {{number_format(((-$info['win_money']/100)-($info['win_money']/100*0.009)) * ($info['proportion']/100),2)}}

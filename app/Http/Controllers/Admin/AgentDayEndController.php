@@ -90,6 +90,7 @@ class AgentDayEndController extends Controller
             }
         }
         $data = Agent::where($map)->paginate(10)->appends($request->all());
+        $dataAll = Agent::where($map)->get();
         foreach ($data as $key=>$value){
             $sql = 'select t1.* from (select * from('.$dateSql.') s where s.creatime between '.strtotime($startDate).' and '.strtotime($endDate).') t1 
             left join hq_user u on t1.user_id = u.user_id
@@ -113,7 +114,6 @@ class AgentDayEndController extends Controller
                 $data[$key]['code']=$this->getSumCode($userData);
                 $data[$key]['pump']=$this->getSumPump($userData,$value['id']);
                 foreach ($moneyData as $k=>$datum){
-                    //$money = $money + $datum->money;
                     if ($datum->money<0){
                         $money = $money + $datum->money * $value['proportion']/100;
                     }
@@ -121,7 +121,188 @@ class AgentDayEndController extends Controller
                 $data[$key]['kesun'] = $money;
             }
         }
-        return view('agentDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all()]);
+        foreach ($dataAll as $key=>$value)
+        {
+            $sql = 'select t1.* from (select * from('.$dateSql.') s where s.creatime between '.strtotime($startDate).' and '.strtotime($endDate).') t1 
+            left join hq_user u on t1.user_id = u.user_id
+            inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id
+            ';
+            $ssql = 'select IFNULL(SUM(t1.get_money),0) as money,a.id AS agentId from (select * from('.$dateSql.') s where s.creatime between '.strtotime($startDate).' and '.strtotime($endDate).') t1 
+            left join hq_user u on t1.user_id = u.user_id
+            RIGHT join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id group by a.id
+            ';
+            $asql = 'select ifnull(sum(l.money),0) as money from hq_live_reward l
+                left join hq_user u on u.user_id = l.user_id
+                inner join (select id from hq_agent_users where del_flag=0 and (id='.$value['id'].' or id IN (select t.id from hq_agent_users t where FIND_IN_SET('.$value['id'].',ancestors)))) a on a.id=u.agent_id';
+            $dataAll[$key]['reward']=DB::select($asql);
+            $dataAll[$key]['fee']=json_decode($value['fee'],true);
+            if ($dateSql!="" || $dateSql!=null){
+                $money=0;
+                $moneyData = DB::select($ssql);
+                $userData = DB::select($sql);
+                $dataAll[$key]['sum_betMoney'] = $this->getSumBetMoney($userData);
+                $dataAll[$key]['win_money']=$this->getWinMoney($userData);
+                $dataAll[$key]['code']=$this->getSumCode($userData);
+                $dataAll[$key]['pump']=$this->getSumPump($userData,$value['id']);
+                foreach ($moneyData as $k=>$datum){
+                    if ($datum->money<0){
+                        $money = $money + $datum->money * $value['proportion']/100;
+                    }
+                }
+                $dataAll[$key]['kesun'] = $money;
+            }
+        }
+        return view('agentDay.list',['list'=>$data,'min'=>config('admin.min_date'),'input'=>$request->all(),'sumBet'=>$this->sumBet($dataAll),'sumMoney'=>$this->sumWinMoney($dataAll),'sumCode'=>$this->sumCode($dataAll),'sumPump'=>$this->sumPump($dataAll),'sumKeSun'=>$this->sumKeSun($dataAll),'sumCodeMoney'=>$this->sumCodeMoney($dataAll),'sumZanGu'=>$this->sumZanGu($dataAll),'sumShouYi'=>$this->sumShouYi($dataAll),'sumGongShiShouYi'=>$this->sumGongShiShouYi($dataAll),'sumReward'=>$this->sumReward($dataAll)]);
+    }
+
+    /**
+     * 总押码
+     * @param $data
+     * @return int
+     */
+    public function sumBet($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['sum_betMoney'];
+        }
+        return $money;
+    }
+
+    /**
+     * 总赢
+     * @param $data
+     * @return int
+     */
+    public function sumWinMoney($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + (-$datum['win_money']);
+        }
+        return $money;
+    }
+
+    /**
+     * 总洗码
+     * @param $data
+     * @return int
+     */
+    public function sumCode($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['code'];
+        }
+        return $money;
+    }
+
+    /**
+     * 总抽水
+     * @param $data
+     * @return int
+     */
+    public function sumPump($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['pump'];
+        }
+        return $money;
+    }
+
+    /**
+     * 客损
+     * @param $data
+     * @return int
+     */
+    public function sumKeSun($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['kesun'];
+        }
+        return $money;
+    }
+
+    /**
+     * 洗码费
+     * @param $data
+     * @return float|int
+     */
+    public function sumCodeMoney($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + abs($datum['win_money']/100 * 0.009);
+        }
+        return $money;
+    }
+
+    /**
+     * 占股收益
+     * @param $data
+     * @return float|int
+     */
+    public function sumZanGu($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + (-(((-$datum['win_money']/100)-($datum['win_money']/100*0.009)) * ($datum['proportion']/100)));
+        }
+        return $money;
+    }
+
+    /**
+     * 总收益
+     * @param $data
+     * @return float|int
+     */
+    public function sumShouYi($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + (-($datum['pump']/100 + $datum['win_money']/100*0.009 + (-$datum['win_money']/100 - $datum['win_money']/100*0.009) * $datum['proportion']/100));
+        }
+        return $money;
+    }
+
+    /**
+     * 公司收益
+     * @param $data
+     * @return float|int
+     */
+    public function sumGongShiShouYi($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + (-$datum['win_money']/100 - ($datum['pump']/100 + $datum['win_money']/100*0.009 + (-$datum['win_money']/100 - $datum['win_money']/100*0.009) * $datum['proportion']/100));
+        }
+        return $money;
+    }
+
+    /**
+     * 打赏金额
+     * @param $data
+     * @return int
+     */
+    public function sumReward($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['reward'][0]->money;
+        }
+        return $money;
     }
 
     /**
