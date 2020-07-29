@@ -59,6 +59,7 @@
                 </td>
                 <td class="hidden-xs">
                     <button class="layui-btn layui-btn-small layui-btn-normal code" data-id="{{$info['user_id']}}"><i class="layui-icon">上分</i></button>
+                    <button class="layui-btn layui-btn-small layui-btn-normal underCode" data-id="{{$info['user_id']}}"><i class="layui-icon">下分</i></button>
                     <button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/hquser/'.$info['user_id'])}}"><i class="layui-icon">删除</i></button>
                 </td>
             </tr>
@@ -89,11 +90,22 @@
                 var id = $(this).attr('data-id');
                 layer.open({
                     type: 2,
-                    title: name + '会员上下分',
+                    title: name + '会员上分',
                     shadeClose: true,
                     offset:'10%',
                     area:['60%','80%'],
                     content:'/admin/hquser/topCode/' + id
+                });
+            });
+            $(".underCode").click(function () {
+                var id = $(this).attr('data-id');
+                layer.open({
+                    type:2,
+                    title: name + "会员下分",
+                    shadeClose: true,
+                    offset: '10%',
+                    area:['60%','80%'],
+                    content:'/admin/hquser/underCode/' +id
                 });
             });
             form.render();

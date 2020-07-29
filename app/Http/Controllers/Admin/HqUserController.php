@@ -55,14 +55,25 @@ class HqUserController extends Controller
     }
 
     /**
-     * 上下分页面
+     * 上分页面
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
      */
     public function topCode($id)
     {
         $info = UserAccount::where('user_id','=',$id)->first();
-        return view('hquser.code',['info'=>$info,'id'=>$id]);
+        return view('hquser.code',['info'=>$info,'id'=>$id,'type'=>1]);
+    }
+
+    /**
+     * 下分
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function underCode($id)
+    {
+        $info = UserAccount::where('user_id','=',$id)->first();
+        return view('hquser.code',['info'=>$info,'id'=>$id,'type'=>2]);
     }
 
     /**
@@ -85,7 +96,7 @@ class HqUserController extends Controller
                 $bill = new Billflow();
                 $bill->setTable('user_billflow_'.date('Ymd',time()));
                 $betBefore = $info['balance'];
-                if ($data['balance']>0){//上分
+                if ($data['type']==1){//上分
                     $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore +($data['balance'] * 100)]);
                     if ($res){
                         $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'remark'=>'财务后台直接上分','creatime'=>time()]);
@@ -96,19 +107,19 @@ class HqUserController extends Controller
                         }else{
                             DB::rollBack();
                             $this->unRedisUserLock($id);
-                            return ['msg'=>'操作失败1','status'=>0];
+                            return ['msg'=>'操作失败','status'=>0];
                         }
                     }else{
                         DB::rollBack();
                         $this->unRedisUserLock($id);
-                        return ['msg'=>'操作失败2','status'=>0];
+                        return ['msg'=>'操作失败','status'=>0];
                     }
                 }else{//下分
                     $balance = UserAccount::where('user_id','=',$id)->lockForUpdate()->first();
                     if ($balance['balance'] < abs($data['balance']*100)){
                         return ['msg'=>'金额不足，不能提现','status'=>0];
                     }else{
-                        $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -abs($data['balance'] * 100)]);
+                        $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -$data['balance'] * 100]);
                         if ($res){
                             $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'remark'=>'财务后台直接下分','creatime'=>time()]);
                             if ($result){
@@ -131,7 +142,7 @@ class HqUserController extends Controller
                 dump($e);
                 DB::rollBack();
                 $this->unRedisUserLock($id);
-                return ['msg'=>'操作失败3','status'=>0];
+                return ['msg'=>'操作失败','status'=>0];
             }
         }else{
             return ['msg'=>'请忽频繁提交','status'=>0];

@@ -8,13 +8,13 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">充值/提现金额：</label>
+        <label class="layui-form-label">金额：</label>
         <div class="layui-input-inline">
-            <input type="text" name="balance" lay-verify="balance" style="width: 150px;" pattern="\d" placeholder="请输入充值/提现金额" autocomplete="off" class="layui-input">
+            <input type="text" name="balance" lay-verify="balance" style="width: 150px;" pattern="\d" placeholder="金额" autocomplete="off" class="layui-input">
         </div>
         <div class="layui-form-mid"><h4 id="h4" style="color: red;"></h4></div>
     </div>
-    <div class="layui-form-mid layui-word-aux">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;金额输入不能为0，小于0是下分，大于0为上分</div>
+    <input type="hidden" name="type" value="{{$type}}">
 @endsection
 @section('id',$id)
 @section('js')

@@ -56,6 +56,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/hquser', 'HqUserController');//线下会员管理
     Route::resource('/onUser','OnHqUserController');//线上会员管理
     Route::get('/hquser/topCode/{id}','HqUserController@topCode');//会员上分页面
+    Route::get('/hquser/underCode/{id}','HqUserController@underCode');//会员下分页面
     Route::post('/hquser/saveTopCode','HqUserController@saveTopCode');//会员上下分操作
     Route::resource('/desk', 'DeskController');//台桌输赢记录
     Route::resource('/order',   'OrderController');//注单记录
