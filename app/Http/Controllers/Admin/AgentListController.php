@@ -184,11 +184,59 @@ class AgentListController extends Controller
 
     public function destroy($id)
     {
-        $count = Agent::where('id','=',$id)->update(['del_flag'=>1]);
+        /*$count = Agent::where('id','=',$id)->update(['del_flag'=>1]);
         if ($count!==false)
         {
             return ['msg'=>'操作成功','status'=>1];
         }else{
+            return ['msg'=>'操作失败','status'=>0];
+        }*/
+        DB::beginTransaction();
+        try {
+            $agentIdArray = array();
+            $agentIdArray[] =$id;
+            $data = Agent::select('id')->whereRaw('FIND_IN_SET('.$id.',ancestors)')->get();
+            foreach ($data as $key=>$value)
+            {
+                $agentIdArray[]=$value['id'];
+            }
+            $userIdArr = array();
+            $userData = HqUser::select('user_id')->where('del_flag','=',0)->whereIn('agent_id',$agentIdArray)->get();
+            foreach ($userData as $key=>$datum)
+            {
+                $userIdArr[] = $datum['user_id'];
+            }
+            $count = Agent::whereIn('id',$agentIdArray)->update(['del_flag'=>1]);
+            if ($count)
+            {
+                if (count($userIdArr)>0)
+                {
+                    $bool = HqUser::whereIn('user_id',$userIdArr)->update(['del_flag'=>1]);
+                    if ($bool)
+                    {
+                        DB::commit();
+                        return ['msg'=>'操作成功','status'=>1];
+                    }
+                    else
+                    {
+                        DB::rollBack();
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                }
+                else
+                {
+                    DB::commit();
+                    return ['msg'=>'操作成功','status'=>1];
+                }
+            }
+            else
+            {
+                DB::rollBack();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+        }catch (\Exception $e)
+        {
+            DB::rollBack();
             return ['msg'=>'操作失败','status'=>0];
         }
     }
