@@ -197,11 +197,13 @@ class BackController extends Controller
         if ($info['user_type']==1)
         {
             $agentIdArr = array();
-            $agentIdArr[]=$info['id'];
-            $agentData = Agent::select('id')->whereRaw('FIND_IN_SET('.$info['id'].',ancestors)')->get();
-            foreach ($agentData as $key=>$datum)
-            {
-                $agentIdArr[] = $datum['id'];
+            $agentIdArr[]=$info['user_id'];
+            $agentData = Agent::select('id')->whereRaw('FIND_IN_SET('.$info['user_id'].',ancestors)')->get();
+            if (count($agentData)>0){
+                foreach ($agentData as $key=>$datum)
+                {
+                    $agentIdArr[] = $datum['id'];
+                }
             }
             $userData = HqUser::select('user_id')->where('del_flag','=',0)->whereIn('agent_id',$agentIdArr)->get();
             DB::beginTransaction();
@@ -217,9 +219,9 @@ class BackController extends Controller
                             DB::rollBack();
                             return ['msg'=>'操作失败','status'=>0];
                         }
-                        DB::commit();
-                        return ['msg'=>'操作成功','status'=>1];
                     }
+                    DB::commit();
+                    return ['msg'=>'操作成功','status'=>1];
                 }
                 else
                 {
