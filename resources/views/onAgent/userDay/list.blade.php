@@ -21,6 +21,8 @@
     </div>
     <br>
     <div class="layui-btn-group">
+        <button type="button" class="layui-btn" id="today">今天</button>
+        <button type="button" class="layui-btn" id="yesterday">昨天</button>
         <button type="button" class="layui-btn" id="thisWeek">本周</button>
         <button type="button" class="layui-btn" id="lastWeek">上周</button>
         <button type="button" class="layui-btn" id="thisMonth">本月</button>
@@ -135,6 +137,20 @@
                 });
                 layer.full(index);
             });
+            //今天
+            $("#today").click(function () {
+                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
+                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
+                $("input[name='begin']").val(formDate(startDate))
+                $("input[name='end']").val(formDate(endDate))
+            });
+            //昨天
+            $("#yesterday").click(function () {
+                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
+                $("input[name='begin']").val(formDate(startDate))
+                $("input[name='end']").val(formDate(endDate))
+            });
             //本周
             $("#thisWeek").click(function () {
                 var now = new Date();//当前日期
@@ -193,6 +209,22 @@
                 var lastMonthEndDate= new Date(nowyear, lastMonth+ 1, 1);
                 var days = (lastMonthEndDate- lastMonthStartDate) / (1000 * 60 * 60 * 24);//格式转换
                 return days
+            }
+            //格式化日期 yyyy-mm-dd HH:mm:ss
+            function formDate(date) {
+                var date = new Date(date);
+                var y = date.getFullYear();
+                var m = date.getMonth() + 1;
+                m = m < 10 ? ('0' + m) : m;
+                var d = date.getDate();
+                d = d < 10 ? ('0' + d) : d;
+                var h = date.getHours();
+                h = h < 10 ? ('0' + h) : h;
+                var minute = date.getMinutes();
+                var second = date.getSeconds();
+                minute = minute < 10 ? ('0' + minute) : minute;
+                second = second < 10 ? ('0' + second) : second;
+                return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
             }
             //格式化日期：yyyy-MM-dd
             function formatDate(date) {
