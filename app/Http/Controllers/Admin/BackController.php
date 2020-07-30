@@ -19,6 +19,14 @@ class BackController extends Controller
     public function index(Request $request)
     {
         $map = array();
+        if (true==$request->has('account'))
+        {
+            $map['user_and_agent_back.account']=$request->input('account');
+        }
+        if (true==$request->has('user_type'))
+        {
+            $map['user_and_agent_back.user_type']=$request->input('user_type');
+        }
         $sql = UserAndAgentBack::where($map);
         $sql->leftJoin('business','business.id','=','user_and_agent_back.create_by')
             ->select('user_and_agent_back.id','user_and_agent_back.user_id','user_and_agent_back.user_type','user_and_agent_back.status','user_and_agent_back.remark',
@@ -66,7 +74,7 @@ class BackController extends Controller
                 {
                     DB::beginTransaction();
                     try {
-                        $bool = UserAndAgentBack::insert(['user_id'=>$info['id'],'user_type'=>$data['user_type'],'status'=>$data['status'],'remark'=>$data['remark'],'create_by'=>Auth::id(),'create_time'=>time()]);
+                        $bool = UserAndAgentBack::insert(['user_id'=>$info['id'],'account'=>$data['account'],'user_type'=>$data['user_type'],'status'=>$data['status'],'remark'=>$data['remark'],'create_by'=>Auth::id(),'create_time'=>time()]);
                         if ($bool)
                         {
                             $agentIdArr = array();
@@ -144,7 +152,7 @@ class BackController extends Controller
                 {
                     DB::beginTransaction();
                     try {
-                        $bool = UserAndAgentBack::insert(['user_id'=>$info['user_id'],'user_type'=>$data['user_type'],'status'=>$data['status'],'remark'=>$data['remark'],'create_by'=>Auth::id(),'create_time'=>time()]);
+                        $bool = UserAndAgentBack::insert(['user_id'=>$info['user_id'],'account'=>$data['account'],'user_type'=>$data['user_type'],'status'=>$data['status'],'remark'=>$data['remark'],'create_by'=>Auth::id(),'create_time'=>time()]);
                         if ($bool)
                         {
                             if (UserBack::where('user_id','=',$info['user_id'])->where('status','=',$data['status'])->exists())

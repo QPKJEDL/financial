@@ -4,6 +4,22 @@
         <button class="layui-btn layui-btn-small layui-btn-normal addBtn" data-desc="添加黑名单" data-url="{{url('/admin/userBack/0/edit')}}"><i class="layui-icon">&#xe654;</i></button>
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="用户账号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <div class="layui-inline">
+            <select name="user_type">
+                <option value="">请选择用户类型</option>
+                <option value="1" {{isset($input['user_type'])&&$input['user_type']==1?'selected':''}}>代理</option>
+                <option value="2" {{isset($input['user_type'])&&$input['user_type']==2?'selected':''}}>会员</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+    </div>
 @endsection
 @section('table')
     <table class="layui-table" lay-even lay-skin="nob">
@@ -77,7 +93,11 @@
                 layer = layui.layer;
             laydate({istoday: true});
             form.render();
-            form.on('submit(formDemo)', function(data) {                
+            $(".reset").click(function () {
+                $("input[name='account']").val('');
+                $("select[name='user_type']").val('');
+            });
+            form.on('submit(formDemo)', function(data) {
             });
             
         });
