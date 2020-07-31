@@ -32,6 +32,9 @@ class OnlineController extends Controller
             ->leftJoin('user_account','user.user_id','=','user_account.user_id')
             ->leftJoin('desk','desk.id','=','user.desk_id')
             ->select('user.*','agent_users.username','desk.desk_name','user_account.balance')->where($map)->orderBy('user.savetime','desc')->paginate(10)->appends($request->all());
+        $countData = HqUser::query()->leftJoin('agent_users','user.agent_id','=','agent_users.id')
+            ->leftJoin('user_account','user.user_id','=','user_account.user_id')
+            ->select('user.*','agent_users.username','user_account.balance')->where(['user.is_online'=>1])->get()->toArray();
         foreach ($data as $key=>$value){
             $url = "http://whois.pconline.com.cn/ipJson.jsp?ip=".$value['last_ip']."'&json=true";
             $result = file_get_contents($url);
@@ -40,7 +43,7 @@ class OnlineController extends Controller
             $data[$key]['address']=$result['addr'];
             $data[$key]['savetime']=date('Y-m-d H:i:s');
         }
-        return view('online.list',['list'=>$data,'input'=>$request->all(),'desk'=>$this->getAllDeskList()]);
+        return view('online.list',['list'=>$data,'input'=>$request->all(),'desk'=>$this->getAllDeskList(),'count'=>count($countData),'money'=>$this->getOnlineUserMoney($countData),'pc'=>$this->getOnlineCount($countData,1),'ios'=>$this->getOnlineCount($countData,2),'android'=>$this->getOnlineCount($countData,3),'h5'=>$this->getOnlineCount($countData,4)]);
     }
 
     /**
@@ -49,5 +52,28 @@ class OnlineController extends Controller
      */
     public function getAllDeskList(){
         return Desk::where('status','=',0)->get();
+    }
+
+    /**
+     * 获取在线用户金额
+     * @param $data
+     * @return int
+     */
+    public function getOnlineUserMoney($data){
+        $money = 0;
+        foreach ($data as $key=>$value){
+            $money = $money + $value['balance'];
+        }
+        return $money;
+    }
+
+    public function getOnlineCount($data,$type){
+        $count = 0;
+        foreach ($data as $key=>$datum){
+            if($datum['online_type']==$type){
+                $count = $count + 1;
+            }
+        }
+        return $count;
     }
 }

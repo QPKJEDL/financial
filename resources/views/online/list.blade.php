@@ -1,5 +1,81 @@
 @section('title', '会员列表')
 @section('header')
+    <div class="wrap-container welcome-container">
+        <div class="row">
+            <div class="welcome-left-container col-lg-9">
+                <div class="data-show">
+                    <ul class="clearfix">
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-org f-l">
+                                    <span class="iconfont">&#xe605;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">总人数</p>
+                                    <p><span class="color-org">{{$count}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-blue f-l">
+                                    <span class="iconfont">&#xe602;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">电脑版</p>
+                                    <p><span class="color-blue">{{$pc}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-green f-l">
+                                    <span class="iconfont">&#xe605;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">苹果版</p>
+                                    <p><span class="color-green">{{$ios}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-green f-l">
+                                    <span class="iconfont">&#xe605;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">安卓版</p>
+                                    <p><span class="color-green">{{$android}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-green f-l">
+                                    <span class="iconfont">&#xe605;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">网页版</p>
+                                    <p><span class="color-green">{{$h5}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="col-sm-4 col-md-4 col-xs-4">
+                            <a href="javascript:;" class="clearfix">
+                                <div class="icon-bg bg-green f-l">
+                                    <span class="iconfont">&#xe600;</span>
+                                </div>
+                                <div class="right-text-con">
+                                    <p class="name">总金额</p>
+                                    <p><span class="color-green">{{number_format($money,2)}}</span></p>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
     </div>
