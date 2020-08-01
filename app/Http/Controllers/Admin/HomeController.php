@@ -37,14 +37,14 @@ class HomeController extends BaseController
         $user = Auth::id();
         //判断当前用户是不是管理员
         //获取到全部菜单
-        $menuAllList = Menu::get();
+        $menuAllList = Menu::query()->orderBy('order','asc')->get();
         if ($user==1){
             return $this->getTreeMenu($menuAllList);
         }else{
             //根据userId来查询角色
             $role = Adminrole::where('user_id','=',$user)->first();
             //根据角色获取到当前角色菜单
-            $menuList = AgentRoleMenu::where('role_id','=',$role['role_id'])->get();
+            $menuList = AgentRoleMenu::where('role_id','=',$role['role_id'])->orderBy('order','asc')->get();
             $menu = array();
             foreach ($menuList as $key=>$value){
                 foreach ($menuAllList as $k=>$v){
