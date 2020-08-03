@@ -14,7 +14,7 @@ class DepositAndWithController extends Controller
         $draw = Draw::query();
         $sql = $draw->leftJoin('user','user.user_id','=','user_draw.user_id')
             ->leftJoin('agent_users','agent_users.id','=','user.agent_id')
-            ->select('user_draw.creatime','user.nickname','user.account','agent_users.username','agent_users.nickname as agentName','user_draw.bet_before','user_draw.money','user_draw.bet_after')->where($map);
+            ->select('user_draw.creatime','user.nickname','user.account','user.agent_id','agent_users.username','agent_users.nickname as agentName','user_draw.bet_before','user_draw.money','user_draw.bet_after')->where($map);
         if (true==$request->has('begin')){
             $begin = strtotime($request->input('begin'));
             if (true==$request->has('end')){

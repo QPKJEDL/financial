@@ -50,7 +50,13 @@
                 <td class="hidden-xs">{{$info['creatime']}}</td>
                 {{--<td class="hidden-xs"></td>--}}
                 <td class="hidden-xs">{{$info['nickname']}}[{{$info['account']}}]</td>
-                <td class="hidden-xs">{{$info['agentName']}}[{{$info['username']}}]</td>
+                <td class="hidden-xs">
+                    @if($info['agent_id']!=0)
+                        {{$info['agentName']}}[{{$info['username']}}]
+                    @else
+
+                    @endif
+                </td>
                 {{--<td class="hidden-xs">{{$info['agent']['nickname']}}[{{$info['agent']['username']}}]</td>--}}
                 <td class="hidden-xs">{{$info['bet_before']/100}}</td>
                 <td class="hidden-xs">{{$info['money']/100}}</td>
