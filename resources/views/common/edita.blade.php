@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
     <title>@yield('title') | {{ Config::get('app.name') }}</title>
     <link rel="stylesheet" type="text/css" href="/static/tools/layui/css/layui.css" />
-    {{--<link rel="stylesheet" type="text/css" href="/static/admin/css/admin.css" />--}}
     <link href="/static/admin/summernote/summernote.css" rel="stylesheet">
     <link href="/static/admin/summernote/summernote-bs3.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/admin/css/zTreeStyle/zTreeStyle.css"/>
@@ -28,12 +27,12 @@
     <form class="layui-form" style="width: 90%;padding-top: 20px;">
         {{ csrf_field() }}
         @yield('content')
-        <div class="layui-form-item">
+        {{--<div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">立即提交</button>
                 <button type="reset" class="layui-btn layui-btn-primary">重置</button>
             </div>
-        </div>
+        </div>--}}
         <input name="id" type="hidden" value="@yield('id')">
     </form>
 </div>

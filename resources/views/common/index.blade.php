@@ -1,57 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="renderer" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>@yield('title') | {{ Config::get('app.name') }}</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" type="text/css" href="/static/admin/layui/css/layui.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/admin/css/admin.css"/>
+    <title>环球国际代理后台</title>
+    <meta name="renderer" content="webkit"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" type="text/css" href="/static/tools/layui/css/layui.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/tools/css/admin.css"/>
+    <script src="/static/tools/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
-<div class="main-layout" id='main-layout'>
-    <!--侧边栏-->
-    <div class="main-layout-side">
-        <div class="m-logo">
-        </div>
-        @include("admin.menu")
+<header class="header" style="position: fixed;width: 100%;">
+    <div class="header-left">
+        <ul class="layui-nav layui-bg-cyan menuBox"  lay-filter="leftNav" id="menuList">
+            <li class="layui-nav-item layui-this"><img src="/static/tools/img/logo.png" onclick="location.reload()"/></li>
+            <li class="layui-nav-item"><a href="javascript:;" data-id="0">个人中心</a></li>
+            @foreach($list as $info)
+                @if($info['parent_id']==0)
+                    <li class="layui-nav-item" ><a href="javascript:;" data-id="{{$info['id']}}">{{$info['name']}}</a></li>
+                @endif
+            @endforeach
+        </ul>
+        <span id="menuTxt">菜单</span>
     </div>
-    <!--右侧内容-->
-    <div class="main-layout-container">
-        <!--头部-->
-        @include("admin.header")
-        <!--主体内容-->
-        <div class="main-layout-body">
-            <!--tab 切换-->
-            <div class="layui-tab layui-tab-brief main-layout-tab" lay-filter="tab" lay-allowClose="true">
-                <ul class="layui-tab-title">
-                    <li class="layui-this welcome">后台主页</li>
-                </ul>
-                <div class="layui-tab-content">
-                    <div class="layui-tab-item layui-show" style="background: #f5f5f5;">
-                        <!--1-->
-                        <iframe src="{{url('admin/index')}}" width="100%" height="100%" id="iframe" name="iframe" scrolling="auto" class="iframe" framborder="0"></iframe>
-                        <!--1end-->
-                    </div>
-                </div>
+    <div class="header-right">
+        <ul class="layui-nav layui-bg-cyan" lay-filter="rightNav">
+            <li class="layui-nav-item">
+                <div class="hidden-xs"><a href="javascript:;">上分请求<span class="layui-badge">0</span></a></div>
+            </li>
+            <li class="layui-nav-item">
+                <div class="hidden-xs downCode" data-url="{{url('/admin/down')}}" data-title="下分请求" data-id="36"><a href="javascript:;">下分请求<span class="layui-badge" id="down">0</span></a></div>
+            </li>
+            <li class="layui-nav-item">
+                <div class="hidden-xs">&nbsp;<i class="layui-icon">&#xe612;</i>&nbsp;{{\Illuminate\Support\Facades\Auth::user()['username']}}&nbsp;</div>
+            </li>
+            <li class="layui-nav-item">
+                <div class="addBtn hidden-xs" data-url="{{url('/admin/userinfo')}}">&nbsp;<i class="layui-icon">&#xe673;</i>&nbsp;修改密码&nbsp;</div>
+            </li>
+            <li class="layui-nav-item"><a href="{{url('/admin/logout')}}">退出</a></li>
+        </ul>
+    </div>
+    <div class="menuList">
+        <a href="javascript:;" class="menuCli menuList-0" style="text-decoration: underline;display: none;" data-parent="0" data-title="个人中心" data-url="{{url('/admin/home')}}" data-id="0">个人中心</a>
+        @foreach($list as $info)
+            @if($info['parent_id']!=0)
+                <a href="javascript:;" class="menuCli menuList-{{$info['parent_id']}}" style="text-decoration: underline;display: none;" data-parent="{{$info['parent_id']}}" data-title="{{$info['name']}}" data-url="{{url($info['uri'])}}" data-id="{{$info['id']}}">{{$info['name']}}</a>
+            @endif
+        @endforeach
+    </div>
+    <div class="layui-tab layui-tab-brief" id="nav" lay-filter="menuTab" lay-allowclose="true">
+        <ul class="layui-tab-title tabList">
+            <li lay-id="0" class="layui-this">首页</li>
+        </ul>
+        <div class="layui-tab-content " >
+            <div class="layui-tab-item layui-show" id="index">
+                <iframe src="{{url('/admin/home')}}" frameborder="0" style="width: 100%; height: calc(100vh - 157px);" id="demoAdmin"></iframe>
             </div>
         </div>
     </div>
-    <!--遮罩-->
-    <div class="main-mask">
-
-    </div>
-</div>
+</header>
+<script src="/static/tools/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/tools/js/menu.js?t=2" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    var scope={
-        link:"{{url('/welcome')}}"
+    setInterval("aaa()",1000)
+    function aaa() {
+        $.ajax({
+            type:"get",
+            url:window.location.protocol+"//"+window.location.host + "/admin/getUnRead",
+            data:null,
+            dataType:'json',
+            success:function (res) {
+                var down = parseInt($("#down").html());
+                $("#down").html(down+parseInt(res.count));
+            }
+        });
     }
 </script>
-<script src="/static/admin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
-<script src="/static/admin/js/common.js" type="text/javascript" charset="utf-8"></script>
-<script src="/static/admin/js/main.js" type="text/javascript" charset="utf-8"></script>
-
 </body>
 </html>
