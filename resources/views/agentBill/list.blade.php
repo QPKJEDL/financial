@@ -63,7 +63,7 @@
                 <td class="hidden-xs">{{$info['agentName']}}[{{$info['username']}}]</td>
                 <td class="hidden-xs">
                     @if($info['user_id']!="")
-                        {{$info['account']}}[{{$info['uName']}}]
+                        {{$info['uName']}}[{{$info['account']}}]
                     @else
                         -
                     @endif
