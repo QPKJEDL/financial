@@ -16,13 +16,22 @@ class DeskController extends Controller
             $tableName = date('Ymd',strtotime($request->input('begin')));
         }else{
             $tableName = date('Ymd',strtotime('-1day'));
+            $request->offsetSet('begin',date('Y-m-d',strtotime('-1day')));
         }
         $map = array();
         if (true==$request->has('deskId'))
         {
             $map['id']=$request->input('deskId');
         }
-        $data = Desk::where($map)->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = Desk::where($map)->paginate($limit)->appends($request->all());
         foreach($data as $key=>$value)
         {
             if (true==$request->has('boot_num'))
@@ -61,8 +70,7 @@ class DeskController extends Controller
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
             $data[$key]['winAndErr']=$this->getWinAndErrMoney($data[$key]['id'],$bootNum,$paveNum,$tableName);
         }
-        $min=config('admin.min_date');
-        return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'min'=>$min]);
+        return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'limit'=>$limit]);
     }
 
     /**
