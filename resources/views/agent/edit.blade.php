@@ -25,19 +25,6 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">角色：</label>
-        <div class="layui-input-block">
-            <select name="user_role" lay-verify="required">
-                <option value=""></option>
-                @foreach($roles as $role)
-                    <option
-                            value="{{ $role->id }}" {{isset($userRole['role_id'])&&$userRole['role_id']==$role->id?'selected':''}}>{{ $role->display_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-    </div>
-    <div class="layui-form-item">
         <label class="layui-form-label">状态：</label>
         <div class="layui-input-block">
             <input type="radio" name="status" value="0" title="正常"
@@ -54,7 +41,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">密码：</label>
             <div class="layui-input-block">
-                <input type="password" name="pwd" lay-verify="pwd" placeholder="请输入6-12位数字加字母密码" autocomplete="off" class="layui-input">
+                <input type="password" name="pwd" lay-verify="pwd" placeholder="请输入密码" autocomplete="off" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
@@ -302,7 +289,7 @@
         }
 
         layui.use(['form','jquery','laypage', 'layer'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery;
             form.render();
             var layer = layui.layer;
@@ -316,8 +303,8 @@
                     }
                 },
                 pwd:function(value){
-                    if(value&&!/^(?!([a-zA-Z]+|\d+)$)[a-zA-Z\d]{6,12}$/.test(value)){
-                        return '密码必须6到12位数字加字母';
+                    if(value.length<6 || value.length==0){
+                        return '密码不能为空，限制长度最低六位';
                     }
                 },
                 pwd_confirmation: function(value) {
@@ -326,9 +313,32 @@
                     }
                 },
                 proportion:function (value) {
-                    if (value<=0){
-                        return '占比必填'
+                    if (value<0){
+                        return '占比不能小于0'
                     }
+                }
+            });
+            $("input[name='username']").blur(function () {
+                var account = $(this).val();
+                if(account.length==0){
+                    layer.msg('账号不能为空',{shift: 6,icon:5});
+                }else{
+                    $.ajax({
+                        headers:{
+                            'X-CSRF-TOKEN':$('input[name="_token"]').val()
+                        },
+                        url:"{{url('/admin/agent/accountUnique')}}",
+                        type:"post",
+                        data:{
+                            "account":account
+                        },
+                        dataType:"json",
+                        success:function (res) {
+                            if(res.status==0){
+                                layer.msg('账号已存在',{shift:6,icon:5});
+                            }
+                        }
+                    });
                 }
             });
             $("#account").click(function(){

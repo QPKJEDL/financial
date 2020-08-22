@@ -17,7 +17,7 @@
 @section('js')
     <script>
         layui.use(['form','jquery','layer'], function() {
-            var form = layui.form()
+            var form = layui.form
                 ,layer = layui.layer
                 ,$ = layui.jquery;
             form.render();
