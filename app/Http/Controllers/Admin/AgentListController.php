@@ -11,10 +11,18 @@ use App\Models\AgentRoleUser;
 use App\Models\Czrecord;
 use App\Models\Desk;
 use App\Models\HqUser;
+use App\Models\SysBalance;
+use App\Models\User;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\View\View;
+use const http\Client\Curl\Features\HTTP2;
 
 class AgentListController extends Controller
 {
@@ -26,15 +34,19 @@ class AgentListController extends Controller
     public function index(Request $request){
         $map = array();
         $map['parent_id']=0;
-        $map['userType']=1;
+        //$map['userType']=1;
         $map['del_flag']=0;
         if (true==$request->has('username'))
         {
-            $map['username']=$request->input('username');
+            $map['username']=HttpFilter($request->input('username'));
+        }
+        if (true==$request->has('userType'))
+        {
+            $map['userType']=(int)$request->input('userType');
         }
         $sql = Agent::query();
         if (true==$request->has('nickname')) {
-           $sql->where('nickname','like','%'.$request->input('nickname').'%');
+           $sql->where('nickname','like','%'.HttpFilter($request->input('nickname')).'%');
         }
         if (true==$request->has('excel') && true==$request->input('excel')){
             $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
@@ -51,15 +63,29 @@ class AgentListController extends Controller
             } catch (\PHPExcel_Exception $e) {
             }
         }else{
-            $data = $sql->where($map)->paginate(10)->appends($request->all());
+            if (true==$request->has('limit'))
+            {
+                $limit = $request->input('limit');
+            }
+            else
+            {
+                $limit = 10;
+            }
+            $data = $sql->where($map)->paginate($limit)->appends($request->all());
+            $sumBalance=0;
             foreach ($data as $key=>$value){
                 $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
                 $data[$key]['userCount']=$this->getHqUserCount($value['id']);
-                $data[$key]['fee']=json_decode($value['fee'],true);
+                if ($value['userType']==1)
+                {
+                    $data[$key]['fee']=json_decode($value['fee'],true);
+                }
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
+                $sumBalance = $sumBalance + $value['groupBalance'];
             }
         }
-        return view('agent.list',['list'=>$data,'input'=>$request->all()]);
+        $balance = SysBalance::where('id','=',1)->first()['balance'];
+        return view('agent.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit,'balance'=>$balance,'sumBalance'=>$sumBalance]);
     }
 
     /**
@@ -81,13 +107,13 @@ class AgentListController extends Controller
     {
         $data = $request->all();
         $id = $data['id'];
-        if ($data['password']!=$data['newPwd'])
+        if (HttpFilter($data['password'])!=HttpFilter($data['newPwd']))
         {
             return ['msg'=>'两次密码输入不一致','status'=>0];
         }
         else
         {
-            $password = bcrypt($data['password']);
+            $password = bcrypt(HttpFilter($data['password']));
             $count = Agent::where('id','=',$id)->update(['password'=>$password]);
             if ($count!==false)
             {
@@ -104,7 +130,7 @@ class AgentListController extends Controller
      * 编辑页
      */
     public function edit($id=0){
-        $data = $id?Agent::find($id):[];
+        $data = (int)$id?Agent::find((int)$id):[];
         $info = AgentRoleUser::where('user_id','=',$id)->first();
         if($id!=0){
             $data['fee']=json_decode($data['fee'],true);
@@ -121,16 +147,16 @@ class AgentListController extends Controller
     public function store(StoreRequest $request)
     {
         $data = $request->all();
-        $roleId = $request->input('user_role');
+        $roleId = (int)$request->input('user_role');
         unset($data['id']);
         unset($data['_token']);
         unset($data['user_role']);
         //判断两次密码是否相同
-        if($data['pwd']!=$data['pwd_confirmation']){
+        if(HttpFilter($data['pwd'])!=HttpFilter($data['pwd_confirmation'])){
             return ['msg'=>'两次密码不同','status'=>0];
         }
         //密码加密
-        $data['password']=bcrypt($data['pwd']);
+        $data['password']=bcrypt(HttpFilter($data['pwd']));
         unset($data['pwd']);
         unset($data['pwd_confirmation']);
         $data['created_at']=date('Y-m-d H:i:s',time());
@@ -149,15 +175,29 @@ class AgentListController extends Controller
         }else{
             return ['msg'=>'操作失败','status'=>0];
         }
+    }
 
+    /**
+     * 效验代理账户是否存在
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function accountUnique(StoreRequest $request)
+    {
+        $account = HttpFilter($request->input('account'));
+        if (Agent::where('username','=',$account)->exists())
+        {
+            return ['msg'=>$account.'账户已存在','status'=>0];
+        }
+        return ['msg'=>'可以使用','status'=>1];
     }
     /*
      * 编辑
      */
     public function update(StoreRequest $request){
-        $id = $request->input('id');
+        $id = (int)$request->input('id');
         $data = $request->all();
-        $roleId = $request->input('user_role');
+        $roleId = 38;
         unset($data['_token']);
         unset($data['id']);
         unset($data['user_role']);
@@ -165,13 +205,13 @@ class AgentListController extends Controller
             unset($data['pwd']);
             unset($data['pwd_confirmation']);
         }
-        $data['fee']=json_encode($data['fee']);
-        $data['limit']=json_encode($data['limit']);
-        $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
-        $data['lhbets_fee']=json_encode($data['lhbets_fee']);
-        $data['nnbets_fee']=json_encode($data['nnbets_fee']);
-        $data['a89bets_fee']=json_encode($data['a89bets_fee']);
-        $data['sgbets_fee']=json_encode($data['sgbets_fee']);
+        $data['fee']=json_encode(HttpFilter($data['fee']));
+        $data['limit']=json_encode(HttpFilter($data['limit']));
+        $data['bjlbets_fee']=json_encode(HttpFilter($data['bjlbets_fee']));
+        $data['lhbets_fee']=json_encode(HttpFilter($data['lhbets_fee']));
+        $data['nnbets_fee']=json_encode(HttpFilter($data['nnbets_fee']));
+        $data['a89bets_fee']=json_encode(HttpFilter($data['a89bets_fee']));
+        $data['sgbets_fee']=json_encode(HttpFilter($data['sgbets_fee']));
         $data['userType']=1;
         $up=Agent::where('id',$id)->update($data);
         if($up!==false){
@@ -194,7 +234,7 @@ class AgentListController extends Controller
         DB::beginTransaction();
         try {
             $agentIdArray = array();
-            $agentIdArray[] =$id;
+            $agentIdArray[] =(int)$id;
             $data = Agent::select('id')->whereRaw('FIND_IN_SET('.$id.',ancestors)')->get();
             foreach ($data as $key=>$value)
             {
@@ -246,7 +286,7 @@ class AgentListController extends Controller
      */
     public function stop(StoreRequest $request){
         $id=$request->input('id');
-        $stop = Agent::where('id','=',$id)->update(array("status"=>1));
+        $stop = Agent::where('id','=',(int)$id)->update(array("status"=>1));
         if($stop){
             return ['msg'=>'停用成功','status'=>1];
         }else{
@@ -258,7 +298,7 @@ class AgentListController extends Controller
      */
     public function start(StoreRequest $request){
         $id=$request->input('id');
-        $stop = Agent::where('id','=',$id)->update(array("status"=>0));
+        $stop = Agent::where('id','=',(int)$id)->update(array("status"=>0));
         if($stop){
             return ['msg'=>'启用成功','status'=>1];
         }else{
@@ -270,8 +310,8 @@ class AgentListController extends Controller
     * 添加代理
     */
     public function insertUserRole($agentId,$roleId){
-        $data['user_id']=$agentId;
-        $data['role_id']=$roleId;
+        $data['user_id']=(int)$agentId;
+        $data['role_id']=(int)$roleId;
         AgentRoleUser::insert($data);
     }
 
@@ -282,11 +322,30 @@ class AgentListController extends Controller
      */
     public function getSubordinateCount($id)
     {
-        return Agent::where('parent_id','=',$id)->count();
+        return Agent::where('parent_id','=',(int)$id)->count();
     }
 
     public function getHqUserCount($id){
-        return HqUser::where('agent_id','=',$id)->count();
+        return HqUser::where('agent_id','=',(int)$id)->count();
+    }
+
+    /**
+     * 代理结构关系
+     * @param $id
+     * @return Factory|Application|View
+     */
+    public function getRelationalStruct($id){
+        $info = (int)$id?Agent::find((int)$id):[];
+        $arr = array();
+        if ($info['parent_id']!=0){
+            $data = explode(",",$info['ancestors']);
+            unset($data[0]);
+            foreach ($data as $key=>$value){
+                $a = $value?Agent::find($value):[];
+                $arr[] = $a;
+            }
+        }
+        return view('agent.agentRelation',['info'=>$info,'parent'=>$arr]);
     }
 
     /**
@@ -295,16 +354,21 @@ class AgentListController extends Controller
      * @param Request $request
      */
     public function getSubordinateAgentList($id,Request $request){
+        $request->offsetSet('parent_id',$id);
         $map = array();
-        $map['parent_id']=$id;
+        $map['parent_id']=(int)$id;
         $map['del_flag']=0;
+        if (true==$request->has('parent_id'))
+        {
+            $map['parent_id']=(int)$request->input('parent_id');
+        }
         if (true==$request->has('username'))
         {
-            $map['username']=$request->input('username');
+            $map['username']=HttpFilter($request->input('username'));
         }
         $sql = Agent::query();
         if (true==$request->has('nickname')) {
-            $sql->where('nickname','like','%'.$request->input('nickname').'%');
+            $sql->where('nickname','like','%'.HttpFilter($request->input('nickname')).'%');
         }
         if (true==$request->has('excel') && true==$request->input('excel')){
             $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
@@ -321,13 +385,21 @@ class AgentListController extends Controller
             } catch (\PHPExcel_Exception $e) {
             }
         }else{
-            $data = $sql->where($map)->paginate(10)->appends($request->all());
+            if ($request->has('limit'))
+            {
+                $limit = (int)$request->input('limit');
+            }
+            else
+            {
+                $limit = 10;
+            }
+            $data = $sql->where($map)->paginate($limit)->appends($request->all());
             foreach ($data as $key=>$value){
                 $data[$key]['fee']=json_decode($value['fee'],true);
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
             }
         }
-        return view('agent.list',['list'=>$data,'input'=>$request->all()]);
+        return view('agent.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit,'balance'=>0,'sumBalance'=>0]);
     }
 
     /**
@@ -338,24 +410,32 @@ class AgentListController extends Controller
      */
     public function user($id,Request $request){
         $map = array();
-        $map['agent_id']=$id;
+        $map['agent_id']=(int)$id;
         if(true==$request->has('account')){
-            $map['account']=$request->input('account');
+            $map['account']=HttpFilter($request->input('account'));
         }
         $user = HqUser::query();
         $sql = $user->leftJoin('agent_users','user.agent_id','=','agent_users.id')
             ->leftJoin('user_account','user.user_id','=','user_account.user_id')
             ->select('user.*','agent_users.nickname as agentName','user_account.balance')->where($map);
         if(true ==$request->has('nickname')){
-            $sql->where('user.nickname','like','%'.$request->input('nickname').'%');
+            $sql->where('user.nickname','like','%'.HttpFilter($request->input('nickname')).'%');
         }
-        $data = $sql->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = (int)$request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
             $data[$key]['cz']=$this->getUserCzCord($value['user_id']);
             $data[$key]['fee']=json_decode($data[$key]['fee'],true);
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
         }
-        return view('agent.userList',['list'=>$data,'input'=>$request->all()]);
+        return view('agent.userList',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
     }
 
     /**
@@ -364,47 +444,85 @@ class AgentListController extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
      */
     public function czEdit($id){
-        $info = $id?Agent::find($id):[];
-        return view('agent.cz',['info'=>$info,'id'=>$id]);
+        $info = (int)$id?Agent::find((int)$id):[];
+        $balance = SysBalance::where('id','=',1)->first();
+        return view('agent.cz',['info'=>$info,'id'=>$id,'balance'=>$balance['balance']]);
     }
 
     public function updateBalance(StoreRequest $request)
     {
         $data = $request->all();
-        $redisLock = $this->redissionLock($data['id']);
+        if ((int)$data['balance']<=0)
+        {
+            return ['msg'=>'金额不能小于0','status'=>0];
+        }
+        $redisLock = $this->redissionLock((int)$data['id']);
         if ($redisLock){
             unset($data['_token']);
-            $id = $data['id'];
+            $id = (int)$data['id'];
             unset($data['id']);
-            $data['balance']=$data['balance']*100;
+            $data['balance']=(int)$data['balance']*100;
             DB::beginTransaction();
             try {
-                $bool = Agent::where('id','=',$id)->lockForUpdate()->first();
-                if ($bool){
-                    $count = Agent::where('id','=',$id)->increment('balance',$data['balance']);
-                    if ($count){
-                        $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],"财务后台直接充值");
-                        if ($result){
-                            DB::commit();
+                if ($data['type']==1)//上分
+                {
+                    $bool = Agent::where('id','=',$id)->lockForUpdate()->first();
+                    if ($bool){
+                        $count = Agent::where('id','=',$id)->increment('balance',(int)$data['balance']);
+                        if ($count){
+                            $result = $this->insertAgentBillFlow($id,0,(int)$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],"财务后台直接充值");
+                            if ($result){
+                                SysBalance::where('id','=',1)->decrement('balance',$data['balance']);
+                                DB::commit();
+                                $this->unRedissLock($id);
+                                return ['msg'=>'操作成功','status'=>1];
+                            }else{
+                                DB::rollBack();
+                                $this->unRedissLock($id);
+                                return ['msg'=>'操作失败','status'=>0];
+                            }
+                            DB::rollBack();
                             $this->unRedissLock($id);
-                            return ['msg'=>'操作成功','status'=>1];
+                            return ['msg'=>'操作失败','status'=>0];
                         }else{
                             DB::rollBack();
                             $this->unRedissLock($id);
                             return ['msg'=>'操作失败','status'=>0];
                         }
-                        DB::rollBack();
-                        $this->unRedissLock($id);
-                        return ['msg'=>'操作失败','status'=>0];
                     }else{
                         DB::rollBack();
                         $this->unRedissLock($id);
                         return ['msg'=>'操作失败','status'=>0];
                     }
-                }else{
-                    DB::rollBack();
+                }
+                else //下分
+                {
+                    $bool = Agent::where('id','=',$id)->lockForUpdate()->first();
+                    if (!$bool)
+                    {
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                    //修改余额 扣钱
+                    $count = Agent::where('id','=',$id)->decrement('balance',$data['balance']);
+                    if (!$count)
+                    {
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                    $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],0,'财务后台手动下分');
+                    if (!$result)
+                    {
+                        DB::rollBack();
+                        $this->unRedissLock($id);
+                        return ['msg'=>'操作失败','status'=>0];
+                    }
+                    SysBalance::where('id','=',1)->increment('balance',$data['balance']);
+                    DB::commit();
                     $this->unRedissLock($id);
-                    return ['msg'=>'操作失败','status'=>0];
+                    return ['msg'=>'操作成功','status'=>1];
                 }
             }catch (\Exception $e)
             {
@@ -496,7 +614,7 @@ class AgentListController extends Controller
         }
     }
     /**获取用户列表
-     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
+     * @return Builder[]|Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
      */
     public function getHqUserList(){
         $sql = HqUser::query();
