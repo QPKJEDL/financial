@@ -27,14 +27,13 @@
     <div class="layui-form-item">
         <label class="layui-form-label">状态：</label>
         <div class="layui-input-block">
-            <input type="radio" name="status" value="0" title="正常" @if($info['status']==0) checked="checked"@endif/>
-                   {{--@if(!isset($info['status']))
-                   checked
-                   @elseif(isset($info['status'])&&$info['status'])
-                   checked
+            @if($id==0)
+                <input type="radio" name="status" value="0" title="正常" checked="checked"/>
+                <input type="radio" name="status" value="1" title="停用">
             @else
-                    @endif>--}}
-            <input type="radio" name="status" value="1" title="停用"@if($info['status']==1) checked="checked"@endif>
+                <input type="radio" name="status" value="0" title="正常" @if($info['status']==0) checked="checked"@endif/>
+                <input type="radio" name="status" value="1" title="停用"@if($info['status']==1) checked="checked"@endif>
+            @endif
         </div>
     </div>
     @if($info==null)

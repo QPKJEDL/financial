@@ -97,7 +97,7 @@
                                     layer.msg(res.msg,{icon:6});
                                     var index = layer.open({
                                         type:2,
-                                        title:$("#nickname").val()+'的充值提现记录',
+                                        title:username+'的充值提现记录',
                                         shadeClose:true,
                                         offset:"10%",
                                         area:['60%','80%'],
@@ -129,7 +129,7 @@
                                     layer.msg(res.msg,{icon:6});
                                     var index = layer.open({
                                         type:2,
-                                        title:$("#nickname").val()+'的充值提现记录',
+                                        title:username+'的充值提现记录',
                                         shadeClose:true,
                                         offset:"10%",
                                         area:['60%','80%'],
