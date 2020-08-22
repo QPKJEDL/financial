@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\StoreRequest;
 use App\Models\Billflow;
 use App\Models\Czrecord;
+use App\Models\SysBalance;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\HqUser;
 use App\Models\UserAccount;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Mockery\Exception;
@@ -23,25 +25,47 @@ class HqUserController extends Controller
     public function index(Request $request){
         $map = array();
         $map['user.del_flag']=0;
-        $map['user.user_type']=1;
-        if(true==$request->has('account')){
-            $map['user.account']=$request->input('account');
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
         }
-        $sql = HqUser::where($map);
-        $sql->leftJoin('agent_users','agent_users.id','=','user.agent_id')
-            ->select('user.*','agent_users.username','agent_users.nickname as agentName')
-            ->where($map);
-        if(true==$request->has('nickname')){
-            $sql->where('user.nickname','like','%'.$request->input('nickname').'%');
+        else
+        {
+            $limit = 10;
         }
-        $data = $sql->paginate(10)->appends($request->all());
-        foreach($data as $key=>&$value){
-            $data[$key]['creatime']=date("Y-m-d H:m:s",$value['creatime']);
-            $data[$key]['fee']=json_decode($value['fee'],true);
-            $data[$key]['userAccount']=UserAccount::getUserAccountInfo($value['user_id']);
-            $data[$key]['cz']=$this->getUserCzCord($value['user_id']);
+        if (""==$request->input('account') && ""==$request->input('nickname') && ""==$request->input('user_type'))
+        {
+            $data = HqUser::where('user_id','<',0)->paginate($limit)->appends($request->all());
+        }else{
+            if(true==$request->has('account')){
+                $map['user.account']=$request->input('account');
+            }
+            if (true==$request->has('user_type'))
+            {
+                if ($request->input('user_type')==1 || $request->input('user_type')==2)
+                {
+                    $map['user.user_type']=$request->input('user_type');
+                }
+            }
+            $sql = HqUser::where($map);
+            $sql->leftJoin('agent_users','agent_users.id','=','user.agent_id')
+                ->select('user.*','agent_users.username','agent_users.nickname as agentName')
+                ->where($map);
+            if(true==$request->has('nickname')){
+                $sql->where('user.nickname','like','%'.$request->input('nickname').'%');
+            }
+
+            $data = $sql->paginate($limit)->appends($request->all());
+            foreach($data as $key=>&$value){
+                $data[$key]['creatime']=date("Y-m-d H:m:s",$value['creatime']);
+                if ($value['user_type']==2){
+                    $data[$key]['fee']=json_decode($value['fee'],true);
+                }
+                $data[$key]['userAccount']=UserAccount::getUserAccountInfo($value['user_id']);
+                $data[$key]['cz']=$this->getUserCzCord($value['user_id']);
+            }
         }
-        return view('hquser.list',['list'=>$data,'input'=>$request->all()]);
+        return view('hquser.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
     }
 
     /**
@@ -55,6 +79,89 @@ class HqUserController extends Controller
     }
 
     /**
+     * 状态封禁
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function changeStatus(StoreRequest $request)
+    {
+        $id = $request->input('id');
+        $status = $request->input('status');
+        $count = HqUser::where('user_id','=',$id)->update(['is_over'=>$status]);
+        if ($count)
+        {
+            return ['msg'=>'操作成功','status'=>1];
+        }
+        else
+        {
+            return ['msg'=>'操作失败','status'=>0];
+        }
+    }
+
+    /**
+     * 编辑
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function edit($id)
+    {
+        $data = $id?HqUser::find($id):[];
+        $data['limit']=json_decode($data['limit'],true);
+        $data['fee']=json_decode($data['fee'],true);
+        $data['nnbets_fee'] = json_decode($data['nnbets_fee'],true);
+        $data['lhbets_fee'] = json_decode($data['lhbets_fee'],true);
+        $data['bjlbets_fee'] = json_decode($data['bjlbets_fee'],true);
+        $data['a89bets_fee'] = json_decode($data['a89bets_fee'],true);
+        $data['sgbets_fee'] = json_decode($data['sgbets_fee'],true);
+        return view('hquser.edit',['info'=>$data,'id'=>$id]);
+    }
+
+    /**
+     * 编辑保存
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function updateSave(StoreRequest $request)
+    {
+        $data = $request->all();
+        $id = $data['id'];
+        $map['nickname']=$data['nickname'];
+        /*$bjl['player']=intval($data['bjlbets_fee']['player'] * 100);
+        $bjl['playerPair']=intval($data['bjlbets_fee']['playerPair'] * 100);
+        $bjl['tie']=intval($data['bjlbets_fee']['tie'] * 100);
+        $bjl['banker']=intval($data['bjlbets_fee']['banker'] *100);
+        $bjl['bankerPair']=intval($data['bjlbets_fee']['bankerPair'] * 100);
+        $data['bjlbets_fee']=json_encode($bjl);
+        $lh['dragon']=intval($data['lhbets_fee']['dragon'] * 100);
+        $lh['tie']=intval($data['lhbets_fee']['tie'] *100);
+        $lh['tiger']=intval($data['lhbets_fee']['tiger']*100);
+        $data['lhbets_fee']=json_encode($lh);
+        $nn['Equal']=intval($data['nnbets_fee']['Equal'] *100);
+        $nn['Double']=intval($data['nnbets_fee']['Double'] *100);
+        $nn['SuperDouble']=intval($data['nnbets_fee']['SuperDouble']*100);
+        $data['nnbets_fee']=json_encode($nn);
+        $sg['Equal']=intval($data['sgbets_fee']['Equal']*100);
+        $sg['Double']=intval($data['sgbets_fee']['Double']*100);
+        $sg['SuperDouble']=intval($data['sgbets_fee']['SuperDouble']*100);
+        $data['sgbets_fee']=json_encode($sg);
+        $a89['Equal']=intval($data['a89bets_fee']['Equal']*100);
+        $a89['Double']=95;
+        $a89['SuperDouble']=intval($data['a89bets_fee']['SuperDouble']*100);
+        $data['a89bets_fee']=json_encode($a89);
+        $map['bjlbets_fee']=json_encode($data['bjlbets_fee']);
+        $map['lhbets_fee']=json_encode($data['lhbets_fee']);
+        $map['nnbets_fee']=json_encode($data['nnbets_fee']);
+        $map['sgbets_fee']=json_encode($data['sgbets_fee']);
+        $map['a89bets_fee']=json_encode($data['a89bets_fee']);*/
+        $count = HqUser::where('user_id','=',$id)->update($map);
+        if (!$count)
+        {
+            return ['msg'=>'操作失败','status'=>0];
+        }
+        return ['msg'=>'操作成功','status'=>1];
+    }
+
+    /**
      * 上分页面
      * @param $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
@@ -62,7 +169,43 @@ class HqUserController extends Controller
     public function topCode($id)
     {
         $info = UserAccount::where('user_id','=',$id)->first();
-        return view('hquser.code',['info'=>$info,'id'=>$id,'type'=>1]);
+        $balance = SysBalance::where('id','=',1)->first();
+        return view('hquser.code',['info'=>$info,'id'=>$id,'balance'=>$balance['balance'],'user'=>$id?HqUser::find($id):[]]);
+    }
+
+    /**
+     * 修改密码
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function resetPwd($id)
+    {
+        return view('hquser.resetPwd',['id'=>$id]);
+    }
+
+    /**
+     * 保存修改密码
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function updatePassword(StoreRequest $request)
+    {
+        $data = $request->all();
+        if ($data['password']!=$data['newPwd'])
+        {
+            return ['msg'=>'两次密码不一致','status'=>0];
+        }
+        $info = $data['id']?HqUser::find($data['id']):[];
+        if (md5($data['password'])==$info['password'])
+        {
+            return ['msg'=>'不能与之前的密码一直','status'=>0];
+        }
+        $count = HqUser::where('user_id','=',$data['id'])->update(['password'=>md5($data['password'])]);
+        if (!$count)
+        {
+            return ['msg'=>'操作失败','status'=>0];
+        }
+        return ['msg'=>'操作成功','status'=>1];
     }
 
     /**
@@ -84,6 +227,9 @@ class HqUserController extends Controller
     public function saveTopCode(StoreRequest $request)
     {
         $data = $request->all();
+        if ($data['balance']<=0){
+            return ['msg'=>'金额必须大于0','status'=>0];
+        }
         $id = $data['id'];
         unset($data['_token']);
         unset($data['id']);
@@ -99,11 +245,25 @@ class HqUserController extends Controller
                 if ($data['type']==1){//上分
                     $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore +($data['balance'] * 100)]);
                     if ($res){
-                        $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'remark'=>'财务后台直接上分','creatime'=>time()]);
+                        $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'pay_type'=>$data['payType'],'remark'=>Auth::user()['username'].'[财务后台直接上分]','creatime'=>time()]);
                         if ($result){
+                            $b = SysBalance::where('id','=',1)->decrement('balance',$data['balance']*100);
+                            if (!$b){
+                                $this->unRedisUserLock($id);
+                                DB::rollBack();
+                                return  ['msg'=>'操作失败','status'=>0];
+                            }
+                            $userInfo = $id?HqUser::find($id):[];
+                            $count = Czrecord::insertRecord($userInfo['draw_name'],$id,Auth::id(),$data['balance']*100,$data['payType']);
+                            if (!$count)
+                            {
+                                DB::rollBack();
+                                $this->unRedisUserLock($id);
+                                return ['msg'=>'操作失败','status'=>0];
+                            }
                             DB::commit();
                             $this->unRedisUserLock($id);
-                            return ['msg'=>'操作成功','status'=>1];
+                            return ['msg'=>'操作成功','status'=>1,'type'=>1,'userName'=>$id?HqUser::find($id):[]['nickname']];
                         }else{
                             DB::rollBack();
                             $this->unRedisUserLock($id);
@@ -116,16 +276,21 @@ class HqUserController extends Controller
                     }
                 }else{//下分
                     $balance = UserAccount::where('user_id','=',$id)->lockForUpdate()->first();
-                    if ($balance['balance'] < abs($data['balance']*100)){
+                    if ($balance['balance'] < $data['balance']*100){
                         return ['msg'=>'金额不足，不能提现','status'=>0];
                     }else{
                         $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -$data['balance'] * 100]);
                         if ($res){
-                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'remark'=>'财务后台直接下分','creatime'=>time()]);
+                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'pay_type'=>0,'remark'=>Auth::user()['username'].'[财务后台直接下分]','creatime'=>time()]);
                             if ($result){
+                                $b = SysBalance::where('id','=',1)->increment('balance',$data['balance']*100);
+                                if (!$b)
+                                {
+                                    DB::rollBack();
+                                }
                                 DB::commit();
                                 $this->unRedisUserLock($id);
-                                return ['msg'=>'操作成功','status'=>1];
+                                return ['msg'=>'操作成功','status'=>1,'type'=>2,'userName'=>$id?HqUser::find($id):[]['nickname']];
                             }else{
                                 DB::rollBack();
                                 $this->unRedisUserLock($id);
@@ -160,10 +325,11 @@ class HqUserController extends Controller
     {
         $code=time().rand(100000,999999);
         //锁入列
-        Redis::rPush('hquser_code_lock_'.$userId,$code);
 
+        Redis::rPush('hq_user_code_lock_'.$userId,$code);
+        Redis::expire('hq_user_code_lock_'.$userId,5);
         //锁出列
-        $codes = Redis::LINDEX('hquser_code_lock_'.$userId,0);
+        $codes = Redis::LINDEX('hq_user_code_lock_'.$userId,0);
         if ($code!=$codes){
             return false;
         }else{
