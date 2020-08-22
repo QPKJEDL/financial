@@ -26,6 +26,10 @@ class OnlineController extends Controller
         if(true==$request->has('online_type')){
             $map['user.online_type']=$request->input('online_type');
         }
+        if (true==$request->has('user_type'))
+        {
+            $map['user.user_type']=$request->input('user_type');
+        }
         $sql = HqUser::query();
 
         $data = $sql->leftJoin('agent_users','user.agent_id','=','agent_users.id')
@@ -34,7 +38,7 @@ class OnlineController extends Controller
             ->select('user.*','agent_users.username','desk.desk_name','user_account.balance')->where($map)->orderBy('user.savetime','desc')->paginate(10)->appends($request->all());
         $countData = HqUser::query()->leftJoin('agent_users','user.agent_id','=','agent_users.id')
             ->leftJoin('user_account','user.user_id','=','user_account.user_id')
-            ->select('user.*','agent_users.username','user_account.balance')->where(['user.is_online'=>1])->get()->toArray();
+            ->select('user.*','agent_users.username','user_account.balance')->where($map)->orderBy('user.savetime','desc')->get();
         foreach ($data as $key=>$value){
             $url = "http://whois.pconline.com.cn/ipJson.jsp?ip=".$value['last_ip']."'&json=true";
             $result = file_get_contents($url);
