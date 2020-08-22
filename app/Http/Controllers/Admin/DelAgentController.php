@@ -20,13 +20,25 @@ class DelAgentController extends Controller
         if (true==$request->has('username')){
             $map['username']=$request->input('username');
         }
+        if (true==$request->has('user_type'))
+        {
+            $map['userType'] = $request->input('user_type');
+        }
         if (true==$request->has('nickname')){
             $sql->where('nickname','like','%'.$request->input('nickname').'%');
         }
-        $data = $sql->where($map)->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->where($map)->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$value){
             $data[$key]['fee']=json_decode($value['fee'],true);
         }
-        return view('delagent.list',['list'=>$data,'input'=>$request->all()]);
+        return view('delagent.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
     }
 }
