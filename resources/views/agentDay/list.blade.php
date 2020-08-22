@@ -1,16 +1,23 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['end'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" id="end" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <select name="userType">
+            <option value="">请选择账号类型</option>
+            <option value="1">线下</option>
+            <option value="2">线上</option>
+        </select>
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -18,17 +25,18 @@
     </div>
     <br>
     <div class="layui-btn-group">
-        <button type="button" class="layui-btn" id="today">今天</button>
-        <button type="button" class="layui-btn" id="yesterday">昨天</button>
-        <button type="button" class="layui-btn" id="thisWeek">本周</button>
-        <button type="button" class="layui-btn" id="lastWeek">上周</button>
-        <button type="button" class="layui-btn" id="thisMonth">本月</button>
-        <button type="button" class="layui-btn" id="lastMonth">上月</button>
+        <button class="layui-btn" id="today" lay-submit>今天</button>
+        <button class="layui-btn" id="yesterday" lay-submit>昨天</button>
+        <button class="layui-btn" id="thisWeek" lay-submit>本周</button>
+        <button class="layui-btn" id="lastWeek" lay-submit>上周</button>
+        <button class="layui-btn" id="thisMonth" lay-submit>本月</button>
+        <button class="layui-btn" id="lastMonth" lay-submit>上月</button>
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
+            <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -55,11 +63,12 @@
             <th class="hidden-xs">总赢</th>
             <th class="hidden-xs">总洗码</th>
             <th class="hidden-xs">总抽水</th>
-            <th class="hidden-xs">客损</th>
             <th class="hidden-xs">打赏金额</th>
             <th class="hidden-xs">百/龙/牛/三/A</th>
             <th class="hidden-xs">洗码费</th>
+            <th class="hidden-xs">抽水收益</th>
             <th class="hidden-xs">占股</th>
+            <th class="hidden-xs">抽水比例</th>
             <th class="hidden-xs">占股收益</th>
             <th class="hidden-xs">总收益</th>
             <th class="hidden-xs">公司收益</th>
@@ -67,73 +76,208 @@
         </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="hidden-xs">全部</td>
-                <td class="hidden-xs">总公司</td>
-                <td class="hidden-xs">admin</td>
-                <td class="hidden-xs">{{number_format($sumBet/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($sumMoney/100,2)}}</td>
-                <td class="hidden-xs">{{number_format(-$sumCode/100,2)}}</td>
-                <td class="hidden-xs">{{number_format(-$sumPump/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($sumKeSun/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($sumReward/100,2)}}</td>
-                <td class="hidden-xs">0.9/0.9/0.9/0.9/0.9</td>
-                <td class="hidden-xs">{{number_format(-$sumCodeMoney,2)}}</td>
-                <td class="hidden-xs">100%</td>
-                <td class="hidden-xs">{{number_format($sumZanGu,2)}}</td>
-                <td class="hidden-xs">{{number_format($sumShouYi,2)}}</td>
-                <td class="hidden-xs">{{number_format($sumGongShiShouYi,2)}}</td>
-                <td class="hidden-xs"></td>
-            </tr>
+            @if($input['type']==1)
+                @if($input['account']=='' || $input['account']==null)
+                    <tr>
+                        <td class="hidden-xs">全部</td>
+                        <td class="hidden-xs">总公司</td>
+                        <td class="hidden-xs">admin</td>
+                        <td class="hidden-xs">{{number_format($sum['washMoney']/100,2)}}</td>
+                        <td class="hidden-xs">
+                            @if($sum['getMoney']<0)
+                                <span style="color: red;">{{number_format($sum['getMoney']/100,2)}}</span>
+                            @else
+                                {{number_format($sum['getMoney']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">
+                            @if($sum['betMoney']<0)
+                                <span style="color: red;">
+                                    {{number_format($sum['betMoney']/100,2)}}
+                                </span>
+                            @else
+                                {{number_format($sum['betMoney']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">
+                            @if($sum['feeMoney']<0)
+                                <span style="color: red;">{{number_format($sum['feeMoney']/100,2)}}</span>
+                            @else
+                                {{number_format($sum['feeMoney']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">{{number_format($sum['reward']/100,2)}}</td>
+                        <td class="hidden-xs">0.9/0.9/0.9/0.9/0.9</td>
+                        <td class="hidden-xs">
+                            @if($sum['code']<0)
+                                <span>{{number_format(-($sum['code']/100),2)}}</span>
+                            @else
+                                {{number_format(-($sum['code']/100),2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">{{number_format($sum['pumpSy']/100,2)}}</td>
+                        <td class="hidden-xs">100%</td>
+                        <td class="hidden-xs">100%</td>
+                        <td class="hidden-xs">
+                            @if($sum['zg']<0)
+                                <span style="color: red;">{{number_format($sum['zg']/100,2)}}</span>
+                            @else
+                                {{number_format($sum['zg']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">
+                            @if($sum['sy']<0)
+                                <span style="color: red;">{{number_format($sum['sy']/100,2)}}</span>
+                            @else
+                                {{number_format($sum['sy']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs">
+                            @if($sum['gs']<0)
+                                <span style="color: red;">{{number_format($sum['gs']/100,2)}}</span>
+                            @else
+                                {{number_format($sum['gs']/100,2)}}
+                            @endif
+                        </td>
+                        <td class="hidden-xs"></td>
+                    </tr>
+                @endif
+            @endif
         @foreach($list as $info)
             <tr>
                 <td class="hidden-xs">全部</td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
                 <td class="hidden-xs">{{$info['username']}}</td>
-                <td class="hidden-xs">{{number_format($info['sum_betMoney']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info['win_money']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info['code']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info['pump']/100,2)}}</td><!--number_format-->
-                <td class="hidden-xs">{{number_format(abs($info['kesun']/100),2)}}</td>
-                <td class="hidden-xs">{{number_format($info['reward'][0]->money/100,2)}}</td>
-                <td class="hidden-xs">{{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee'] ['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}</td>
-                <td class="hidden-xs">{{number_format(abs($info['win_money']/100*0.009),2)}}</td>
-                <td class="hidden-xs">{{$info['proportion']}}%</td>
+                <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
                 <td class="hidden-xs">
-                    {{number_format(((-$info['win_money']/100)-($info['win_money']/100*0.009)) * ($info['proportion']/100),2)}}
+                    @if($info['getMoney']<0)
+                        <span style="color: red;">{{number_format($info['getMoney']/100,2)}}</span>
+                    @else
+                        {{number_format($info['getMoney']/100,2)}}
+                    @endif
                 </td>
-                <td class="hidden-xs">{{number_format($info['pump']/100 + $info['win_money']/100*0.009 + (-$info['win_money']/100 - $info['win_money']/100*0.009) * $info['proportion']/100,2)}}</td>
                 <td class="hidden-xs">
-                    {{number_format(-$info['win_money']/100 - ($info['pump']/100 + $info['win_money']/100*0.009 + (-$info['win_money']/100 - $info['win_money']/100*0.009) * $info['proportion']/100),2)}}
+                    @if($info['betMoney']<0)
+                        <span style="color: red;">{{number_format($info['betMoney']/100,2)}}</span>
+                    @else
+                        {{number_format($info['betMoney']/100,2)}}
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        @if($info['feeMoney']<0)
+                            <span style="color: red;">{{number_format($info['feeMoney']/100,2)}}</span>
+                        @else
+                            {{number_format($info['feeMoney']/100,2)}}
+                        @endif
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">{{number_format($info['reward']/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        {{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee'] ['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        {{number_format($info['code']/100,2)}}
+                        @if($info['code']<0)
+                            <span style="color:red;">{{number_format($info['code']/100,2)}}</span>
+                        @else
+                            {{number_format($info['code']/100,2)}}
+                        @endif
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==2)
+                        {{number_format($info['feeMoney']/100,2)}}
+                        @if($info['feeMoney']<0)
+                            <span style="color: red;">{{number_format($info['feeMoney']/100,2)}}</span>
+                        @else
+                            {{number_format($info['feeMoney']/100,2)}}
+                        @endif
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        {{$info['proportion']}}%
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==2)
+                        {{$info['pump']}}%
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['getMoney']>0)
+                        <span style="color: red;">{{number_format($info['zg']/100,2)}}</span>
+                    @else
+                        {{number_format($info['zg']/100,2)}}
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['getMoney']>0)
+                        <span style="color: red;">{{number_format($info['sy']/100,2)}}</span>
+                    @else
+                        {{number_format($info['sy']/100,2)}}
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        @if($info['gs']<0)
+                            <span style="color:red;">{{number_format($info['gs']/100,2)}}</span>
+                        @else
+                            {{number_format($info['gs']/100,2)}}
+                        @endif
+                    @else
+                        -
+                    @endif
                 </td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button type="button" class="layui-btn layui-btn-small agentDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
-                        <button type="button" class="layui-btn layui-btn-small userDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs agentDayInfo" data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs userDayInfo" data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
                     </div>
                 </td>
             </tr>
         @endforeach
-        @if(!$list[0])
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+        @if(count($list)==0)
+            <tr><td colspan="17" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
     <div class="page-wrap">
-        {{$list->render()}}
     </div>
 @endsection
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer
             ;
-            laydate({istoday: true});
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("input[name='end']").val('');
                 $("select[name='desk_id']").val(''); 
                 $("input[name='boot']").val('');
             });
@@ -141,15 +285,15 @@
             $("#today").click(function () {
                 var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
                 var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
-                $("input[name='begin']").val(formDate(startDate))
-                $("input[name='end']").val(formDate(endDate))
+                $("input[name='begin']").val(formatDate(startDate))
+                $("input[name='end']").val(formatDate(endDate))
             });
             //昨天
             $("#yesterday").click(function () {
                 var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
                 var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
-                $("input[name='begin']").val(formDate(startDate))
-                $("input[name='end']").val(formDate(endDate))
+                $("input[name='begin']").val(formatDate(startDate))
+                $("input[name='end']").val(formatDate(endDate))
             });
             //本周
             $("#thisWeek").click(function () {

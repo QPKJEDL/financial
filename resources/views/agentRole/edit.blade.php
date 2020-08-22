@@ -57,16 +57,12 @@
             nodes = treeObj.getCheckedNodes(true);
             array = nodes;
         }
-        layui.use(['form','jquery','laypage', 'layer','tree','util'], function() {
-            var tree = layui.tree
+        layui.use(['form','jquery', 'layer'], function() {
+            var form = layui.form
             ,layer = layui.layer
-            ,util = layui.util;
-            var form = layui.form(),
-                $ = layui.jquery;
+            , $ = layui.jquery;
             form.render();
-            var layer = layui.layer;
-            form.on('submit(formDemo)', function(data) {
-                console.log(array);
+            form.on('submit(formDemo)', function(ele) {
                 var data = $('form').serializeArray();
                 data.push({"name":"menus","value":JSON.stringify(array)});
                 var id = $("input[name='id']").val();
