@@ -41,7 +41,20 @@ Route::group(['namespace'  => "Auth"], function () {
 });
 //后台主要模块
 Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], function () {
-    Route::get('/',                     'HomeController@index');
+
+    //菜单获取
+    Route::get('/getMenuList',          'IndexController@getMenuList');
+    //主页
+    Route::get('/',                     'IndexController@index');
+    Route::get('/getUnRead','DownController@getUnRead');//获取未读消息
+    //首页
+    Route::get('/home',                 'HomeController@index');
+
+    //账户管理模块
+    Route::resource('/deluser','DelUserController');//已删会员
+    Route::resource('/delagent','DelAgentController');//已删代理
+
+
     Route::get('/gewt',                 'HomeController@configr');
     Route::get('/index',                'HomeController@welcome');
     Route::post('/sort',                'HomeController@changeSort');
@@ -53,7 +66,17 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::post('/saveinfo/{type}',     'UserController@saveInfo');
     Route::resource('/roles',           'RoleController');
     Route::resource('/permissions',     'PermissionController');
+    //会员充值提现记录
+    Route::get('/getRecordByUserId/{userId}','DepositAndWithController@getRecordByUserId');
+    //代理充值提现记录查询
+    Route::get('/getRecordByAgentId/{id}','AgentDrawAndCzController@getRecordByAgentId');
+    //会员列表
     Route::resource('/hquser', 'HqUserController');//线下会员管理
+    Route::post('/hquser/changeStatus','HqUserController@changeStatus');//停用启用
+    Route::get('/hquser/edit/{id}','HqUserController@edit');//编辑
+    Route::post('/hquser/save','HqUserController@updateSave');//编辑保存
+    Route::get('/hquser/resetPwd/{id}','HqUserController@resetPwd');//修改密码
+    Route::post('/hquser/updatePassword','HqUserController@updatePassword');//保存修改密码
     Route::resource('/onUser','OnHqUserController');//线上会员管理
     Route::get('/hquser/topCode/{id}','HqUserController@topCode');//会员上分页面
     Route::get('/hquser/underCode/{id}','HqUserController@underCode');//会员下分页面
@@ -62,10 +85,21 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/order',   'OrderController');//注单记录
     Route::resource('/gameRecord','GameRecordController');//台桌游戏查询
     Route::resource('/online',      'OnlineController');//在线用户管理
+
+    //第三方
+    Route::resource('/three','ThreeController');//第三方支付流水
+    Route::resource('/tripartite','AgentTripartiteController');//代理第三方支付统计
+
+    //代理日结
     Route::resource('/agentDay',    'AgentDayEndController');//代理日结表
-    Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getIndexByParentId');//下级代理日结
+    Route::get('/agentDays/{id}/{begin}/{end}','AgentDayEndController@getAgentDayByAgentId');//下级代理日结
     Route::get('/userDays/{id}/{begin}/{end}','UserDayEndController@getUserDayEndByAgentId');//下级会员日结
+
+    //代理列表
     Route::resource('/agent',       'AgentListController');//代理列表
+    Route::get('/getRelationalStruct/{id}','AgentListController@getRelationalStruct');//结构关系
+    Route::post('/agent/accountUnique','AgentListController@accountUnique');//效验代理账户是否存在
+
     Route::get('/agent/resetPwd/{id}','AgentListController@resetPwd');//修改密码页面
     Route::post('/agent/saveResetPwd','AgentListController@saveResetPwd');//保存修改密码
     Route::post('/agentUpdate',       'AgentListController@update');//代理账号编辑
@@ -79,9 +113,12 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/agent/subUser/{id}','AgentListController@user');//下级会员
     Route::resource('/userDay',     'UserDayEndController');//会员日结表
     Route::resource('/daw','DepositAndWithController');//会员提现查询
+
+
+    //会员充值查询
     Route::resource('/cz','CzController');//会员充值查询
-    Route::resource('/deluser','DelUserController');//已删会员
-    Route::resource('/delagent','DelAgentController');//已删代理
+    Route::get('/userCz/{id}','CzController@getCzRecordList');//获取会员的充值记录
+
     Route::resource('/down','DownController');//下分请求
     Route::post('/down/lockDataById','DownController@lockDataById');//锁定数据
     Route::post('/down/approveData','DownController@approveData');//确认数据
