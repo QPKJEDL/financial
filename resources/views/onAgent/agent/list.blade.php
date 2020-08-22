@@ -2,7 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-normal addBtn" id="addAgent" data-desc="添加代理" data-url="{{url('/admin/onAgent/0/edit')}}"><i class="layui-icon">&#xe654;</i></button>
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="username" value="{{ $input['username'] or '' }}" name="username" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
@@ -16,7 +16,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -55,9 +55,9 @@
                 <td class="hidden-xs">{{$info['created_at']}}</td>
                 <td class="hidden-xs">
                     @if($info['is_act']==0)
-                        <span class="layui-btn layui-btn-mini layui-btn-danger act" data-id="{{$info['id']}}">未激活</span>
+                        <span class="layui-btn layui-btn-xs layui-btn-danger act" data-id="{{$info['id']}}">未激活</span>
                     @elseif($info['is_act']==1)
-                        <span class="layui-btn layui-btn-mini layui-btn-warm">激活</span>
+                        <span class="layui-btn layui-btn-xs layui-btn-warm">激活</span>
                     @endif
                 </td>
                 <td class="hidden-xs">
@@ -68,17 +68,17 @@
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    <button class="layui-btn layui-btn-small layui-btn-normal edit-btn" data-id="{{$info['id']}}" data-desc="修改代理" data-url="{{url('/admin/onAgent/'. $info['id'] .'/edit')}}">编辑</button>
+                    <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{$info['id']}}" data-desc="修改代理" data-url="{{url('/admin/onAgent/'. $info['id'] .'/edit')}}">编辑</button>
                     @if($info['status']==0)
-                        <button class="layui-btn layui-btn-small layui-btn-warm stop" data-id="{{$info['id']}}" data-desc="代理停用">停用</button>
+                        <button class="layui-btn layui-btn-xs layui-btn-warm stop" data-id="{{$info['id']}}" data-desc="代理停用">停用</button>
                     @elseif($info['status']==1)
-                        <button class="layui-btn layui-btn-small layui-btn start" data-id="{{$info['id']}}" data-desc="代理启用">启用</button>
+                        <button class="layui-btn layui-btn-xs layui-btn start" data-id="{{$info['id']}}" data-desc="代理启用">启用</button>
                     @endif
-                    <button class="layui-btn layui-btn-small cz" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">上分</i></button>
-                    <button class="layui-btn layui-btn-small @if($info['userCount']==0) layui-btn-disabled @else layui-btn-normal @endif user" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">下级会员</i></button>
-                    <button class="layui-btn layui-btn-small @if($info['agentCount']==0) layui-btn-disabled @else layui-btn-normal @endif agent" data-id="{{$info['id']}}"data-name="{{$info['nickname']}}" data-desc="下级代理"><i class="layui-icon">下级代理</i></button>
-                    <button class="layui-btn layui-btn-small resetPwd" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">修改密码</i></button>
-                    <button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/agent/'.$info['id'])}}"><i class="layui-icon">删除</i></button>
+                    <button class="layui-btn layui-btn-xs cz" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">上分</i></button>
+                    <button class="layui-btn layui-btn-xs @if($info['userCount']==0) layui-btn-disabled @else layui-btn-normal @endif user" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">下级会员</i></button>
+                    <button class="layui-btn layui-btn-xs @if($info['agentCount']==0) layui-btn-disabled @else layui-btn-normal @endif agent" data-id="{{$info['id']}}"data-name="{{$info['nickname']}}" data-desc="下级代理"><i class="layui-icon">下级代理</i></button>
+                    <button class="layui-btn layui-btn-xs resetPwd" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}"data-desc="下级会员"><i class="layui-icon">修改密码</i></button>
+                    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/agent/'.$info['id'])}}"><i class="layui-icon">删除</i></button>
                 </td>
             </tr>
         @endforeach
@@ -95,12 +95,11 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer
             ;
-            laydate({istoday: true});
             $(".reset").click(function(){
                 $('input[name="username"]').val('')
                 $('input[name="nickname"]').val('')

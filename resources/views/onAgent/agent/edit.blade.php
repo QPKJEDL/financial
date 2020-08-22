@@ -25,19 +25,6 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">角色：</label>
-        <div class="layui-input-block">
-            <select name="user_role" lay-verify="required">
-                <option value=""></option>
-                @foreach($roles as $role)
-                    <option
-                            value="{{ $role->id }}" {{isset($userRole['role_id'])&&$userRole['role_id']==$role->id?'selected':''}}>{{ $role->display_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-    </div>
-    <div class="layui-form-item">
         <label class="layui-form-label">状态：</label>
         <div class="layui-input-block">
             <input type="radio" name="status" value="0" title="正常"
@@ -54,7 +41,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">密码：</label>
             <div class="layui-input-block">
-                <input type="password" name="pwd" lay-verify="pwd" placeholder="请输入6-12位数字加字母密码" autocomplete="off" class="layui-input">
+                <input type="password" name="pwd" lay-verify="pwd" placeholder="请输入密码" autocomplete="off" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
@@ -68,7 +55,7 @@
         <div class="layui-inline">
             <label class="layui-form-label">抽水：</label>
             <div class="layui-input-inline" style="width: 100px;">
-                <input type="number" name="pump" lay-verify="pump" value="{{$info['pump'] or ''}}"  placeholder="%" autocomplete="off" class="layui-input">
+                <input type="number" name="pump" lay-verify="pump" value="{{$info['pump'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
             </div>
             <div class="layui-form-mid layui-word-aux">比如20%就填写20</div>
         </div>
@@ -77,7 +64,7 @@
         <div class="layui-inline">
             <label class="layui-form-label">占比：</label>
             <div class="layui-input-inline" style="width: 100px;">
-                <input type="number" name="proportion" lay-verify="proportion" value="{{$info['proportion'] or ''}}"  placeholder="%" autocomplete="off" class="layui-input">
+                <input type="number" name="proportion" lay-verify="proportion" value="{{$info['proportion'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
             </div>
             <div class="layui-form-mid layui-word-aux">比如20%就填写20</div>
         </div>
@@ -136,12 +123,48 @@
 @section('js')
     <script>
         layui.use(['form','jquery','layer'], function() {
-            var form = layui.form()
+            var form = layui.form
                 ,layer = layui.layer
                 ,$ = layui.jquery;
             form.render();
+            form.verify({
+                pwd:function (value) {
+                    if(value.length==0 || value.length<6){
+                        return '密码最低6位'
+                    }
+                },
+                pwd_confirmation:function (value) {
+                    var password = $("input[name='pwd']").val();
+                    if (password!=value){
+                        return '密码不一致'
+                    }
+                }
+            });
             var id = $("input[name='id']").val();
             var index = parent.layer.getFrameIndex(window.name);
+            $("input[name='username']").blur(function () {
+                var account = $(this).val();
+                if(account.length==0){
+                    layer.msg('账号不能为空',{shift: 6,icon:5});
+                }else{
+                    $.ajax({
+                        headers:{
+                            'X-CSRF-TOKEN':$('input[name="_token"]').val()
+                        },
+                        url:"{{url('/admin/agent/accountUnique')}}",
+                        type:"post",
+                        data:{
+                            "account":account
+                        },
+                        dataType:"json",
+                        success:function (res) {
+                            if(res.status==0){
+                                layer.msg('账号已存在',{shift:6,icon:5});
+                            }
+                        }
+                    });
+                }
+            });
             $("#account").click(function(){
                 //console.log(Math.random().toString().slice(-6));
                 //清空数据
@@ -150,23 +173,41 @@
             });
             if(id==0){
                 form.on('submit(formDemo)', function(data) {
+                    var username = $("input[name='username']").val();
                     $.ajax({
-                        url:"{{url('/admin/onAgent')}}",
-                        data:$('form').serialize(),
-                        type:'post',
-                        dataType:'json',
-                        success:function(res){
-                            if(res.status == 1){
-                                layer.msg(res.msg,{icon:6});
-                                var index = parent.layer.getFrameIndex(window.name);
-                                setTimeout('parent.layer.close('+index+')',2000);
-
-                            }else{
-                                layer.msg(res.msg,{shift: 6,icon:5});
-                            }
+                        headers:{
+                            'X-CSRF-TOKEN':$('input[name="_token"]').val()
                         },
-                        error : function(XMLHttpRequest, textStatus, errorThrown) {
-                            layer.msg('网络失败', {time: 1000});
+                        url:"{{url('/admin/agent/accountUnique')}}",
+                        type:"post",
+                        data:{
+                            "account":username
+                        },
+                        dataType:"json",
+                        success:function (res) {
+                            if(res.status==0){
+                                layer.msg('账号已存在',{shift:6,icon:5});
+                            }else{
+                                $.ajax({
+                                    url:"{{url('/admin/onAgent')}}",
+                                    data:$('form').serialize(),
+                                    type:'post',
+                                    dataType:'json',
+                                    success:function(res){
+                                        if(res.status == 1){
+                                            layer.msg(res.msg,{icon:6});
+                                            var index = parent.layer.getFrameIndex(window.name);
+                                            setTimeout('parent.layer.close('+index+')',2000);
+
+                                        }else{
+                                            layer.msg(res.msg,{shift: 6,icon:5});
+                                        }
+                                    },
+                                    error : function(XMLHttpRequest, textStatus, errorThrown) {
+                                        layer.msg('网络失败', {time: 1000});
+                                    }
+                                });
+                            }
                         }
                     });
                     return false;

@@ -1,13 +1,13 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" id="begin" placeholder="开始日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" id="begin" placeholder="开始日期" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['end'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" id="end" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     {{--@if($input['type']==1)--}}
     <div class="layui-inline">
@@ -21,17 +21,21 @@
     </div>
     <br>
     <div class="layui-btn-group">
-        <button type="button" class="layui-btn" id="today">今天</button>
-        <button type="button" class="layui-btn" id="yesterday">昨天</button>
-        <button type="button" class="layui-btn" id="thisWeek">本周</button>
-        <button type="button" class="layui-btn" id="lastWeek">上周</button>
-        <button type="button" class="layui-btn" id="thisMonth">本月</button>
-        <button type="button" class="layui-btn" id="lastMonth">上月</button>
+        <button class="layui-btn" id="today" lay-submit>今天</button>
+        <button class="layui-btn" id="yesterday" lay-submit>昨天</button>
+        <button class="layui-btn" id="thisWeek" lay-submit>本周</button>
+        <button class="layui-btn" id="lastWeek" lay-submit>上周</button>
+        <button class="layui-btn" id="thisMonth" lay-submit>本月</button>
+        <button class="layui-btn" id="lastMonth" lay-submit>上月</button>
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -54,82 +58,101 @@
             <th class="hidden-xs">抽水</th>
             <th class="hidden-xs">码佣总额</th>
             <th class="hidden-xs">打赏金额</th>
-            {{--@if($input['type']==1)--}}
             <th class="hidden-xs">操作</th>
-            {{--@endif--}}
         </tr>
         </thead>
         <tbody>
         @foreach($list as $info)
             <tr>
                 <td class="hidden-xs">全部</td>
-                <td class="hidden-xs">{{$info->nickname}}</td>
-                <td class="hidden-xs">{{$info->account}}</td>
-                <td class="hidden-xs">{{$info->balance/100}}</td>
-                <td class="hidden-xs">{{$info->count}}</td>
-                <td class="hidden-xs">{{$info->betMoney/100}}</td>
-                <td class="hidden-xs">{{$info->code/100}}</td>
-                <td class="hidden-xs">{{$info->getMoney/100}}</td>
-                <td class="hidden-xs">0.00</td>
-                <td class="hidden-xs">{{$info->code/100 * 0.009}}</td>
-                <td class="hidden-xs">{{$info->reward/100}}</td>
+                <td class="hidden-xs">{{$info['nickname']}}</td>
+                <td class="hidden-xs">{{$info['account']}}</td>
+                <td class="hidden-xs">{{number_format($info['balance'],2)}}</td>
+                <td class="hidden-xs">{{$info['betNum']}}</td>
+                <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['getMoney']/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        -
+                    @else
+                        {{number_format($info['feeMoney']/100,2)}}
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        -
+                    @else
+                        {{number_format($info['betMoney']/100 * 0.009,2)}}
+                    @endif
+                </td>
+                <td class="hidden-xs">{{number_format($info['reward']/100,2)}}</td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button class="layui-btn layui-btn-small dayInfo" data-id="{{$info->user_id}}" data-name="{{$info->nickname}}" data-desc="详情"><i class="layui-icon">详情</i></button>
+                        <button class="layui-btn layui-btn-xs dayInfo" data-id="{{$info->user_id}}" data-name="{{$info->nickname}}" data-desc="详情"><i class="layui-icon">详情</i></button>
                     </div>
                 </td>
             </tr>
         @endforeach
         @if(count($list)==0)
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="12" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
     <div class="page-wrap">
-        <div id="demo1"></div>
+        <div id="demo"></div>
     </div>
 @endsection
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
-            var pages={{$pages}};
-            var curr = {{$curr}};
+            var count = {{$list->total()}};
+            var curr = {{$list->currentPage()}};
+            var limit = {{$limit}};
             var url = "";
-            laypage({
-                cont: 'demo1'
-                ,pages: pages //总页数
+            //分页
+            laypage.render({
+                elem: 'demo'
+                ,count: count
                 ,curr:curr
-                ,groups: 5 //连续显示分页数
-                ,jump:function (obj,first) {
+                ,limit:limit
+                ,limits:[10,50,100,150]
+                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                ,jump: function(obj,first){
                     if(url.indexOf("?") >= 0){
-                        url = url.split("?")[0] + "?pageNum=" + obj.curr + "&" + $('form').serialize();
+                        url = url.split("?")[0] + "?page=" + obj.curr + "&limit="+ obj.limit + "&" +$("form").serialize();
                     }else{
-                        url = url + "?pageNum=" + obj.curr;
+                        url = url + "?page=" + obj.curr + "&limit="+obj.limit;
                     }
                     if (!first){
                         location.href = url;
                     }
                 }
             });
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             //今天
             $("#today").click(function () {
-                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
-                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
-                $("input[name='begin']").val(formDate(startDate))
-                $("input[name='end']").val(formDate(endDate))
+                var startDate = new Date();
+                $("input[name='begin']").val(formatDate(startDate))
+                $("input[name='end']").val(formatDate(startDate))
             });
             //昨天
             $("#yesterday").click(function () {
                 var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
-                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
-                $("input[name='begin']").val(formDate(startDate))
-                $("input[name='end']").val(formDate(endDate))
+                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + (24*60*60*1000 -1));
+                $("#begin").val(formatDate(startDate))
+                $("#end").val(formatDate(endDate))
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');

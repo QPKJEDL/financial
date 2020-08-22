@@ -1,13 +1,13 @@
 @section('title', '台桌输赢情况')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{$input['end'] or ''}}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" id="end" value="{{$input['end'] or ''}}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <select name="desk_id">
@@ -43,12 +43,15 @@
         <input type="text" lay-verify="" value="{{$input['orderSn'] or ''}}" name="orderSn" placeholder="注单号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
+        <input type="text" lay-verify value="{{$input['account'] or ''}}" name="account" placeholder="多个会员账号用英文版逗号隔开" autocomplete="off" class="layui-input"/>
+    </div>
+    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -112,11 +115,11 @@
                 <td class="hidden-xs" style="font-size: 1px;">{{$info->boot_num}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{$info->pave_num}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{$info->user['nickname']}}[{{$info->user['account']}}]</td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info->bill['bet_before']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_before']/100,2)}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">
-                    <button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-small layui-btn-normal result">查看结果</button>
+                    <button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-xs layui-btn-normal result">查看结果</button>
                 </td>
-                <td class="hidden-xs" style="font-size: 1px;">{{$info->bill['bet_after']/100}}</td>
+                <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_after']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info->status==2)
                         -
@@ -149,38 +152,42 @@
                         -
                     @endif
                 </td>
-                <td class="hidden-xs">{{$info->money/100}}</td>
-                <td class="hidden-xs">{{$info->money/100}}</td>
-                <td class="hidden-xs">{{$info->get_money/100}}</td>
+                <td class="hidden-xs">{{number_format($info->money/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info->money/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info->get_money/100,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info->status==1)
-                        @if($info->game_type==1)
-                            {{$info->user['fee']['baccarat']}}
-                        @elseif($info->game_type==2)
-                            {{$info->user['fee']['dragonTiger']}}
-                        @elseif($info->game_type==3)
-                            {{$info->user['fee']['niuniu']}}
-                        @elseif($info->game_type==4)
-                            {{$info->user['fee']['sangong']}}
-                        @elseif($info->game_type==5)
-                            {{$info->user['fee']['A89']}}
-                        @endif
-                    @else
+                    @if($info->user['user_type']==1)
                         -
+                    @else
+                        @if($info->status==1)
+                            @if($info->game_type==1)
+                                {{$info->user['fee']['baccarat']}}
+                            @elseif($info->game_type==2)
+                                {{$info->user['fee']['dragonTiger']}}
+                            @elseif($info->game_type==3)
+                                {{$info->user['fee']['niuniu']}}
+                            @elseif($info->game_type==4)
+                                {{$info->user['fee']['sangong']}}
+                            @elseif($info->game_type==5)
+                                {{$info->user['fee']['A89']}}
+                            @endif
+                        @else
+                            -
+                        @endif
                     @endif
                 </td>
                 <td class="hidden-xs">
                     @if($info->status==1)
                         @if($info->game_type==1)
-                            {{($info->money/100)*($info->user['fee']['baccarat']/100)}}
+                            {{number_format(($info->money/100)*($info->user['fee']['baccarat']/100),2)}}
                         @elseif($info->game_type==2)
-                            {{($info->money/100)*($info->user['fee']['dragonTiger']/100)}}
+                            {{number_format(($info->money/100)*($info->user['fee']['dragonTiger']/100),2)}}
                         @elseif($info->game_type==3)
-                            {{($info->money/100)*($info->user['fee']['niuniu']/100)}}
+                            {{number_format(($info->money/100)*($info->user['fee']['niuniu']/100),2)}}
                         @elseif($info->game_type==4)
-                            {{($info->money/100)*($info->user['fee']['sangong']/100)}}
+                            {{number_format(($info->money/100)*($info->user['fee']['sangong']/100),2)}}
                         @elseif($info->game_type==5)
-                            {{($info->money/100)*($info->user['fee']['A89']/100)}}
+                            {{number_format(($info->money/100)*($info->user['fee']['A89']/100),2)}}
                         @endif
                     @else
                         0.00
@@ -200,7 +207,7 @@
             </tr>
         @endforeach
         @if(count($list)==0)
-            <tr><td colspan="18" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="17" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
@@ -211,33 +218,39 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             var pages = {{$pages}};
             var curr = {{$curr}};
+            var limit = {{$limit}};
             var url = "";
-            laypage({
-                cont: 'demo1'
-                ,pages: pages //总页数
+            laypage.render({
+                elem:"demo1"
+                ,count: pages
                 ,curr:curr
-                ,groups: 5 //连续显示分页数
-                ,jump:function (obj,first) {
+                ,limit:limit
+                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                ,jump: function(obj,first){
                     if(url.indexOf("?") >= 0){
-                        url = url.split("?")[0] + "?pageNum=" + obj.curr + "&" +$("form").serialize();
+                        url = url.split("?")[0] + "?pageNum=" + obj.curr + "&limit="+ obj.limit + "&" +$("form").serialize();
                     }else{
-                        url = url + "?pageNum=" + obj.curr;
+                        url = url + "?pageNum=" + obj.curr + "&limit="+obj.limit;
                     }
                     if (!first){
                         location.href = url;
                     }
-                    //console.log(window.location.href);
                 }
             });
-            laydate({istoday: true});
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
                 $("select[name='desk_id']").val('');

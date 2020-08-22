@@ -1,26 +1,46 @@
 @section('title', '会员充值提现')
 @section('content')
-
+    <input type="hidden" id="nickname" value="{{$user['account']}}"/>
+    <input type="hidden" id="status" value="1">
     <div class="layui-form-item">
         <label class="layui-form-label">账户余额：</label>
         <div class="layui-input-inline">
-            <label id="userB">{{$info['balance']/100}}</label>
+            <label id="userB">{{number_format($info['balance']/100,2)}}</label>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <input type="radio" name="type" value="1" title="充值" lay-filter="type" checked="">
+            <input type="radio" name="type" value="2" title="提现" lay-filter="type">
+        </div>
+    </div>
+    <div class="layui-form-item" id="payType">
+        <label class="layui-form-label">充值类型：</label>
+        <div class="layui-input-block">
+            <input type="radio" name="payType" value="1" title="到款" checked="">
+            <input type="radio" name="payType" value="2" title="签单">
+            <input type="radio" name="payType" value="3" title="移分">
+            <input type="radio" name="payType" value="4" title="按比例">
+            <input type="radio" name="payType" value="5" title="支付宝">
+            <input type="radio" name="payType" value="6" title="微信">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">金额：</label>
         <div class="layui-input-inline">
-            <input type="text" name="balance" lay-verify="balance" style="width: 150px;" pattern="\d" placeholder="金额" autocomplete="off" class="layui-input">
+            <input type="number" name="balance" lay-verify="balance" style="width: 150px;" pattern="\d" placeholder="金额" autocomplete="off" class="layui-input">
         </div>
         <div class="layui-form-mid"><h4 id="h4" style="color: red;"></h4></div>
     </div>
-    <input type="hidden" name="type" value="{{$type}}">
+    <div class="layui-form-item">
+        <div class="layui-form-mid layui-word-aux" style="left: 100px;color: blue;">您的可用余额为：{{number_format($balance/100,2)}}</div>
+    </div>
 @endsection
 @section('id',$id)
 @section('js')
     <script>
         layui.use(['form','jquery','layer'], function() {
-            var form = layui.form()
+            var form = layui.form
                 ,layer = layui.layer
                 ,$ = layui.jquery;
             form.render();
@@ -37,9 +57,11 @@
                 var payType = $("#payType");
                 if(data.value==1){
                     payType.show();
+
                 }else{
                     payType.hide();
                 }
+                $("#status").val(data.value)
             });
             $("input[name='balance']").on('keyup',function(){
                 var money = $(this).val();
@@ -47,7 +69,7 @@
                 $('#h4').html(str);
             });
             form.on('submit(formDemo)', function(data) {
-                $.ajax({
+                /*$.ajax({
                     url:"{{url('/admin/hquser/saveTopCode')}}",
                     data:$('form').serialize(),
                     type:'post',
@@ -56,7 +78,7 @@
                         if(res.status == 1){
                             layer.msg(res.msg,{icon:6});
                             var index = parent.layer.getFrameIndex(window.name);
-                            setTimeout('parent.layer.close('+index+')',2000);
+                            setTimeout('parent.layer.close('+index+')',1000);
                         }else{
                             layer.msg(res.msg,{shift: 6,icon:5});
                         }
@@ -64,7 +86,74 @@
                     error : function(XMLHttpRequest, textStatus, errorThrown) {
                         layer.msg('网络失败', {time: 1000});
                     }
-                });
+                });*/
+                var v = $("#status").val();
+                var userName = $("#nickname").val();
+                if(v==1){
+                    layer.confirm('您确定给会员['+v+']充值'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
+                        btn:['确定','取消']//按钮
+                    },function () {
+                        $.ajax({
+                            url:"{{url('/admin/hquser/saveTopCode')}}",
+                            data:$('form').serialize(),
+                            type:'post',
+                            dataType:'json',
+                            success:function(res){
+                                if(res.status == 1){
+                                    layer.msg(res.msg,{icon:6});
+                                    var index = layer.open({
+                                        type:2,
+                                        title:$("#nickname").val()+'的充值提现记录',
+                                        shadeClose:true,
+                                        offset:"10%",
+                                        area:['60%','80%'],
+                                        content:'/admin/getRecordByUserId/'+$("input[name='id']").val()
+                                    });
+                                    layer.full(index);
+                                }else{
+                                    layer.msg(res.msg,{shift: 6,icon:5});
+                                }
+                            },
+                            error : function(XMLHttpRequest, textStatus, errorThrown) {
+                                layer.msg('网络失败', {time: 1000});
+                            }
+                        });
+                    },function () {
+                        layer.msg('您取消了对该会员的充值');
+                    });
+                }else{
+                    layer.confirm('您确定给会员['+v+']提现'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
+                        btn:['确定','取消']//按钮
+                    },function () {
+                        $.ajax({
+                            url:"{{url('/admin/hquser/saveTopCode')}}",
+                            data:$('form').serialize(),
+                            type:'post',
+                            dataType:'json',
+                            success:function(res){
+                                if(res.status == 1){
+                                    layer.msg(res.msg,{icon:6});
+                                    var index =  layer.open({
+                                        type:2,
+                                        title:$("#nickname").val()+'的充值提现记录',
+                                        shadeClose:true,
+                                        offset:"10%",
+                                        area:['60%','80%'],
+                                        content:'/admin/getRecordByUserId/'+$("input[name='id']").val()
+                                    });
+                                    layer.full(index);
+                                }else{
+                                    layer.msg(res.msg,{shift: 6,icon:5});
+                                }
+                            },
+                            error : function(XMLHttpRequest, textStatus, errorThrown) {
+                                layer.msg('网络失败', {time: 1000});
+                            }
+                        });
+                    },function () {
+                        layer.msg('您取消了对该会员的提现');
+                    });
+                }
                 return false;
             });
             function DX(n) {

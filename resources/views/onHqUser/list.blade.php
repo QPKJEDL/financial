@@ -1,7 +1,7 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">
@@ -15,7 +15,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -58,9 +58,9 @@
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    <button class="layui-btn layui-btn-small layui-btn-normal code" data-id="{{$info['user_id']}}"><i class="layui-icon">上分</i></button>
-                    <button class="layui-btn layui-btn-small layui-btn-normal underCode" data-id="{{$info['user_id']}}"><i class="layui-icon">下分</i></button>
-                    <button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/hquser/'.$info['user_id'])}}"><i class="layui-icon">删除</i></button>
+                    <button class="layui-btn layui-btn-xs layui-btn-normal code" data-id="{{$info['user_id']}}"><i class="layui-icon">上分</i></button>
+                    <button class="layui-btn layui-btn-xs layui-btn-normal underCode" data-id="{{$info['user_id']}}"><i class="layui-icon">下分</i></button>
+                    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/hquser/'.$info['user_id'])}}"><i class="layui-icon">删除</i></button>
                 </td>
             </tr>
         @endforeach

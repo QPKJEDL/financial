@@ -1,13 +1,13 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始时间" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" id="begin" name="begin" placeholder="开始时间" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束时间" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" id="end" name="end" placeholder="结束时间" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <select name="deskId">
@@ -24,10 +24,10 @@
         <input type="text" lay-verify="live_acc" value="{{ $input['live_acc'] or '' }}" name="live_acc" placeholder="主播账号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="boot_num" value="{{ $input['boot_num'] or '' }}" name="boot_num" placeholder="靴" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="boot_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{ $input['boot_num'] or '' }}" name="boot_num" placeholder="靴" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="pave_num" value="{{ $input['pave_num'] or '' }}" name="pave_num" placeholder="铺" autocomplete="off" class="layui-input">
+        <input type="text" lay-verify="pave_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{ $input['pave_num'] or '' }}" name="pave_num" placeholder="铺" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
@@ -35,7 +35,8 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <label style="position: relative;left: 90%;">总金额：{{number_format($money/100,2)}}</label>
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -69,7 +70,7 @@
                 <td class="hidden-xs">{{$info['pave_num']}}</td>
                 <td class="hidden-xs">{{$info['liveAcc']}}</td>
                 <td class="hidden-xs">{{$info['liveName']}}</td>
-                <td class="hidden-xs">{{$info['money']/100}}</td>
+                <td class="hidden-xs">{{number_format($info['money']/100,2)}}</td>
                 <td class="hidden-xs">{{$info['creatime']}}</td>
             </tr>
         @endforeach
@@ -79,26 +80,58 @@
         </tbody>
     </table>
     <div class="page-wrap">
-        {{$list->render()}}
+        <div id="demo"></div>
     </div>
 @endsection
 @section('js')
     <script>
-        layui.use(['form', 'jquery','laydate', 'layer'], function() {
-            var form = layui.form(),
+        layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
-                layer = layui.layer
+                layer = layui.layer,
+                laypage = layui.laypage
             ;
-            laydate({istoday: true});
+            var count = {{$list->total()}};
+            var curr = {{$list->currentPage()}};
+            var limit = {{$limit}};
+            var url = "";
+            //分页
+            laypage.render({
+                elem: 'demo'
+                ,count: count
+                ,curr:curr
+                ,limit:limit
+                ,limits:[10,50,100,150]
+                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                ,jump: function(obj,first){
+                    if(url.indexOf("?") >= 0){
+                        url = url.split("?")[0] + "?page=" + obj.curr + "&limit="+ obj.limit + "&" +$("form").serialize();
+                    }else{
+                        url = url + "?page=" + obj.curr + "&limit="+obj.limit;
+                    }
+                    if (!first){
+                        location.href = url;
+                    }
+                }
+            });
+            //初始化laydate
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("input[name='end']").val('');
                 $("select[name='desk_id']").val(''); 
-                $("input[name='boot']").val('');
+                $("input[name='account']").val('');
+                $("input[name='live_acc']").val('');
+                $("input[name='boot_num']").val('');
+                $("input[name='pave_num']").val('');
             });
-            form.render();
             form.on('submit(formDemo)', function(data) {
-                console.log(data);
             });
         });
     </script>

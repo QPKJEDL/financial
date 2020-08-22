@@ -1,13 +1,13 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" id="begin" placeholder="开始日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" id="begin" placeholder="开始日期" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['end'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     {{--@if($input['type']==1)--}}
     <div class="layui-inline">
@@ -30,7 +30,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -75,7 +75,7 @@
             </tr>
         @endforeach
         @if(count($list)==0)
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="10" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
@@ -86,12 +86,18 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             var pages={{$pages}};
             var curr = {{$curr}};
             var url = "";

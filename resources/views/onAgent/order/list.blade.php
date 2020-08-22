@@ -1,13 +1,13 @@
 @section('title', '台桌输赢情况')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this,format:'YYYY-MM-DD hh:mm:ss',istime:true, festival: true,min:'{{$min}}'})" value="{{$input['end'] or ''}}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" id="end" value="{{$input['end'] or ''}}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <select name="desk_id">
@@ -48,7 +48,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -173,12 +173,18 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer','laypage'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             var pages = {{$pages}};
 
             var curr = {{$curr}};

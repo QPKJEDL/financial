@@ -1,13 +1,13 @@
 @section('title', '会员列表')
 @section('header')
     <div class="layui-inline">
-        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#x1002;</i></button>
+        <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" onclick="layui.laydate({elem: this, festival: true,min:'{{$min}}'})" value="{{ $input['end'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束日期" id="end" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
@@ -27,7 +27,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-even lay-skin="nob">
+    <table class="layui-table" lay-size="sm">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -82,8 +82,8 @@
                 </td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button type="button" class="layui-btn layui-btn-small agentDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
-                        <button type="button" class="layui-btn layui-btn-small userDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs agentDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs userDayInfo" data-id="{{$info['id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
                     </div>
                 </td>
             </tr>
@@ -100,12 +100,17 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer
             ;
-            laydate({istoday: true});
+            laydate.render({
+                elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
+            });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
                 $("select[name='desk_id']").val(''); 

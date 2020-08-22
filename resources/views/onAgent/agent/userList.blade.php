@@ -89,7 +89,7 @@
 @section('js')
     <script>
         layui.use(['form', 'jquery','laydate', 'layer','element'], function() {
-            var form = layui.form(),
+            var form = layui.form,
                 $ = layui.jquery,
                 laydate = layui.laydate,
                 layer = layui.layer,
