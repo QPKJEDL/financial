@@ -9,10 +9,14 @@
 namespace App\Http\Controllers\Admin;
 use App\Models\Admin;
 use App\Models\Adminrole;
+use App\Models\Agent;
 use App\Models\AgentRoleMenu;
 use App\Models\Buscount;
+use App\Models\HqUser;
 use App\Models\Menu;
 use App\Models\Order;
+use App\Models\Role;
+use App\Models\SysBalance;
 use Illuminate\Support\Facades\Auth;
 use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
@@ -25,10 +29,28 @@ class HomeController extends BaseController
     /**
      * 后台首页
      */
-    public function index() {
-        $menu = new Admin();
-        //dump($menu->menus());
-        return view('admin.index',['menus'=>$this->getUserMenu(),'mid'=>$menu->getMenuId(),'parent_id'=>$menu->getParentMenuId()]);
+    public function index(Request $request) {
+        //代理总数
+        $agentCount = Agent::where('del_flag','=',0)->count('id');
+        //今日新增代理
+        $toDayAgentCount = Agent::where('del_flag','=',0)->whereDate('created_at',date('Y-m-d',time()))->count('id');
+        //会员总数
+        $userCount = HqUser::where('del_flag','=',0)->count('user_id');
+        //今日新增会员
+        $begin = strtotime(date('Y-m-d',time()));
+        $end = strtotime('+1day',$begin)-1;
+        $toDayUserCount = HqUser::where('del_flag','=',0)->whereBetween('creatime',[$begin,$end])->count('user_id');
+
+        //当前用户信息
+        $roleId = Adminrole::where('user_id','=',Auth::id())->first()['role_id'];
+        //获取角色名称
+        $roleName = Role::where('id','=',$roleId)->first()['display_name'];
+        $arr = array();
+        $arr['roleName']=$roleName;
+        $arr['time']=date('Y-m-d H:i:s',time());
+        $arr['ip']=$request->ip();
+        $arr['balance']=SysBalance::getBalance();
+        return view('common.home',['arr'=>$arr,'agentCount'=>$agentCount,'toDayAgentCount'=>$toDayAgentCount,'userCount'=>$userCount,'toDayUserCount'=>$toDayUserCount]);
     }
 
     public function getUserMenu()
