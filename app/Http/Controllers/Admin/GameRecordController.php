@@ -17,6 +17,7 @@ class GameRecordController extends Controller
             $tableName = date('Ymd',strtotime($request->input('begin')));
         }else{
             $tableName = date('Ymd',time());
+            $request->offsetSet('begin',date('Y-m-d',time()));
         }
         $map = array();
         if(true==$request->has('desk_id')){
@@ -25,9 +26,21 @@ class GameRecordController extends Controller
         if(true==$request->has('boot')){
             $map['boot_num']=$request->input('boot');
         }
+        if (true==$request->has('pave'))
+        {
+            $map['pave_num']=$request->input('pave_num');
+        }
         $gameRecord = new GameRecord();
         $gameRecord->setTable('game_record_'.$tableName);
-        $data = $gameRecord->where($map)->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $gameRecord->where($map)->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
             $data[$key]['desk']=Desk::getDeskInfo($value['desk_id']);
             $data[$key]['creatime']=date('Y-m-d H:m:s',$value['creatime']);
@@ -60,8 +73,7 @@ class GameRecordController extends Controller
                 }
             }
         }
-        $min=config('admin.min_date');
-        return view('gameRecord.list',['list'=>$data,'min'=>$min,'desk'=>Desk::getDeskList(),'input'=>$request->all()]);
+        return view('gameRecord.list',['list'=>$data,'limit'=>$limit,'desk'=>Desk::getDeskList(),'input'=>$request->all()]);
     }
 
     /**
