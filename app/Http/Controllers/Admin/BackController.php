@@ -31,7 +31,15 @@ class BackController extends Controller
         $sql->leftJoin('business','business.id','=','user_and_agent_back.create_by')
             ->select('user_and_agent_back.id','user_and_agent_back.user_id','user_and_agent_back.user_type','user_and_agent_back.status','user_and_agent_back.remark',
                 'user_and_agent_back.create_time','business.username','business.nickname');
-        $data = $sql->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             $data[$key]['create_time']=date('Y-m-d H:i:s',$datum['create_time']);
@@ -44,7 +52,7 @@ class BackController extends Controller
                 $data[$key]['user']=$datum['user_id']?HqUser::find($datum['user_id']):[];
             }
         }
-        return view('userBack.list',['list'=>$data,'input'=>$request->all()]);
+        return view('userBack.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
     }
 
     /**
