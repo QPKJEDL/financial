@@ -63,7 +63,7 @@ class OnAgentListController extends Controller
 
     public function store(StoreRequest $request)
     {
-        $roleId = $request->input('user_role');
+        $roleId = 37;
         $data = $request->all();
         $newPwd = $data['pwd_confirmation'];
         $data['password']=$data['pwd'];
