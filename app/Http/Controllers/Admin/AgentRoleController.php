@@ -7,6 +7,10 @@ use App\Http\Requests\StoreRequest;
 use App\Models\AgentMenu;
 use App\Models\AgentRole;
 use App\Models\AgentRoleMenu;
+use App\Models\RoleMenu;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\View\View;
 
 class AgentRoleController extends Controller
 {
@@ -16,9 +20,28 @@ class AgentRoleController extends Controller
     public function index(){
         return view('agentRole.list',['list'=>AgentRole::get()->toArray()]);
     }
+    public function store(StoreRequest $request)
+    {
+        $data = $request->all();
+        $menus = $request->input('menus');
+        $menusData = json_decode($menus,true);
+        unset($data['id']);
+        unset($data['menus']);
+        unset($data['_token']);
+        $data['created_at']=date('Y-m-d H:i:s',time());
+        $count = AgentRole::insertGetId($data);
+        if ($count){
+            $this->insertAgentRole($menusData,$count);
+            return ['msg'=>'添加成功','status'=>1,'id'=>$count];
+        }else{
+            return ['msg'=>'添加失败','status'=>0];
+        }
+    }
 
     /**
      * 角色编辑
+     * @param int $id
+     * @return Factory|Application|View
      */
     public function edit($id=0)
     {
@@ -65,7 +88,7 @@ class AgentRoleController extends Controller
     }
 
     public function deleteAgentRoleMenu($roleId){
-        AgentRoleMenu::where('role_id','=',$roleId)->delete();
+        RoleMenu::where('role_id','=',$roleId)->delete();
     }
 
     public function insertAgentRole($data,$roleId){
@@ -73,7 +96,7 @@ class AgentRoleController extends Controller
             if (count($data)>0){
                 foreach ($data as $key=>$value)
                 {
-                    AgentRoleMenu::insert(['role_id'=>$roleId,'menu_id'=>$data[$key]['id']]);
+                    RoleMenu::insert(['role_id'=>$roleId,'menu_id'=>$data[$key]['id']]);
                 }
             }
         }
