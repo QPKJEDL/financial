@@ -74,8 +74,10 @@ class HqUserController extends Controller
      * @return Czrecord|\Illuminate\Database\Eloquent\Model|null
      */
     public function getUserCzCord($userId){
-        $data = Czrecord::where('user_id',$userId)->orderBy('creatime','desc')->first();
-        return $data;
+        $bill = new Billflow();
+        $bill->setTable('user_billflow_'.date('Ymd',time()));
+        $data = $bill->where('user_id','=',$userId)->orderBy('creatime','desc')->where('status','=',1)->first();
+        return $data['score'];
     }
 
     /**

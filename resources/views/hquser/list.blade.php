@@ -77,7 +77,7 @@
                         @endif
                     @endif
                 </td>
-                <td class="hidden-xs">{{number_format($info['cz']['score']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['cz']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['userAccount']['balance']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['user_type']==1)
