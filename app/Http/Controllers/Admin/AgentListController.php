@@ -471,7 +471,7 @@ class AgentListController extends Controller
                     if ($bool){
                         $count = Agent::where('id','=',$id)->increment('balance',(int)$data['balance']);
                         if ($count){
-                            $result = $this->insertAgentBillFlow($id,0,(int)$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],Auth::user()['username']."点击充值");
+                            $result = $this->insertAgentBillFlow($id,0,(int)$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],Auth::user()['username']."[点击充值]");
                             if ($result){
                                 SysBalance::where('id','=',1)->decrement('balance',$data['balance']);
                                 DB::commit();
@@ -513,7 +513,7 @@ class AgentListController extends Controller
                         $this->unRedissLock($id);
                         return ['msg'=>'操作失败','status'=>0];
                     }
-                    $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],0,'财务后台手动下分');
+                    $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],0,Auth::user()['username'].'[点击提现]');
                     if (!$result)
                     {
                         DB::rollBack();
