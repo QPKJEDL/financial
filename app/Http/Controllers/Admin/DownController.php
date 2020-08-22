@@ -43,13 +43,34 @@ class DownController extends Controller
             }
             $sql->whereBetween('user_draw.creatime',[$time,$end]);
         }
-        $data = $sql->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$value){
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
             $data[$key]['agent']=$this->get_direct_agent($value['agent_id']);
         }
-        $min=config('admin.min_date');
-        return view('down.list',['list'=>$data,'input'=>$request->all(),'min'=>$min]);
+        return view('down.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
+    }
+
+    /**
+     * 获取未读消息
+     * @return array
+     */
+    public function getUnRead()
+    {
+        $data = Draw::query()->where('unread','=',0)->select('id')->get();
+        foreach ($data as $key=>$datum)
+        {
+            Draw::where('id','=',$datum['id'])->update(['unread'=>1]);
+        }
+        return ['status'=>1,'count'=>count($data)];
     }
 
     /**
@@ -60,20 +81,48 @@ class DownController extends Controller
     public function lockDataById(StoreRequest $request){
         $id = $request->input('id');
         $user = Auth::user();
-        $count = Draw::where('id','=',$id)->update(['lock_by'=>$user['username']]);
-        if ($count){
+        DB::beginTransaction();
+        try {
+            $info = Draw::where('id','=',$id)->lockForUpdate()->first();
+            if (!$info)
+            {
+                DB::rollBack();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            if ($info['status']==2)
+            {
+                DB::rollBack();
+                return ['msg'=>'当前数据已经不能被操作','status'=>0];
+            }
+            if ($info['lock_by']!="" && $info['lock_by']!=null)
+            {
+                DB::rollBack();
+                return ['msg'=>'当前数据已经不能被操作','status'=>0];
+            }
+            $count = Draw::where('id','=',$id)->update(['lock_by'=>$user['username'],'endtime'=>time()]);
+            if (!$count)
+            {
+                DB::rollBack();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            DB::commit();
             return ['msg'=>'操作成功','status'=>1];
-        }else{
+        }catch (\Exception $e){
+            DB::rollBack();
             return ['msg'=>'操作失败','status'=>0];
         }
     }
+
     /**
      * 确认数据
+     * @param StoreRequest $request
+     * @return array
      */
     public function approveData(StoreRequest $request){
         $id = $request->input('id');
         $count = Draw::where('id','=',$id)->update(['status'=>1,'endtime'=>time()]);
         if ($count){
+            DB::table('sys_balance')->where('id','=',1)->increment('balance',$count['money']);
             return ['msg'=>'确认成功','status'=>1];
         }else{
             return ['msg'=>'确认失败','status'=>0];
@@ -85,10 +134,10 @@ class DownController extends Controller
      * @return array
      */
     public function obsoleteData(StoreRequest $request){
-        $id = $request->input('id');
+        $id = (int)$request->input('id');
+        $reason = HttpFilter($request->input('reason'));
         $data['status']=2;
-        $user = Auth::user();
-        $data['lock_by']=$user['username'];
+        $data['reason']=HttpFilter($reason);
         $redisLock = $this->redissionLock($id);
         if ($redisLock){
             DB::beginTransaction();
