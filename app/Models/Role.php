@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class Role extends Model implements AdminRoleInterface
 {
     use AdminRoleTrait;
-    protected $table = 'admin_roles';
+    protected $table = 'business_roles';
     public function isAbleDel($roleid){
         return DB::table('admin_role_user')->where('role_id',$roleid)->get()->toArray()?true:false;
     }

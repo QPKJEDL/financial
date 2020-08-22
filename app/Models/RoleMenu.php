@@ -6,14 +6,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AgentRoleMenu extends Model
+class RoleMenu extends Model
 {
-    protected $table = "business_role_menu";
+    protected $table = "agent_role_menu";
 
     public $timestamps = false;
-
     public static function getInfo($roleId,$menuId){
-        $data = AgentRoleMenu::where('role_id','=',$roleId)->where('menu_id','=',$menuId)->first();
+        $data = RoleMenu::where('role_id','=',$roleId)->where('menu_id','=',$menuId)->first();
         return $data;
     }
 }
