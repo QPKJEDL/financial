@@ -19,18 +19,30 @@ class DelUserController extends Controller
         if (true==$request->has('account')){
             $map['user.account']=$request->input('account');
         }
+        if (true==$request->has('user_type'))
+        {
+            $map['user.user_type']=$request->input('user_type');
+        }
         $sql->leftJoin('user_account','user.user_id','=','user_account.user_id')
             ->select('user.*','user_account.balance')->where($map);
         if (true==$request->has('nickname')){
             $sql->where('user.nickname','like','%'.$request->input('nickname').'%');
         }
-        $data = $sql->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum){
             $data[$key]['fee']=json_decode($datum['fee'],true);
             $data[$key]['creatime']=date('Y-m-d H:i:s',$datum['creatime']);
             $data[$key]['cz']=$this->getUserCzCord($datum['user_id']);
         }
-        return view('deluser.list',['list'=>$data,'input'=>$request->all()]);
+        return view('deluser.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
     }
 
     /**
