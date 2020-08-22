@@ -471,7 +471,7 @@ class AgentListController extends Controller
                     if ($bool){
                         $count = Agent::where('id','=',$id)->increment('balance',(int)$data['balance']);
                         if ($count){
-                            $result = $this->insertAgentBillFlow($id,0,(int)$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],"财务后台直接充值");
+                            $result = $this->insertAgentBillFlow($id,0,(int)$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],$data['payType'],Auth::user()['username']."点击充值");
                             if ($result){
                                 SysBalance::where('id','=',1)->decrement('balance',$data['balance']);
                                 DB::commit();
