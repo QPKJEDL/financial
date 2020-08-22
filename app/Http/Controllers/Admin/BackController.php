@@ -21,11 +21,11 @@ class BackController extends Controller
         $map = array();
         if (true==$request->has('account'))
         {
-            $map['user_and_agent_back.account']=$request->input('account');
+            $map['user_and_agent_back.account']=HttpFilter($request->input('account'));
         }
         if (true==$request->has('user_type'))
         {
-            $map['user_and_agent_back.user_type']=$request->input('user_type');
+            $map['user_and_agent_back.user_type']=(int)$request->input('user_type');
         }
         $sql = UserAndAgentBack::where($map);
         $sql->leftJoin('business','business.id','=','user_and_agent_back.create_by')
@@ -33,7 +33,7 @@ class BackController extends Controller
                 'user_and_agent_back.create_time','business.username','business.nickname');
         if (true==$request->has('limit'))
         {
-            $limit = $request->input('limit');
+            $limit = (int)$request->input('limit');
         }
         else
         {
@@ -73,12 +73,12 @@ class BackController extends Controller
     public function store(StoreRequest $request)
     {
         $data = $request->all();
-        if ($data['user_type']==1)
+        if ((int)$data['user_type']==1)
         {
-            $info = Agent::where('username','=',$data['account'])->first();
+            $info = Agent::where('username','=',HttpFilter($data['account']))->first();
             if ($info)
             {
-                if (!UserAndAgentBack::where('user_id','=',$info['id'])->where('user_type','=',1)->where('status','=',$data['status'])->exists())
+                if (!UserAndAgentBack::where('user_id','=',$info['id'])->where('user_type','=',1)->where('status','=',(int)$data['status'])->exists())
                 {
                     DB::beginTransaction();
                     try {
