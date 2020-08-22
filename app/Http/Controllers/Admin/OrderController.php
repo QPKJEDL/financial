@@ -25,48 +25,23 @@ class OrderController extends Controller
         }else{
             $curr =1;
         }
-        //获取开始时间和结束时间
-        if (true==$request->has('begin')){
-            $begin = strtotime($request->input('begin'));
+        if (true==$request->has('begin'))
+        {
             $startDate = $request->input('begin');
-            if (true==$request->has('end')){
-                $endTime = strtotime($request->input('end'));
-                $endDate = $request->input('end');
-                $request->offsetSet('end',$request->input('end'));
-            }else{
-                $endTime = time();
-                $endDate = date('Y-m-d',$endTime);
-                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
-            }
+            $begin = strtotime($request->input('begin'));
         }else{
-            //获取上次维护完成时间
-            $start = Maintain::getAtLastOutDate();
-            $end = Maintain::getAtLastMaintainDate();
-            if ($start['create_time']!="" && $end['create_time']==""){
-                if ($start['create_time'] > $end['create_time']){   //如果最后一次维护完成时间大于最后一个得维护开始时间 那么默认找昨天得数据
-                    //获取昨天的开始和结束的时间戳
-                    $begin = $this->getYesterdayBeginTime();
-                    $endTime = $this->getYesterdayEndTime($begin);
-                    $startDate = date('Y-m-d',$begin);
-                    $endDate = date('Y-m-d',$endTime);
-                    $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
-                    $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
-                }else{
-                    $begin = $start['create_time'];
-                    $endTime = $end['create_time'];
-                    $startDate = date('Y-m-d',$start['create_time']);
-                    $endDate = date('Y-m-d',$end['create_time']);
-                    $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
-                    $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
-                }
-            }else{
-                $begin = $this->getYesterdayBeginTime();
-                $endTime = $this->getYesterdayEndTime($begin);
-                $startDate = date('Y-m-d',$begin);
-                $endDate = date('Y-m-d',$endTime);
-                $request->offsetSet('begin',date('Y-m-d H:i:s',$begin));
-                $request->offsetSet('end',date('Y-m-d H:i:s',$endTime));
-            }
+            $startDate = date('Y-m-d',time());
+            $begin = strtotime($startDate);
+            $request->offsetSet('begin',$startDate);
+        }
+        if (true==$request->has('end'))
+        {
+            $endDate = $request->input('end');
+            $endTime = strtotime('+1day',strtotime($endDate))-1;
+        }else{
+            $endDate = date('Y-m-d',time());
+            $endTime = strtotime('+1day',strtotime($endDate))-1;
+            $request->offsetSet('end',$endDate);
         }
         //获取到开始时间和结束时间的时间段数组
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
@@ -79,33 +54,106 @@ class OrderController extends Controller
                 }else{
                     $sql = $sql.' union all select * from hq_order_'.$dateArr[$i];
                 }
+                $sqlStr = '';
+                if (true==$request->has('account'))
+                {
+                    $account = explode(',',$request->input('account'));
+                    $uData = HqUser::query()->whereIn('account',$account)->select('user_id')->get();
+                    $str='';
+                    foreach ($uData as $key=>$datum)
+                    {
+                        if ($str=="" && $str==null)
+                        {
+                            $str = $datum['user_id'];
+                        }
+                        else
+                        {
+                            $str=$str.','.$datum['user_id'];
+                        }
+                    }
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where user_id IN ('.$str.')';
+                    }
+                }
                 if (true==$request->has('desk_id')){
-                    $sql = $sql.' and desk_id ='.$request->input('desk_id');
+                    if ($sqlStr=='') {
+                        $sqlStr = ' where desk_id=' . $request->input('desk_id');
+                    }
+                    else
+                    {
+                        $sqlStr = $sqlStr.' and desk_id ='.$request->input('desk_id');
+                    }
                 }
                 if (true==$request->has('type')){
-                    $sql = $sql.' and game_type='.$request->input('type');
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where game_type='.$request->input('type');
+                    }
+                    else
+                    {
+                        $sqlStr = $sqlStr.' and game_type='.$request->input('type');
+                    }
                 }
                 if (true==$request->has('status')){
-                    $sql = $sql.' and status='.$request->input('status');
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where status='.$request->input('status');
+                    }
+                    else
+                    {
+                        $sqlStr = $sqlStr.' and status='.$request->input('status');
+                    }
                 }
                 if (true==$request->has('boot_num')){
-                    $sql = $sql.' and boot_num='.$request->input('boot_num');
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where boot_num='.$request->input('boot_num');
+                    }
+                    else
+                    {
+                        $sqlStr = $sqlStr.' and boot_num='.$request->input('boot_num');
+                    }
                 }
                 if (true==$request->has('pave_num')){
-                    $sql = $sql.' and pave_num='.$request->input('pave_num');
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where pave_num='.$request->input('pave_num');
+                    }
+                    else
+                    {
+                        $sqlStr = $sqlStr.' and pave_num='.$request->input('pave_num');
+                    }
                 }
                 if (true==$request->has('orderSn')){
-                    $sql = $sql.' and order_sn='.$request->input('orderSn');
+                    if ($sqlStr=='')
+                    {
+                        $sqlStr = ' where order_sn='.$request->input('orderSn');
+                    }else{
+                        $sqlStr = $sqlStr.' and order_sn='.$request->input('orderSn');
+                    }
+                }
+                if ($sqlStr!='')
+                {
+                    $sql = $sql.$sqlStr;
                 }
             }
         }
         if ($sql!="" || $sql!=null){
-            $dataSql = 'select t.* from ('.$sql.') t 
+            if (true==$request->has('limit'))
+            {
+                $limit = $request->input('limit');
+            }
+            else
+            {
+                $limit = 10;
+            }
+            $dataSql = 'select t.*,u.user_type from ('.$sql.') t 
             left join hq_user u on u.user_id = t.user_id
-            where u.user_type =2 and t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * 10).',10';
+            where t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * $limit).','.$limit;
             $countSql = 'select t.* from ('.$sql.') t
              left join hq_user u on u.user_id = t.user_id
-             where u.user_type=2 and t.creatime between '.$begin.' and '.$endTime;
+             where t.creatime between '.$begin.' and '.$endTime;
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
@@ -133,16 +181,16 @@ class OrderController extends Controller
                 }
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
-            $min = config('admin.min_date');
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }else{
             $data = array();
             $count= array();
-            $min = config('admin.min_date');
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>$min,'pages'=>ceil(count($count)/10)]);
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }
     }
     public function getOrderListByUserId($id,$begin,$end,Request $request){
+        $request->offsetSet('begin',$begin);
+        $request->offsetSet('end',$end);
         if (true==$request->has('pageNum')){
             $curr = $request->input('pageNum');
         }else{
@@ -179,7 +227,15 @@ class OrderController extends Controller
             }
         }
         if ($sql!='' || $sql!=null){
-            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' limit '.(($curr-1) * 10).',10';
+            if (true==$request->has('limit'))
+            {
+                $limit = $request->input('limit');
+            }
+            else
+            {
+                $limit = 10;
+            }
+            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' limit '.(($curr-1) * $limit).','.$limit;
             $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end);
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
@@ -208,10 +264,11 @@ class OrderController extends Controller
                 }
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>ceil(count($count)/10)]);
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
         }else{
             $data=array();
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>1]);
+            $count= array();
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
         }
     }
 
