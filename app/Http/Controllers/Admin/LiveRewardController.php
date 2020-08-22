@@ -36,18 +36,29 @@ class LiveRewardController extends Controller
             ->leftJoin('user as u2','u2.user_id','=','live_user_id')
             ->leftJoin('desk','desk.id','=','live_reward.desk_id')
             ->select('live_reward.*','u1.nickname as userName','u1.agent_id','u1.account as userAcc','u2.nickname as liveName','u2.account as liveAcc','desk.desk_name');
+        $request->offsetSet('begin',date('Y-m-d',time()));
+        $request->offsetSet('end',date('Y-m-d',time()));
         if (true==$request->has('begin') && true==$request->has('end'))
         {
             $time = strtotime($request->input('begin'));
             $end = strtotime('+1day',strtotime($request->input('end')))-1;
             $sql->whereBetween('live_reward.creatime',[$time,$end]);
         }
-        $data = $sql->where($map)->paginate(10)->appends($request->all());
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = $sql->where($map)->paginate($limit)->appends($request->all());
+        $money = $sql->where($map)->sum('money');
         foreach ($data as $key=>$value){
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
             $data[$key]['agent']=$this->get_direct_agent($value['agent_id']);
         }
-        return view('live.list',['list'=>$data,'desk'=>Desk::getDeskList(),'min'=>config('admin.min_date'),'input'=>$request->all()]);
+        return view('live.list',['list'=>$data,'money'=>$money,'desk'=>Desk::getDeskList(),'limit'=>$limit,'input'=>$request->all()]);
     }
 
     /**
