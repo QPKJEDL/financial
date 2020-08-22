@@ -35,11 +35,11 @@ class DepositAndWithController extends Controller
         }
         if (true==$request->has('account'))
         {
-            $map['user.account']=$request->input('account');
+            $map['user.account']=HttpFilter($request->input('account'));
         }
         if (true==$request->has('user_type'))
         {
-            $map['user.user_type']=$request->input('user_type');
+            $map['user.user_type']=HttpFilter($request->input('user_type'));
         }
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
         //获取第一天的数据
@@ -57,7 +57,7 @@ class DepositAndWithController extends Controller
         }
         if (true==$request->has('limit'))
         {
-            $limit = $request->input('limit');
+            $limit = (int)$request->input('limit');
         }
         else
         {
