@@ -3,56 +3,151 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Billflow;
 use App\Models\Draw;
+use App\Models\HqUser;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DepositAndWithController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $map = array();
-        $draw = Draw::query();
-        $sql = $draw->leftJoin('user','user.user_id','=','user_draw.user_id')
-            ->leftJoin('agent_users','agent_users.id','=','user.agent_id')
-            ->select('user_draw.creatime','user.nickname','user.account','user.agent_id','agent_users.username','agent_users.nickname as agentName','user_draw.bet_before','user_draw.money','user_draw.bet_after')->where($map);
-        if (true==$request->has('begin')){
-            $begin = strtotime($request->input('begin'));
-            if (true==$request->has('end')){
-                $end = strtotime('+1day',strtotime($request->input('end')))-1;
-            }else{
-                $end = strtotime('+1day',time())-1;
-            }
-            $sql->whereBetween('user_draw.creatime',[$begin,$end]);
+        if (true==$request->has('begin'))
+        {
+            $startDate = $request->input('begin');
         }
-        if (true==$request->has('account')){
-            $sql->where('user.account','=',$request->input('account'));
+        else
+        {
+            $startDate = date('Y-m-d',time());
+            $request->offsetSet('begin',date('Y-m-d',time()));
         }
-        $sql->orderBy('user_draw.creatime','desc');
-        if (true==$request->input('excel') && true==$request->has('excel')){
-            $excel = $sql->get()->toArray();
-            $head = array('时间','用户名称[账号]','直属上级[账号]','操作前金额(元)','提现金额(元)','操作后金额(元)');
-            foreach ($excel as $key=>$value){
-                $excel[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
-                $excel[$key]['nickname']=$value['nickname'].'['.$value['account'].']';
-                $excel[$key]['agentName']=$value['agentName'].'['.$value['username'].']';
-                $excel[$key]['bet_before']=$value['bet_before']/100;
-                $excel[$key]['money']=$value['money']/100;
-                $excel[$key]['bet_after']=$value['bet_after']/100;
-                unset($excel[$key]['account']);
-                unset($excel[$key]['username']);
-            }
-            try {
-                exportExcel($head, $excel, '会员提现记录' . date('YmdHis', time()), '', true);
-            } catch (\PHPExcel_Reader_Exception $e) {
-            } catch (\PHPExcel_Exception $e) {
-            }
-        }else{
-            $data = $sql->paginate(10)->appends($request->all());
-            foreach($data as $key=>&$value){
-                $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
-            }
+        if (true==$request->has('end'))
+        {
+            $endDate = $request->input('end');
         }
-        return view('daw.list',['list'=>$data,'input'=>$request->all(),'min'=>config('admin.min_date')]);
+        else
+        {
+            $endDate = date('Y-m-d',time());
+            $request->offsetSet('end',date('Y-m-d',time()));
+        }
+        if (true==$request->has('account'))
+        {
+            $map['user.account']=$request->input('account');
+        }
+        if (true==$request->has('user_type'))
+        {
+            $map['user.user_type']=$request->input('user_type');
+        }
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        //获取第一天的数据
+        $bill = new Billflow();
+        $bill->setTable('user_billflow_'.$dateArr[0]);
+        $sql = $bill->leftJoin('user','user_billflow_'.$dateArr[0].'.user_id','=','user.user_id')
+            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+        for ($i=1;$i<count($dateArr);$i++)
+        {
+            $b = new Billflow();
+            $b->setTable('user_billflow_'.$dateArr[$i]);
+            $d = $b->leftJoin('user','user_billflow_'.$dateArr[$i].'.user_id','=','user.user_id')
+                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+            $sql->unionAll($d);
+        }
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->paginate($limit)->appends($request->all());
+        foreach ($data as $key=>$datum)
+        {
+            $data[$key]->creatime=date('Y-m-d H:i:s',time());
+        }
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
+    }
+
+    /**
+     * 根据会员id查询充值提现记录
+     * @param $userId
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function getRecordByUserId($userId,Request $request)
+    {
+        $map = array();
+        $user = $userId?HqUser::find($userId):[];
+        $request->offsetSet('account',$user['account']);
+        if (true==$request->has('begin'))
+        {
+            $startDate = $request->input('begin');
+        }
+        else
+        {
+            $startDate = date('Y-m-d',time());
+            $request->offsetSet('begin',date('Y-m-d',time()));
+        }
+        if (true==$request->has('end'))
+        {
+            $endDate = $request->input('end');
+        }
+        else
+        {
+            $endDate = date('Y-m-d',time());
+            $request->offsetSet('end',date('Y-m-d',time()));
+        }
+        if (true==$request->has('account'))
+        {
+            $map['user.account']=$request->input('account');
+        }
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        //获取第一天的数据
+        $bill = new Billflow();
+        $bill->setTable('user_billflow_'.$dateArr[0]);
+        $sql = $bill->leftJoin('user','user_billflow_'.$dateArr[0].'.user_id','=','user.user_id')
+            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+        //dump($sql->get());
+        for ($i=1;$i<count($dateArr);$i++)
+        {
+            $b = new Billflow();
+            $b->setTable('user_billflow_'.$dateArr[$i]);
+            $d = $b->leftJoin('user','user_billflow_'.$dateArr[$i].'.user_id','=','user.user_id')
+                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+            $sql->unionAll($d);
+        }
+        if (true==$request->has('limit'))
+        {
+            $limit = $request->input('limit');
+        }
+        else
+        {
+            $limit = 10;
+        }
+        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->paginate($limit)->appends($request->all());
+        foreach ($data as $key=>$datum)
+        {
+            $data[$key]->creatime=date('Y-m-d H:i:s',time());
+        }
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
+    }
+    /**
+     * 根据开始时间结束时间获取中间得时间段
+     * @param $startDate
+     * @param $endDate
+     * @return array
+     */
+    public function getDateTimePeriodByBeginAndEnd($startDate,$endDate){
+        $arr = array();
+        $start_date = date("Y-m-d",strtotime($startDate));
+        $end_date = date("Y-m-d",strtotime($endDate));
+        for ($i = strtotime($start_date); $i <= strtotime($end_date);$i += 86400){
+            $arr[] = date('Ymd',$i);
+        }
+        return $arr;
     }
 
     /**
