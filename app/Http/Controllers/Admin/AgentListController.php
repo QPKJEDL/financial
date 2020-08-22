@@ -147,7 +147,7 @@ class AgentListController extends Controller
     public function store(StoreRequest $request)
     {
         $data = $request->all();
-        $roleId = (int)$request->input('user_role');
+        $roleId = 38;
         unset($data['id']);
         unset($data['_token']);
         unset($data['user_role']);
@@ -159,6 +159,7 @@ class AgentListController extends Controller
         $data['password']=bcrypt(HttpFilter($data['pwd']));
         unset($data['pwd']);
         unset($data['pwd_confirmation']);
+        $data['userType']=1;
         $data['created_at']=date('Y-m-d H:i:s',time());
         $data['fee']=json_encode($data['fee']);
         $data['limit']=json_encode($data['limit']);
