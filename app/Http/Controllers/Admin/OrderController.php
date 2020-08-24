@@ -150,10 +150,10 @@ class OrderController extends Controller
             }
             $dataSql = 'select t.*,u.user_type from ('.$sql.') t 
             left join hq_user u on u.user_id = t.user_id
-            where t.creatime between '.$begin.' and '.$endTime.' limit '.(($curr-1) * $limit).','.$limit;
+            where t.creatime between '.$begin.' and '.$endTime.' order by t.creatime desc limit '.(($curr-1) * $limit).','.$limit;
             $countSql = 'select t.* from ('.$sql.') t
              left join hq_user u on u.user_id = t.user_id
-             where t.creatime between '.$begin.' and '.$endTime;
+             where t.creatime between '.$begin.' and '.$endTime.' order by t.creatime desc';
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
@@ -235,8 +235,8 @@ class OrderController extends Controller
             {
                 $limit = 10;
             }
-            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' limit '.(($curr-1) * $limit).','.$limit;
-            $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end);
+            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' order by t.creatime desc limit '.(($curr-1) * $limit).','.$limit;
+            $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' order by t.creatime desc';
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
