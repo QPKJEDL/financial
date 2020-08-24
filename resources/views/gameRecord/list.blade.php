@@ -53,41 +53,53 @@
                 <td class="hidden-xs">{{$info['pave_num']}}</td>
                 <td class="hidden-xs">{{$info['creatime']}}</td>
                 <td class="hidden-xs">
-                @if($info['type']==1)
-                        <span style="@if($info['result']['game']=='和')color: green;@elseif($info['result']['game']=='庄') color: red;@else color: blue;@endif">{{$info['result']['game']}}</span>&nbsp;<span style="color: black;">{{$info['result']['playerPair']}}</span> <span style="color: black;">{{$info['result']['bankerPair']}}</span>
-                    @elseif($info['type']==2)
-                        <span style="@if($info['result']=='庄')color:red;@elseif($info['result']=='闲') color:blue;@else color:green;@endif">{{$info['result']}}</span>
-                    @elseif($info['type']==3)
-                        @if($info['result']['bankernum']=="")
-                            <span style="color: blue;">{{$info['result']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x3result']}}</span>
-                        @else
-                            <span style="color: red;">{{$info['result']['bankernum']}}</span>
+                @if($info['status']==1)
+                        @if($info['type']==1)
+                            <span style="@if($info['result']['game']=='和')color: green;@elseif($info['result']['game']=='庄') color: red;@else color: blue;@endif">{{$info['result']['game']}}</span>&nbsp;<span style="color: black;">{{$info['result']['playerPair']}}</span> <span style="color: black;">{{$info['result']['bankerPair']}}</span>
+                        @elseif($info['type']==2)
+                            <span style="@if($info['result']=='龙')color:red;@elseif($info['result']=='虎') color:blue;@else color:green;@endif">{{$info['result']}}</span>
+                        @elseif($info['type']==3)
+                            @if($info['result']['bankernum']=="")
+                                <span style="color: blue;">{{$info['result']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x3result']}}</span>
+                            @else
+                                <span style="color: red;">{{$info['result']['bankernum']}}</span>
+                            @endif
+                            [{{$info['result']['num']}}]
+                        @elseif($info['type']==4)
+                            @if($info['result']['bankernum']=="")
+                                <span style="color: blue;">{{$info['result']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x3result']}}</span>
+                                <span style="color: blue;">{{$info['result']['x4result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x5result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x6result']}}</span>
+                            @else
+                                <span style="color: red;">{{$info['result']['bankernum']}}</span>
+                            @endif
+                            [{{$info['result']['num']}}]
+                        @elseif($info['type']==5)
+                            @if($info['result']['bankernum']=="")
+                                <span style="color: blue;">{{$info['result']['Fanresult']}}</span> <span style="color: blue;">{{$info['result']['Shunresult']}}</span> <span style="color: blue;">{{$info['result']['Tianresult']}}</span>
+                            @else
+                                <span style="color: red;">{{$info['result']['bankernum']}}</span>
+                            @endif
+                            [{{$info['result']['num']}}]
                         @endif
-                    @elseif($info['type']==4)
-                        @if($info['result']['bankernum']=="")
-                            <span style="color: blue;">{{$info['result']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x3result']}}</span>
-                            <span style="color: blue;">{{$info['result']['x4result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x5result']}}</span>&nbsp;<span style="color: blue;">{{$info['result']['x6result']}}</span>
-                        @else
-                            <span style="color: red;">{{$info['result']['bankernum']}}</span>
-                        @endif
-                    @elseif($info['type']==5)
-                        @if($info['result']['bankernum']=="")
-                            {{$info['result']['Fanresult']}} {{$info['result']['Shunresult']}} {{$info['result']['Tianresult']}}
-                        @else
-                            <span style="color: red;">{{$info['result']['bankernum']}}</span>
-                        @endif
-                    @endif
+                @elseif($info['status']==2)
+                    作废
+                    @elseif($info['status']==0)
+                    下注中
+                @endif
                 </td>
                 <td class="hidden-xs">
                 @if($info['type']==1)
                         {{$info['afterResult']['game']}}&nbsp;{{$info['afterResult']['playerPair']}} {{$info['afterResult']['bankerPair']}}
                     @elseif($info['type']==2)
-                        {{$info['afterResult']}}
+                        <span style="@if($info['afterResult']=='龙')color:red;@elseif($info['afterResult']=='虎') color:blue;@else color:green;@endif">{{$info['afterResult']}}</span>
                     @elseif($info['type']==3)
                         @if($info['afterResult']['bankernum']=="")
-                            {{$info['afterResult']['x1result']}}&nbsp;{{$info['afterResult']['x2result']}}&nbsp;{{$info['afterResult']['x3result']}}
+                            <span style="color: blue;">{{$info['afterResult']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x3result']}}</span>
                         @else
-                            {{$info['afterResult']['bankernum']}}
+                            <span style="color: red;">{{$info['afterResult']['bankernum']}}</span>
+                        @endif
+                        @if($info['update_result_before']!='')
+                           [{{$info['afterResult']['num']}}]
                         @endif
                     @elseif($info['type']==4)
                         @if($info['afterResult']['bankernum']=="")
@@ -96,12 +108,18 @@
                         @else
                             <span style="color: red;">{{$info['afterResult']['bankernum']}}</span>
                         @endif
+                            @if($info['update_result_before']!='')
+                                [{{$info['afterResult']['num']}}]
+                            @endif
                     @elseif($info['type']==5)
                         @if($info['afterResult']['bankernum']=="")
-                            {{$info['afterResult']['Fanresult']}} {{$info['afterResult']['Shunresult']}} {{$info['afterResult']['Tianresult']}}
+                            <span style="color: blue;">{{$info['afterResult']['Fanresult']}}</span> <span style="color: blue;">{{$info['afterResult']['Shunresult']}}</span> <span style="color: blue;">{{$info['afterResult']['Tianresult']}}</span>
                         @else
                             <span style="color: red;">{{$info['afterResult']['bankernum']}}</span>
                         @endif
+                            @if($info['update_result_before']!='')
+                                [{{$info['afterResult']['num']}}]
+                            @endif
                     @endif
                 </td>
             </tr>
