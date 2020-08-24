@@ -32,10 +32,24 @@ class AgentDrawAndCzController extends Controller
             ->select('agent_billflow.*','agent_users.nickname as agentName','agent_users.username','user.nickname as uName','user.account');
         if (true==$request->has('begin'))
         {
-            $start=strtotime($request->input('begin'));
-            $end=strtotime('+1day',$start);
-            $sql->whereBetween('agent_billflow.creatime',[$start,$end]);
+            $begin = strtotime($request->input('begin'));
+            if (true==$request->has('end'))
+            {
+                $end = strtotime('+1day',strtotime($request->input('end')))-1;
+            }
+            else
+            {
+                $end = strtotime('+1day',$begin)-1;
+            }
         }
+        else
+        {
+            $begin = strtotime(date('Y-m-d',time()));
+            $end = strtotime('+1day',$begin)-1;
+            $request->offsetSet('begin',date('Y-m-d',$begin));
+            $request->offsetSet('end',date('Y-m-d',$end));
+        }
+        $sql->whereBetween('agent_billflow.creatime',[$begin,$end]);
         if (true==$request->has('limit'))
         {
             $limit = (int)$request->input('limit');
