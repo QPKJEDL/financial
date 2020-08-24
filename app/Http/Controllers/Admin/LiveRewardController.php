@@ -36,14 +36,26 @@ class LiveRewardController extends Controller
             ->leftJoin('user as u2','u2.user_id','=','live_user_id')
             ->leftJoin('desk','desk.id','=','live_reward.desk_id')
             ->select('live_reward.*','u1.nickname as userName','u1.agent_id','u1.account as userAcc','u2.nickname as liveName','u2.account as liveAcc','desk.desk_name');
-        $request->offsetSet('begin',date('Y-m-d',time()));
-        $request->offsetSet('end',date('Y-m-d',time()));
-        if (true==$request->has('begin') && true==$request->has('end'))
+        if (true==$request->has('begin'))
         {
-            $time = strtotime($request->input('begin'));
-            $end = strtotime('+1day',strtotime($request->input('end')))-1;
-            $sql->whereBetween('live_reward.creatime',[$time,$end]);
+            $begin = strtotime($request->input('begin'));
+            if (true==$request->has('end'))
+            {
+                $end = strtotime('+1day',strtotime($request->input('end'))) -1;
+            }
+            else
+            {
+                $end = strtotime('+1day',$begin)-1;
+            }
         }
+        else
+        {
+            $begin = strtotime(date('Y-m-d',time()));
+            $end = strtotime('+1day',$begin)-1;
+            $request->offsetSet('begin',date('Y-m-d',time()));
+            $request->offsetSet('end',date('Y-m-d',time()));
+        }
+        $sql->whereBetween('live_reward.creatime',[$begin,$end]);
         if (true==$request->has('limit'))
         {
             $limit = $request->input('limit');
