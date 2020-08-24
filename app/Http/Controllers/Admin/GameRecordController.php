@@ -151,6 +151,7 @@ class GameRecordController extends Controller
         } else {
             $arr['x3result'] = "";
         }
+        $arr['num']='庄'.$data['bankernum'].' 闲1 '.$data['x1num'].' 闲2 '.$data['x2num'].' 闲3 '.$data['x3num'];
         return $arr;
     }
     /**
@@ -199,6 +200,7 @@ class GameRecordController extends Controller
         } else {
             $arr['x6result'] = "";
         }
+        $arr['num']='庄'.$data['bankernum'].' 闲1 '.$data['x1num'].' 闲2 '.$data['x2num'].' 闲3 '.$data['x3num'].' 闲4 '.$data['x4num'].' 闲5 '.$data['x5num'].' 闲6 '.$data['x6num'];
         return $arr;
     }
 
@@ -230,6 +232,7 @@ class GameRecordController extends Controller
         }else{
             $arr['Tianresult'] = "";
         }
+        $arr['num']='庄'.$data['BankerNum'].' 反门'.$data['FanNum'].'顺门'.$data['ShunNum'].'天门'.$data['TianNum'];
         return $arr;
     }
 }
