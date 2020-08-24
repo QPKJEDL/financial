@@ -15,8 +15,8 @@ class DeskController extends Controller
         if(true == $request->has('begin')){
             $tableName = date('Ymd',strtotime($request->input('begin')));
         }else{
-            $tableName = date('Ymd',strtotime('-1day'));
-            $request->offsetSet('begin',date('Y-m-d',strtotime('-1day')));
+            $tableName = date('Ymd',time());
+            $request->offsetSet('begin',date('Y-m-d',time()));
         }
         $map = array();
         if (true==$request->has('deskId'))
