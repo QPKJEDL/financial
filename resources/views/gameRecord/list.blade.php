@@ -141,6 +141,7 @@
                 $("input[name='begin']").val('');
                 $("select[name='desk_id']").val(''); 
                 $("input[name='boot']").val('');
+                $("input[name='pave']").val('');
             });
             form.on('submit(formDemo)', function(data) {
                 console.log(data);
