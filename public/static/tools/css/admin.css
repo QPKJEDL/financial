@@ -1,0 +1,45 @@
+.header-right{
+	float: right;
+	margin-top: -65px;
+	position: absolute;
+	top: 65px;
+	right: 0;
+}
+.menuCli{
+	margin-left: 20px;
+	font-size: 14px;
+	font-weight: bold;
+	position: relative;
+	top: 8px;
+}
+.menuList{
+	height: 35px;
+	background-color: #d8d7d6;
+}
+.header-left{
+	height: 60px;
+	background: #2F4056!important;
+}
+
+#menuTxt{
+	display: none;
+	color: white;
+	background: #FFB800;
+	padding: 5px 10px;
+	margin: 15px;
+}
+.menuBox{
+	position: absolute;
+	top: 60px;
+	left: -100%;
+	z-index: 99;
+}
+.menuBox li{
+	display: block!important;
+}
+.menuBox li:first-child{
+	display: none!important;
+}
+@media screen and (max-width: 900px){
+	#homeTop{display: none}
+}
