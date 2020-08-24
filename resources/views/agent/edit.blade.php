@@ -54,7 +54,7 @@
         <div class="layui-inline">
             <label class="layui-form-label">占比：</label>
             <div class="layui-input-inline" style="width: 100px;">
-                <input type="number" name="proportion" lay-verify="proportion" value="{{$info['proportion'] or ''}}"  placeholder="%" autocomplete="off" class="layui-input">
+                <input type="number" @if($id!=0) disabled readonly style="border: 1px solid #DDD;background-color: #F5F5F5;color: #ACA899;" @endif name="proportion" lay-verify="proportion" value="{{$info['proportion'] or ''}}"  placeholder="%" autocomplete="off" class="layui-input">
             </div>
             <div class="layui-form-mid layui-word-aux">比如20%就填写20</div>
         </div>
