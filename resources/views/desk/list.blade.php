@@ -15,12 +15,6 @@
             </select>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="boot_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号(不填就是0)" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
-        <input type="text" lay-verify="pave_num" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" value="{{$input['pave_num'] or ''}}" name="pave_num" placeholder="铺号(不填就是0)" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
@@ -35,16 +29,12 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
-            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
             <th class="hidden-xs">日期</th>
             <th class="hidden-xs">台桌类型</th>
             <th class="hidden-xs">台桌名称</th>
-            <th class="hidden-xs">靴号</th>
-            <th class="hidden-xs">铺号</th>
             <th class="hidden-xs">总下注</th>
             <th class="hidden-xs">下注输赢</th>
             <th class="hidden-xs">洗码费</th>
@@ -57,8 +47,6 @@
                 <td class="hidden-xs">{{$info['time']}}</td>
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
-                <td class="hidden-xs">{{$input['boot_num'] or 0}}</td>
-                <td class="hidden-xs">{{$input['pave_num'] or 0}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['winAndErr']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format(($info['money']/100) * 0.009,2)}}</td>
