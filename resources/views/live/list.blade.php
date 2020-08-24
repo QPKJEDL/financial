@@ -7,7 +7,7 @@
         <input class="layui-input" lay-verify="begin" id="begin" name="begin" placeholder="开始时间" value="{{ $input['begin'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="end" id="end" name="end" placeholder="结束时间" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="end" id="end" name="end" placeholder="结束时间" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <select name="deskId">
@@ -38,6 +38,10 @@
     <label style="position: relative;left: 90%;">总金额：{{number_format($money/100,2)}}</label>
     <table class="layui-table" lay-size="sm">
         <colgroup>
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -75,7 +79,7 @@
             </tr>
         @endforeach
         @if(!$list[0])
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="10" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
@@ -125,7 +129,7 @@
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
                 $("input[name='end']").val('');
-                $("select[name='desk_id']").val(''); 
+                $("select[name='deskId']").val('');
                 $("input[name='account']").val('');
                 $("input[name='live_acc']").val('');
                 $("input[name='boot_num']").val('');
