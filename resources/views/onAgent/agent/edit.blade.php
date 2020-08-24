@@ -27,14 +27,13 @@
     <div class="layui-form-item">
         <label class="layui-form-label">状态：</label>
         <div class="layui-input-block">
-            <input type="radio" name="status" value="0" title="正常"
-                   @if(!isset($info['status']))
-                   checked
-                   @elseif(isset($info['status'])&&$info['status'])
-                   checked
+            @if($id==0)
+                <input type="radio" name="status" value="0" title="正常" checked>
+                <input type="radio" name="status" value="1" title="停用">
             @else
-                    @endif>
-            <input type="radio" name="status" value="1" title="停用" {{isset($info['status'])&&!$info['status']?'checked':''}}>
+                <input type="radio" name="status" value="0" title="正常" @if($info['status']==0) checked @endif>
+                <input type="radio" name="status" value="1" title="异常" @if($info['status']==1) checked @endif>
+            @endif
         </div>
     </div>
     @if($info==null)
@@ -55,7 +54,7 @@
         <div class="layui-inline">
             <label class="layui-form-label">抽水：</label>
             <div class="layui-input-inline" style="width: 100px;">
-                <input type="number" name="pump" lay-verify="pump" value="{{$info['pump'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
+                <input type="number" name="pump" lay-verify="pump" @if($id!=0) disabled readonly style="border: 1px solid #DDD;background-color: #F5F5F5;color: #ACA899;" @endif value="{{$info['pump'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
             </div>
             <div class="layui-form-mid layui-word-aux">比如20%就填写20</div>
         </div>
@@ -64,7 +63,7 @@
         <div class="layui-inline">
             <label class="layui-form-label">占比：</label>
             <div class="layui-input-inline" style="width: 100px;">
-                <input type="number" name="proportion" lay-verify="proportion" value="{{$info['proportion'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
+                <input type="number" name="proportion" lay-verify="proportion" @if($id!=0) disabled readonly style="border: 1px solid #DDD;background-color: #F5F5F5;color: #ACA899;" @endif value="{{$info['proportion'] or '0'}}"  placeholder="%" autocomplete="off" class="layui-input">
             </div>
             <div class="layui-form-mid layui-word-aux">比如20%就填写20</div>
         </div>
