@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Desk;
 use App\Models\GameRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GameRecordController extends Controller
 {
@@ -28,7 +29,7 @@ class GameRecordController extends Controller
         }
         if (true==$request->has('pave'))
         {
-            $map['pave_num']=$request->input('pave_num');
+            $map['pave_num']=$request->input('pave');
         }
         $gameRecord = new GameRecord();
         $gameRecord->setTable('game_record_'.$tableName);
@@ -40,7 +41,7 @@ class GameRecordController extends Controller
         {
             $limit = 10;
         }
-        $data = $gameRecord->where($map)->paginate($limit)->appends($request->all());
+        $data = $gameRecord->where($map)->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
             $data[$key]['desk']=Desk::getDeskInfo($value['desk_id']);
             $data[$key]['creatime']=date('Y-m-d H:m:s',$value['creatime']);
