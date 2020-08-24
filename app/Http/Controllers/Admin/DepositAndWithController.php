@@ -68,7 +68,7 @@ class DepositAndWithController extends Controller
         foreach ($data as $key=>$datum)
         {
             //获取直属上级
-            $userInfo = $datum['user_id']?HqUser::find($datum['user_id']):[];
+            $userInfo = $datum->user_id?HqUser::find($datum->user_id):[];
             $agent=$userInfo['agent_id']?Agent::find($userInfo['agent_id']):[];
             $data[$key]->sj['nickname']=$agent['nickname'];
             $data[$key]->sj['username']=$agent['username'];
