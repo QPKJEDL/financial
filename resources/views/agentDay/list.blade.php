@@ -66,9 +66,9 @@
             <th class="hidden-xs">打赏金额</th>
             <th class="hidden-xs">百/龙/牛/三/A</th>
             <th class="hidden-xs">洗码费</th>
+            <th class="hidden-xs">抽水比例</th>
             <th class="hidden-xs">抽水收益</th>
             <th class="hidden-xs">占股</th>
-            <th class="hidden-xs">抽水比例</th>
             <th class="hidden-xs">占股收益</th>
             <th class="hidden-xs">总收益</th>
             <th class="hidden-xs">公司收益</th>
@@ -91,13 +91,10 @@
                             @endif
                         </td>
                         <td class="hidden-xs">
-                            @if($sum['betMoney']<0)
                                 <span style="color: red;">
-                                    {{number_format($sum['betMoney']/100,2)}}
+                                    {{number_format(-$sum['betMoney']/100,2)}}
                                 </span>
-                            @else
-                                {{number_format($sum['betMoney']/100,2)}}
-                            @endif
+
                         </td>
                         <td class="hidden-xs">
                             @if($sum['feeMoney']<0)
@@ -109,14 +106,10 @@
                         <td class="hidden-xs">{{number_format($sum['reward']/100,2)}}</td>
                         <td class="hidden-xs">0.9/0.9/0.9/0.9/0.9</td>
                         <td class="hidden-xs">
-                            @if($sum['code']<0)
-                                <span>{{number_format(-($sum['code']/100),2)}}</span>
-                            @else
-                                {{number_format(-($sum['code']/100),2)}}
-                            @endif
+                            <span style="color: red;">{{number_format(-($sum['code']/100),2)}}</span>
                         </td>
-                        <td class="hidden-xs">{{number_format($sum['pumpSy']/100,2)}}</td>
                         <td class="hidden-xs">100%</td>
+                        <td class="hidden-xs">{{number_format($sum['pumpSy']/100,2)}}</td>
                         <td class="hidden-xs">100%</td>
                         <td class="hidden-xs">
                             @if($sum['zg']<0)
@@ -184,7 +177,6 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info['userType']==1)
-                        {{number_format($info['code']/100,2)}}
                         @if($info['code']<0)
                             <span style="color:red;">{{number_format($info['code']/100,2)}}</span>
                         @else
@@ -196,7 +188,13 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info['userType']==2)
-                        {{number_format($info['feeMoney']/100,2)}}
+                        {{$info['pump']}}%
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==2)
                         @if($info['feeMoney']<0)
                             <span style="color: red;">{{number_format($info['feeMoney']/100,2)}}</span>
                         @else
@@ -213,13 +211,7 @@
                         -
                     @endif
                 </td>
-                <td class="hidden-xs">
-                    @if($info['userType']==2)
-                        {{$info['pump']}}%
-                    @else
-                        -
-                    @endif
-                </td>
+
                 <td class="hidden-xs">
                     @if($info['getMoney']>0)
                         <span style="color: red;">{{number_format($info['zg']/100,2)}}</span>
