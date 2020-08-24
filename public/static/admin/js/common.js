@@ -5,7 +5,7 @@ layui.config({
 });
 
 layui.use(['form', 'jquery', 'laydate', 'layer', 'laypage', 'dialog',   'element'], function() {
-	var form = layui.form(),
+	var form = layui.form,
 		layer = layui.layer,
 		$ = layui.jquery,
 		dialog = layui.dialog;
@@ -26,7 +26,15 @@ layui.use(['form', 'jquery', 'laydate', 'layer', 'laypage', 'dialog',   'element
 		var url=$(this).attr('data-url');
 		var desc=$(this).attr('data-desc');
 		//将iframeObj传递给父级窗口,执行操作完成刷新
-		parent.page(desc, url, iframeObj, w = "700px", h = "620px");
+		//parent.page(desc, url, iframeObj, w = "700px", h = "620px");
+		layer.open({
+			type:2,
+			title:desc,
+			shadeClose:true,
+			offset:'10%',
+			area:['60%','70%'],
+			content:url
+		});
 		return false;
 
 	}).mouseenter(function() {
@@ -47,8 +55,17 @@ layui.use(['form', 'jquery', 'laydate', 'layer', 'laypage', 'dialog',   'element
 	//列表添加
 	$('#table-list').on('click', '.add-btn', function() {
 		var url=$(this).attr('data-url');
+		var desc=$(this).attr('data-desc');
 		//将iframeObj传递给父级窗口
-		parent.page("菜单添加", url, iframeObj, w = "700px", h = "620px");
+		//parent.page("菜单添加", url, iframeObj, w = "700px", h = "620px");
+		layer.open({
+			type:2,
+			title:desc,
+			shadeClose:true,
+			offset:'10%',
+			area:['60%','70%'],
+			content:url
+		});
 		return false;
 	})
 	//列表删除
@@ -98,7 +115,14 @@ layui.use(['form', 'jquery', 'laydate', 'layer', 'laypage', 'dialog',   'element
 		var url=That.attr('data-url');
 		var desc=That.attr('data-desc');
 		//将iframeObj传递给父级窗口
-		parent.page(desc, url, iframeObj, w = "700px", h = "620px");
+		layer.open({
+			type:2,
+			title:desc,
+			shadeClose:true,
+			offset:'10%',
+			area:['60%','70%'],
+			content:url
+		});
 		return false;
 	})
 });
