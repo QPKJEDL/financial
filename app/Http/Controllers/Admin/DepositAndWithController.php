@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use App\Models\Billflow;
 use App\Models\Draw;
 use App\Models\HqUser;
@@ -66,6 +67,23 @@ class DepositAndWithController extends Controller
         $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
+            //获取直属上级
+            $userInfo = $datum['user_id']?HqUser::find($datum['user_id']):[];
+            $agent=$userInfo['agent_id']?Agent::find($userInfo['agent_id']):[];
+            $data[$key]->sj['nickname']=$agent['nickname'];
+            $data[$key]->sj['username']=$agent['username'];
+            if ($agent['parent_id']==0)
+            {
+                $data[$key]->zsyj['nickname']=$agent['nickname'];
+                $data[$key]->zsyj['username']=$agent['username'];
+            }
+            else
+            {
+                $idArr = explode(',',$agent['ancestors']);
+                $zsyj = $idArr[1]?Agent::find($idArr[1]):[];
+                $data[$key]->zsyj['nickname']=$zsyj['nickname'];
+                $data[$key]->zsyj['username']=$zsyj['username'];
+            }
             $data[$key]->creatime=date('Y-m-d H:i:s',time());
         }
         return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
