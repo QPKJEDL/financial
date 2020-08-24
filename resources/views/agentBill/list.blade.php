@@ -4,7 +4,10 @@
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
     </div>
     <div class="layui-inline">
-        <input class="layui-input" lay-verify="begin" name="begin" placeholder="时间" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
+        <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始时间" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
+    </div>
+    <div class="layui-inline">
+        <input class="layui-input" lay-verify="end" name="end" placeholder="结束时间" id="end" value="{{ $input['end'] or '' }}" autocomplete="off">
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="代理账号" autocomplete="off" class="layui-input">
@@ -42,18 +45,21 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
             <th class="hidden-xs">时间</th>
             <th class="hidden-xs">代理名称[账号]</th>
             <th class="hidden-xs">会员名称[账号]</th>
+            <th class="hidden-xs">直属上级[账号]</th>
+            <th class="hidden-xs">直属一级[账号]</th>
             <th class="hidden-xs">操作前金额</th>
             <th class="hidden-xs">操作金额</th>
             <th class="hidden-xs">操作后金额</th>
             <th class="hidden-xs">操作类型</th>
-            <th class="hidden-xs">充值类型</th>
-            <th class="hidden-xs" style="display:block; text-align: left; width:30em; overflow:hidden; white-space: nowrap; text-overflow:ellipsis;">备注</th>
+            <th class="hidden-xs" style="display:block; text-align: left; width:30em; overflow:hidden; white-space: nowrap; text-overflow:ellipsis;">操作人</th>
         </tr>
         </thead>
         <tbody>
@@ -68,31 +74,29 @@
                         -
                     @endif
                 </td>
+                <td class="hidden-xs">{{$info['sj']['nickname']}}[{{$info['sj']['username']}}]</td>
+                <td class="hidden-xs">{{$info['zsyj']['nickname']}}[{{$info['zsyj']['username']}}]</td>
                 <td class="hidden-xs">{{number_format($info['bet_before']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['money']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['bet_after']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==1)
                         充值
+                        @if($info['type']==1)
+                            (到款)
+                        @elseif($info['type']==2)
+                            (签单)
+                        @elseif($info['type']==3)
+                            (移分)
+                        @elseif($info['type']==4)
+                            (按比例)
+                        @elseif($info['type']==5)
+                            (支付宝)
+                        @elseif($info['type']==6)
+                            (微信)
+                        @endif
                     @elseif($info['status']==2)
                         提现
-                    @endif
-                </td>
-                <td class="hidden-xs">
-                    @if($info['type']==1)
-                        到款
-                    @elseif($info['type']==2)
-                        签单
-                    @elseif($info['type']==3)
-                        移分
-                    @elseif($info['type']==4)
-                        按比例
-                    @elseif($info['type']==5)
-                        支付宝
-                    @elseif($info['type']==6)
-                        微信
-                    @else
-                        -
                     @endif
                 </td>
                 <td class="hidden-xs">{{$info['remark']}}</td>
@@ -141,6 +145,9 @@
             });
             laydate.render({
                 elem:"#begin"
+            });
+            laydate.render({
+                elem:"#end"
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
