@@ -30,7 +30,10 @@ class Menu extends Model implements AdminMenuInterface
             //根据userId来查询角色
             $role = Adminrole::where('user_id','=',$user)->first();
             //根据角色获取到当前角色菜单
-            $menuList = AgentRoleMenu::where('role_id','=',$role['role_id'])->get();
+            //$menuList = AgentRoleMenu::where('role_id','=',$role['role_id'])->get();
+            $menuList = AgentRoleMenu::query()
+                ->leftJoin('business_menus','business_role_menu.menu_id','=','business_menus.id')
+                ->select('business_role_menu.menu_id')->where('business_role_menu.role_id','=',$role['role_id'])->orderBy('business_menus.order','asc')->get();
             $menu = array();
             foreach ($menuList as $key=>$value){
                 foreach ($menuAllList as $k=>$v){
