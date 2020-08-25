@@ -73,6 +73,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::get('/getRecordByAgentId/{id}','AgentDrawAndCzController@getRecordByAgentId');
     //会员列表
     Route::resource('/hquser', 'HqUserController');//线下会员管理
+    Route::get('/userRelation/{id}','HqUserController@userRelation');//会员结构关系
     Route::post('/hquser/changeStatus','HqUserController@changeStatus');//停用启用
     Route::get('/hquser/edit/{id}','HqUserController@edit');//编辑
     Route::post('/hquser/save','HqUserController@updateSave');//编辑保存
