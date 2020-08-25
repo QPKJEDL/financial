@@ -206,13 +206,13 @@ class AgentListController extends Controller
             unset($data['pwd']);
             unset($data['pwd_confirmation']);
         }
-        $data['fee']=json_encode(HttpFilter($data['fee']));
-        $data['limit']=json_encode(HttpFilter($data['limit']));
-        $data['bjlbets_fee']=json_encode(HttpFilter($data['bjlbets_fee']));
-        $data['lhbets_fee']=json_encode(HttpFilter($data['lhbets_fee']));
-        $data['nnbets_fee']=json_encode(HttpFilter($data['nnbets_fee']));
-        $data['a89bets_fee']=json_encode(HttpFilter($data['a89bets_fee']));
-        $data['sgbets_fee']=json_encode(HttpFilter($data['sgbets_fee']));
+        $data['fee']=json_encode($data['fee']);
+        $data['limit']=json_encode($data['limit']);
+        $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
+        $data['lhbets_fee']=json_encode($data['lhbets_fee']);
+        $data['nnbets_fee']=json_encode($data['nnbets_fee']);
+        $data['a89bets_fee']=json_encode($data['a89bets_fee']);
+        $data['sgbets_fee']=json_encode($data['sgbets_fee']);
         $data['userType']=1;
         $up=Agent::where('id',$id)->update($data);
         if($up!==false){
