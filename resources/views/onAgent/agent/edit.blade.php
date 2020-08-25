@@ -104,19 +104,6 @@
             </div>
         </div>
     </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">状态：</label>
-        <div class="layui-input-block">
-            <input type="radio" name="data_permission" value="2" title="本人及以下权限"
-                   @if(!isset($info['data_permission']))
-                   checked
-                   @elseif(isset($info['data_permission'])&&$info['data_permission'])
-                   checked
-            @else
-                    @endif>
-            <input type="radio" name="data_permission" value="1" title="所有数据权限" {{isset($info['data_permission'])&&!$info['data_permission']?'checked':''}}>
-        </div>
-    </div>
 @endsection
 @section('id',$id)
 @section('js')
