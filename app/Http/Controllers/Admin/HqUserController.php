@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\StoreRequest;
+use App\Models\Agent;
 use App\Models\Billflow;
 use App\Models\Czrecord;
 use App\Models\SysBalance;
@@ -362,5 +363,21 @@ class HqUserController extends Controller
         }else{
             return ['msg'=>'操作失败','status'=>0];
         }
+    }
+
+    /**
+     * 会员关系结构
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function userRelation($id)
+    {
+        $user = (int)$id?HqUser::find((int)$id):[];
+        $agentInfo = $user['agent_id']?Agent::find($user['agent_id']):[];
+        $ancestors = explode(',',$agentInfo['ancestors']);
+        unset($ancestors[0]);
+        $ancestors[]=$agentInfo['id'];
+        $data = Agent::query()->whereIn('id',$ancestors)->get();
+        return view('hquser.userRelation',['info'=>$user,'parent'=>$data]);
     }
 }
