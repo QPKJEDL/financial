@@ -57,7 +57,7 @@
         <tbody>
         @foreach($list as $info)
             <tr>
-                <td class="hidden-xs">{{$info['account']}}</td>
+                <td class="hidden-xs"><a href="javascript:;" class="children" data-id="{{$info['user_id']}}">{{$info['account']}}</a></td>
                 <td class="hidden-xs">
                     @if($info['user_type']==1)
                         线上
@@ -157,6 +157,18 @@
                 $("input[name='account']").val('');
                 $("input[name='nickname']").val('');
                 $("select[name='user_type']").val('');
+            });
+            //关系结构
+            $('.children').click(function () {
+                var id = $(this).attr('data-id');
+                layer.open({
+                    type:2,
+                    title:"关系结构",
+                    shadeClose:true,
+                    offset:'10%',
+                    area:['60%','80%'],
+                    content:'/admin/userRelation/'+id
+                });
             });
             //编辑
             $(".edit").click(function () {
