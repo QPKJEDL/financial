@@ -191,14 +191,12 @@ class OnAgentListController extends Controller
     {
         $data = $request->all();
         $id = $data['id'];
-        $roleId = $data['user_role'];
         unset($data['_token']);
         unset($data['user_role']);
         unset($data['id']);
         $data['limit']=json_encode($data['limit']);
         $count = Agent::where('id','=',$id)->update($data);
         if ($count!==false){
-            AgentRoleUser::where('user_id',$id)->update(array('role_id'=>$roleId));
             return ['msg'=>'操作成功','status'=>1];
         }else{
             return ['msg'=>'操作失败','status'=>0];
