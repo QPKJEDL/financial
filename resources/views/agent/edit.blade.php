@@ -125,19 +125,6 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">状态：</label>
-        <div class="layui-input-block">
-            <input type="radio" name="data_permission" value="2" title="本人及以下权限"
-                   @if(!isset($info['data_permission']))
-                   checked
-                   @elseif(isset($info['data_permission'])&&$info['data_permission'])
-                   checked
-            @else
-                    @endif>
-            <input type="radio" name="data_permission" value="1" title="所有数据权限" {{isset($info['data_permission'])&&!$info['data_permission']?'checked':''}}>
-        </div>
-    </div>
-    <div class="layui-form-item">
         <label class="layui-form-label">百家乐洗码率：</label>
         <div class="layui-input-block">
             <input type="number" name="fee[baccarat]" value="0.9" required lay-verify="required" placeholder="请输入百家乐洗码率" autocomplete="off" class="layui-input">
