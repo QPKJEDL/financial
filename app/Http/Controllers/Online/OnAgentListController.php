@@ -73,6 +73,7 @@ class OnAgentListController extends Controller
         unset($data['id']);
         unset($data['user_role']);
         if ($data['password']==$newPwd){
+            $data['data_permission']=2;
             $data['password']=bcrypt($data['password']);
             $data['userType']=2;
             $data["ancestors"]=0;
