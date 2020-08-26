@@ -159,7 +159,7 @@
                     @elseif($info['online_type']==4)
                         网页版
                     @else
-                        未知
+                        三方
                     @endif
                 </td>
             </tr>
