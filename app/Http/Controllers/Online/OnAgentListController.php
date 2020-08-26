@@ -72,6 +72,24 @@ class OnAgentListController extends Controller
         unset($data['_token']);
         unset($data['id']);
         unset($data['user_role']);
+        if ((int)$data['limit']['min']>50000 || (int)$data['limit']['min']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['max']>50000 || (int)$data['limit']['max']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMin']>5000 || (int)$data['limit']['tieMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMax']>5000 || (int)$data['limit']['tieMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMin']>5000 || (int)$data['limit']['pairMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
         if ($data['password']==$newPwd){
             $data['data_permission']=2;
             $data['password']=bcrypt($data['password']);
