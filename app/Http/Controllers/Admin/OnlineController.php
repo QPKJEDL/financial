@@ -45,7 +45,7 @@ class OnlineController extends Controller
             $result = iconv('gb2312','utf-8//IGNORE',$result);
             $result = json_decode($result,true);
             $data[$key]['address']=$result['addr'];
-            $data[$key]['savetime']=date('Y-m-d H:i:s');
+            $data[$key]['savetime']=date('Y-m-d H:i:s',$value['savetime']);
         }
         return view('online.list',['list'=>$data,'input'=>$request->all(),'desk'=>$this->getAllDeskList(),'count'=>count($countData),'money'=>$this->getOnlineUserMoney($countData),'pc'=>$this->getOnlineCount($countData,1),'ios'=>$this->getOnlineCount($countData,2),'android'=>$this->getOnlineCount($countData,3),'h5'=>$this->getOnlineCount($countData,4)]);
     }
