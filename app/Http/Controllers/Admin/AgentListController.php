@@ -155,6 +155,24 @@ class AgentListController extends Controller
         if(HttpFilter($data['pwd'])!=HttpFilter($data['pwd_confirmation'])){
             return ['msg'=>'两次密码不同','status'=>0];
         }
+        if ((int)$data['limit']['min']>50000 || (int)$data['limit']['min']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['max']>50000 || (int)$data['limit']['max']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMin']>5000 || (int)$data['limit']['tieMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMax']>5000 || (int)$data['limit']['tieMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMin']>5000 || (int)$data['limit']['pairMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
         //密码加密
         $data['password']=bcrypt(HttpFilter($data['pwd']));
         unset($data['pwd']);
@@ -208,6 +226,24 @@ class AgentListController extends Controller
             unset($data['pwd_confirmation']);
         }
         $data['fee']=json_encode($data['fee']);
+        if ((int)$data['limit']['min']>50000 || (int)$data['limit']['min']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['max']>50000 || (int)$data['limit']['max']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMin']>5000 || (int)$data['limit']['tieMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['tieMax']>5000 || (int)$data['limit']['tieMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMin']>5000 || (int)$data['limit']['pairMin']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
+        if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
+            return ['msg'=>'限红错误','status'=>0];
+        }
         $data['limit']=json_encode($data['limit']);
         $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
         $data['lhbets_fee']=json_encode($data['lhbets_fee']);
