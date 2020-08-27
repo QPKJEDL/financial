@@ -61,9 +61,23 @@ class AgentDayEndController extends Controller
         $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get();
 
         //获取要统计的数据id
-        $info = UserRebate::query()->whereBetween('creatime',[$begin,$end])->groupBy('creatime','user_id')->select('id');
-        $sumData = UserRebate::query()->whereIn('id',$info)->select(DB::raw('SUM(washMoney) as washMoney'),DB::raw('SUM(getMoney) as getMoney'),
-        DB::raw('SUM(betMoney) as betMoney'),DB::raw('SUM(feeMoney) as feeMoney'))->first();
+        $info = UserRebate::query()->select('id','user_id','creatime')->whereBetween('creatime',[$begin,$end])->groupBy('id','creatime','user_id')->get();
+        $idArray = array();
+        foreach ($info as $key=>$v)
+        {
+            $idArray[] = $v['id'];
+        }
+        $sqlDataMoney = UserRebate::query()->whereIn('id',$idArray)->groupBy('user_id','creatime');
+        $sumData['washMoney'] = DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('washMoney');
+        $sumData['pumpSy']=0;
+        $sumData['reward']=0;
+        $sumData['code']=0;
+        $sumData['zg']=0;
+        $sumData['sy']=0;
+        $sumData['gs']=0;
+        $sumData['getMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('getMoney');
+        $sumData['betMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('betMoney');
+        $sumData['feeMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('feeMoney');
         foreach ($data as $key=>$datum)
         {
             if ($datum['userType']==1)
