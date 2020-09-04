@@ -7,6 +7,7 @@ use App\Models\Agent;
 use App\Models\Billflow;
 use App\Models\Draw;
 use App\Models\HqUser;
+use App\Models\Pay;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,75 @@ class DepositAndWithController extends Controller
                 ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
             $sql->unionAll($d);
         }
+        $arr = array();
+        if (true==$request->has('business_name'))
+        {
+            $arr['business_id']=$request->input('business_name');
+        }
+        if (true==$request->has('excel'))
+        {
+            $head = array('时间','用户名称[账号]','直属上级[账号]','直属一级[账号]','操作前金额','充值提现金额','操作后金额','操作类型','操作人');
+            $excelData = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($arr)->get()->toArray();
+            $excel = array();
+            foreach ($excelData as $key=>$datum)
+            {
+                $a['creatime']=date('Y-m-d H:i:s',$datum->creatime);
+                $a['user'] = $datum->nickname.'['.$datum->account.']';
+                $user = $datum->user_id?HqUser::find($datum->user_id):[];
+                $sj = $user['agent_id']?Agent::find($user['agent_id']):[];
+                $a['sj'] = $sj['nickname'].'['.$sj['username'].']';
+                if ($sj['parent_id']==0)
+                {
+                    $a['zs'] = $sj['nickname'].'['.$sj['username'].']';
+                }else{
+                    $ancestors = explode(',',$sj['ancestors']);
+                    $zs = $ancestors[1]?Agent::find($ancestors[1]):[];
+                    $a['zs'] = $zs['nickname'].'['.$zs['username'].']';
+                }
+
+                $a['bet_before']=number_format($datum->bet_before/100,2);
+                $a['money']=number_format($datum->score/100,2);
+                $a['bet_after']=number_format($datum->bet_after/100,2);
+                if ($datum->business_id==0)
+                {
+                    if ($datum->status==1)
+                    {
+                        $a['status']="充值";
+                        if ($datum->pay_type==1)
+                        {
+                            $a['status']=$a['status'].'(到款)';
+                        }elseif ($datum->pay_type==2)
+                        {
+                            $a['status']=$a['status'].'(签单)';
+                        }elseif ($datum->pay_type==3)
+                        {
+                            $a['status']=$a['status'].'(移分)';
+                        }elseif ($datum->pay_type==4){
+                            $a['status']=$a['status'].'(按比例)';
+                        }elseif ($datum->pay_type==5)
+                        {
+                            $a['status']=$a['status'].'(支付宝)';
+                        }elseif ($datum->pay_type==6)
+                        {
+                            $a['status']=$a['status'].'(微信)';
+                        }
+                    }else{
+                        $a['status']='提现';
+                    }
+                }
+                else
+                {
+                    $a['status']=$datum->business_name;
+                }
+                $a['remark']=$datum->remark;
+                $excel[] = $a;
+            }
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'会员充值提现查询', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         if (true==$request->has('limit'))
         {
             $limit = (int)$request->input('limit');
@@ -64,7 +134,7 @@ class DepositAndWithController extends Controller
         {
             $limit = 10;
         }
-        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->paginate($limit)->appends($request->all());
+        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($arr)->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             //获取直属上级
@@ -86,8 +156,7 @@ class DepositAndWithController extends Controller
             }
             $data[$key]->creatime=date('Y-m-d H:i:s',time());
         }
-
-        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList()]);
     }
 
     /**
@@ -168,7 +237,7 @@ class DepositAndWithController extends Controller
             }
             $data[$key]->creatime=date('Y-m-d H:i:s',time());
         }
-        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all()]);
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList()]);
     }
     /**
      * 根据开始时间结束时间获取中间得时间段

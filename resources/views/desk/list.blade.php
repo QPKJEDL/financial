@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
     <input class="layui-input" lay-verify="begin" id="begin" name="begin" placeholder="日期" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -16,7 +17,7 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+        <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出EXCEL</button>
     </div>
 @endsection
 @section('table')

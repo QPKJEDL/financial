@@ -84,7 +84,7 @@
                     if(res.status == 1){
                         layer.msg(res.msg,{icon:6});
                         var index = parent.layer.getFrameIndex(window.name);
-                        setTimeout('parent.layer.close('+index+')',2000);
+                        setTimeout(window.open('{{url('/admin/login')}}'),2000);
                     }else{
                         layer.msg(res.msg,{shift: 6,icon:5});
                     }

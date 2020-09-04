@@ -8,12 +8,14 @@ use App\Models\GameRecord;
 use App\Models\HqUser;
 use App\Models\LiveReward;
 use App\Models\Maintain;
+use App\Models\Order;
 use App\Models\User;
 use App\Models\UserRebate;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use App\Models\Desk;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -58,7 +60,7 @@ class AgentDayEndController extends Controller
         {
             $request->offsetSet('account','');
         }
-        $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get();
+        $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get()->toArray();
 
         //获取要统计的数据id
         $info = UserRebate::query()->select('id','user_id','creatime')->whereBetween('creatime',[$begin,$end])->groupBy('id','creatime','user_id')->get();
@@ -78,61 +80,290 @@ class AgentDayEndController extends Controller
         $sumData['getMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('getMoney');
         $sumData['betMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('betMoney');
         $sumData['feeMoney']=DB::table(DB::raw("({$sqlDataMoney->toSql()}) as s"))->mergeBindings($sqlDataMoney->getQuery())->sum('feeMoney');
-        foreach ($data as $key=>$datum)
+        $bool = $this->checkIsToDay($request->input('begin'),$request->input('end'));
+        if ($bool)
+        {
+            $order = new Order();
+            $order->setTable('order_'.date('Ymd',time()));
+            $orderData = $order->get()->toArray();
+            $sumData['washMoney'] = $sumData['washMoney']+$this->getToDaySumBetMoney($orderData);
+            $sumData['getMoney'] = $sumData['getMoney'] + $this->getToDayWinMoney($orderData);
+            $sumData['betMoney'] = $sumData['betMoney'] + $this->getToDayCode($orderData);
+            //打赏金额
+            $sumData['reward'] = $sumData['reward'] + $this->getToDayReward();
+            if (count($data)!=0)
+            {
+                foreach ($data as $key=>$datum)
+                {
+                    foreach ($orderData as $k=>$v)
+                    {
+                        $user = $v['user_id']?HqUser::find($v['user_id']):[];
+                        $agent = $user['agent_id']?Agent::find($user['agent_id']):[];
+                        if (true==$request->has('userType'))
+                        {
+                            if ($agent['userType']!=$request->input('userType'))
+                            {
+                                continue;
+                            }
+                        }
+                        $ancestors = explode(',',$agent['ancestors']);
+                        $ancestors[] = $agent['id'];
+                        if ($this->whetherAffiliatedAgent($datum['agent_id'],$ancestors))
+                        {
+                            $betMoney = json_decode($v['bet_money'],true);
+                            if($v['game_type']==1 || $v['game_type']==2)
+                            {
+                                $data[$key]['washMoney'] = $datum['washMoney'] +array_sum($betMoney);
+                                if ($v['status']==1)
+                                {
+                                    $data[$key]['betMoney']= $datum['betMoney'] + array_sum($betMoney);
+                                }
+                            }else if ($v['game_type']==3){
+                                $data[$key]['washMoney'] = $datum['washMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                                if ($v['status']==1)
+                                {
+                                    $data[$key]['betMoney']=$datum['betMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                                }
+                            }else if($v['game_type']==4){
+                                $data[$key]['washMoney']=$datum['washMoney'] + $this->getSanGongBetMoney($betMoney);
+                                if ($v['status']==1)
+                                {
+                                    $data[$key]['betMoney'] = $datum['betMoney'] + $this->getSanGongBetMoney($betMoney);
+                                }
+                            }else if($v['game_type']==5){
+                                $data[$key]['washMoney']=$datum['washMoney'] + $this->getA89BetMoney($betMoney);
+                                if ($v['status']==1)
+                                {
+                                    $data[$key]['betMoney'] = $datum['betMoney'] + $this->getA89BetMoney($betMoney);
+                                }
+                            }
+                            $data[$key]['getMoney'] = $datum['getMoney'] + $v['get_money'];
+                        }
+                    }
+                }
+            }else{
+                foreach ($orderData as $k=>$v){
+                    $user = $v['user_id']?HqUser::find($v['user_id']):[];
+                    if ($user['agent_id']!=0)
+                    {
+                        if (Agent::where('id','=',$user['agent_id'])->exists()){
+
+                            $agent = $user['agent_id']?Agent::find($user['agent_id']):[];
+                            $ancestors = explode(',',$agent['ancestors']);
+                            $ancestors[] = $agent['id'];
+                            $agentInfo = $ancestors[1]?Agent::find($ancestors[1]):[];
+                            $arr = $this->checkAgentIdIsExist($agentInfo['id'],$data);
+                            if ($arr['exist']==1)
+                            {
+                                $a['agent_id']=$agentInfo['id'];
+                                $a['nickname']=$agentInfo['nickname'];
+                                $a['username']=$agentInfo['username'];
+                                $a['userType']=$agentInfo['userType'];
+                                if ($agentInfo['userType']==1){
+                                    $a['fee']=$agentInfo['fee'];
+                                }else{
+                                    $a['pump']=$agentInfo['pump'];
+                                }
+                                $a['proportion']=$agentInfo['proportion'];
+                                $a['feeMoney']=0;
+                                $a['reward']=0;
+                                $betMoney = json_decode($v['bet_money'],true);
+                                if($v['game_type']==1 || $v['game_type']==2)
+                                {
+                                    $a['washMoney'] = array_sum($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $a['betMoney']= array_sum($betMoney);
+                                    }
+                                }else if ($v['game_type']==3){
+                                    $a['washMoney'] = $this->getNiuNiuBetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $a['betMoney']=$this->getNiuNiuBetMoney($betMoney);
+                                    }
+                                }else if($v['game_type']==4){
+                                    $a['washMoney']=$this->getSanGongBetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $a['betMoney'] =$this->getSanGongBetMoney($betMoney);
+                                    }
+                                }else if($v['game_type']==5){
+                                    $a['washMoney']=$this->getA89BetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $a['betMoney'] =$this->getA89BetMoney($betMoney);
+                                    }
+                                }
+                                $a['getMoney'] =$v['get_money'];
+                                $data[] = $a;
+                            }
+                            else
+                            {
+                                $data[$arr['index']]['getMoney'] = $data[$arr['index']]['getMoney'] + $v['get_money'];
+                                $betMoney = json_decode($v['bet_money'],true);
+                                if($v['game_type']==1 || $v['game_type']==2)
+                                {
+                                    $data[$arr['index']]['washMoney'] = $data[$arr['index']]['washMoney']+ array_sum($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $data[$arr['index']]['betMoney']= $data[$arr['index']]['betMoney'] + array_sum($betMoney);
+                                    }
+                                }else if ($v['game_type']==3){
+                                    $data[$arr['index']]['washMoney'] = $data[$arr['index']]['washMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $data[$arr['index']]['betMoney']=$data[$arr['index']]['betMoney']+ $this->getNiuNiuBetMoney($betMoney);
+                                    }
+                                }else if($v['game_type']==4){
+                                    $data[$arr['index']]['washMoney']=$data[$arr['index']]['washMoney']+ $this->getSanGongBetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $data[$arr['index']]['betMoney'] = $data[$arr['index']]['betMoney']+$this->getSanGongBetMoney($betMoney);
+                                    }
+                                }else if($v['game_type']==5){
+                                    $data[$arr['index']]['washMoney']=$data[$arr['index']]['washMoney']+ $this->getA89BetMoney($betMoney);
+                                    if ($v['status']==1)
+                                    {
+                                        $data[$arr['index']]['betMoney'] =$data[$arr['index']]['betMoney']+$this->getA89BetMoney($betMoney);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        foreach ($data as $key=>&$datum)
         {
             if ($datum['userType']==1)
             {
-                $data[$key]['fee']=json_decode($datum['fee'],true);
+                $datum['fee']=json_decode($datum['fee'],true);
                 //洗码费
-                $data[$key]['code']=$datum['betMoney']*0.009;
+                $datum['code']=$datum['betMoney']*0.009;
                 $sumData['code']=$sumData['code'] + $datum['code'];
-
                 //占股收益
-                if ($datum['getMoney']>0)
-                {
-                    $data[$key]['zg']=-(($datum['getMoney'] - $datum['code']) * ($datum['proportion']/100));
-                }
-                else
-                {
-                    $data[$key]['zg']=($datum['getMoney'] - $datum['code']) * ($datum['proportion']/100);
-                }
+                //$datum['zg']=($datum['getMoney'] + $datum['code']) * ($datum['proportion']/100);
+                $datum['zg']=-($datum['getMoney'] + $datum['code']) * ($datum['proportion']/100);
+                $sumData['zg'] = $sumData['zg'] - $datum['zg'];
+                //总收益
                 if ($datum['zg']>0)
                 {
-                    $sumData['zg'] = $sumData['zg'] + $datum['zg'];
-                }else{
-                    $sumData['zg'] = $sumData['zg'] - $datum['zg'];
-                }
-                //总收益
-                $data[$key]['sy']=$datum['zg'] + $datum['feeMoney'] + $datum['code'];
-                if ($datum['sy']>0)
-                {
-                    $sumData['sy'] = $sumData['sy'] + $datum['sy'];
+                    $datum['sy'] = $datum['zg'] + $datum['feeMoney'] + $datum['code'];
                 }
                 else
                 {
-                    $sumData['sy'] = $sumData['sy'] - $datum['sy'];
+                    $datum['sy']=$datum['zg'] + $datum['feeMoney'] + $datum['code'];
                 }
+
+                $sumData['sy'] = $sumData['sy'] - $datum['sy'];
+
                 //总收益
                 if ($datum['getMoney']>0)
                 {
-                    $data[$key]['gs']= -$datum['getMoney'] - $datum['sy'];
+                    $datum['gs']= -$datum['getMoney'] - $datum['sy'];
                 }
                 else
                 {
-                    $data[$key]['gs']= abs($datum['getMoney']) - $datum['sy'];
+                    $datum['gs']= abs($datum['getMoney']) - $datum['sy'];
                 }
                 $sumData['gs']=$sumData['gs']+$datum['gs'];
             }
             else
             {
+                $data[$key]['sy']=$datum['feeMoney'];
+                $data[$key]['gs']=-($datum['getMoney'] + $datum['sy']);
+                $sumData['sy'] = $sumData['sy'] - $datum['sy'];
+                $sumData['gs']=$sumData['gs']+$datum['gs'];
                 $sumData['pumpSy']=$sumData['pumpSy'] + $datum['feeMoney'];
             }
             //打赏金额
             //获取当前代理下的会员
             $userData = HqUser::where('agent_id','=',$datum['agent_id'])->select('user_id')->get();
             $money = LiveReward::query()->whereIn('user_id',$userData)->sum('money');
-            $data[$key]['reward']=$money;
+            $datum['reward']=$money;
             $sumData['reward']=$sumData['reward'] + $money;
+        }
+        if (true==$request->has('excel'))
+        {
+            $head = array('台类型','名称','账号','总押码','总赢','总洗码','总抽水','打赏金额','百/龙/牛/三/A','洗码费','抽水比例','抽水收益','占股','占股收益','总收益','公司收益');
+            $excel = array();
+            $d = array();
+            $d['desk_type']='全部';
+            $d['name']='总公司';
+            $d['username']='admin';
+            $d['washMoney']=number_format($sumData['washMoney']/100,2);
+            if ($sumData['getMoney']>0)
+            {
+                $d['getMoney']=number_format(-$sumData['getMoney']/100,2);
+            }
+            else{
+                $d['getMoney']=number_format($sumData['getMoney']/100,2);
+            }
+            $d['betMoney']=number_format(-$sumData['betMoney']/100,2);
+            $d['feeMoney'] = number_format(-$sumData['feeMoney']/100,2);
+            $d['reward']=number_format($sumData['reward']/100,2);
+            $d['fee']='0.9/0.9/0.9/0.9/0.9';
+            $d['code']=number_format(-$sumData['code']/100,2);
+            $d['pump']='100%';
+            $d['puSy']=number_format(-$sumData['pumpSy']/100,2);
+            $d['proportion']='100%';
+            $d['zg']=number_format($sumData['zg']/100,2);
+            $d['sy']=number_format($sumData['sy']/100,2);
+            $d['gs']=number_format($sumData['gs']/100,2);
+            $excel[] = $d;
+            foreach ($data as $key=>&$datum)
+            {
+                $a = array();
+                $a['desk_type']='全部';
+                $a['name']=$datum['nickname'];
+                $a['username']=$datum['username'];
+                $a['washMoney']=number_format($datum['washMoney']/100,2);
+                if ($datum['getMoney']>0)
+                {
+                    $a['getMoney']=number_format(-$datum['getMoney']/100,2);
+                }
+                else{
+                    $a['getMoney']=number_format($datum['getMoney']/100,2);
+                }
+                $a['betMoney']=number_format($datum['betMoney']/100,2);
+                if ($datum['userType']==1){
+                    $a['feeMoney']=number_format($datum['feeMoney']/100,2);
+                }else{
+                    $a['feeMoney']='-';
+                }
+                $a['reward']=number_format($datum['reward']/100,2);
+                if ($datum['userType']==1)
+                {
+                    $a['fee']=$datum['fee']['baccarat'].'/'.$datum['fee']['dragonTiger'].'/'.$datum['fee']['niuniu'].'/'.$datum['fee']['sangong'].'/'.$datum['fee']['A89'];
+                }else
+                {
+                    $a['fee']='-';
+                }
+
+                if ($datum['userType']==1)
+                {
+                    $a['code']=number_format($datum['code']/100,2);
+                    $a['pump']='-';
+                    $a['puSy']='-';
+                    $a['proportion']=$datum['proportion'].'%';
+                    $a['zg'] = number_format($datum['zg']/100,2);
+                }else
+                {
+                    $a['code']='-';
+                    $a['pump']=$datum['pump'].'%';
+                    $a['puSy']=number_format($datum['feeMoney']/100,2);
+                    $a['proportion']='-';
+                    $a['zg']=0.00;
+                }
+                $a['sy'] = number_format($datum['sy']/100,2);
+                $a['gs']=number_format($datum['gs']/100,2);
+                $excel[] = $a;
+            }
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'代理日结', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
         }
         return view('agentDay.list',['list'=>$data,'input'=>$request->all(),'sum'=>$sumData]);
     }
@@ -165,12 +396,81 @@ class AgentDayEndController extends Controller
             $begin = strtotime(date('Y-m-d',time()));
             $end = strtotime('+1day',$begin)-1;
         }
-        $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get();
-        foreach ($data as $key=>$datum)
+        $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get()->toArray();
+        $bool = $this->checkIsToDay($request->input('begin'),$request->input('end'));
+        if ($bool)
+        {
+            $order = new Order();
+            $order->setTable('order_20200831 as order');
+            $orderData = $this->getAncestorsByAgentId($id,$order);
+            if(count($data)==0)
+            {
+                foreach ($orderData as $key=>$datum)
+                {
+                    if ($datum['count']==1)
+                    {
+                        $a = array();
+                        $a['agent_id']=$datum['id'];
+                        $a['nickname']=$datum['nickname'];
+                        $a['username']=$datum['username'];
+                        $a['fee']=$datum['fee'];
+                        $a['userType']=$datum['userType'];
+                        $a['proportion']=$datum['proportion'];
+                        $a['pump']=$datum['pump'];
+                        $a['washMoney'] = $datum['sumMoney'];
+                        $a['getMoney']=$datum['getMoney'];
+                        $a['betMoney']=$datum['betMoney'];
+                        $a['feeMoney']=0;
+                        $data[] = $a;
+                    }
+                }
+            }
+            else
+            {
+                foreach ($orderData as $key=>$datum)
+                {
+                    $arr = $this->checkAgentIdIsExist($datum['id'],$data);
+                    if ($arr['exist']==0)
+                    {
+                        $index = $arr['index'];
+                        $data[$index]['washMoney']=$data[$index]['washMoney'] + $datum['sumMoney'];
+                        $data[$index]['getMoney']=$data[$index]['getMoney'] + $datum['getMoney'];
+                        $data[$index]['betMoney']=$data[$index]['betMoney'] + $datum['betMoney'];
+                    }
+                }
+            }
+        }
+        foreach ($data as $key=>&$datum)
         {
             if ($datum['userType']==1)
             {
+                //洗码费
+                $datum['code']=$datum['betMoney']*0.009;
                 $data[$key]['fee']=json_decode($datum['fee'],true);
+                $datum['zg']=-($datum['getMoney'] + $datum['code']) * ($datum['proportion']/100);
+                //总收益
+                if ($datum['zg']>0)
+                {
+                    $datum['sy'] = $datum['zg'] + $datum['feeMoney'] + $datum['code'];
+                }
+                else
+                {
+                    $datum['sy']=$datum['zg'] + $datum['feeMoney'] + $datum['code'];
+                }
+                //总收益
+                if ($datum['getMoney']>0)
+                {
+                    $datum['gs']= -$datum['getMoney'] - $datum['sy'];
+                }
+                else
+                {
+                    $datum['gs']= abs($datum['getMoney']) - $datum['sy'];
+                }
+            }
+            else
+            {
+                $data[$key]['sy']=$datum['feeMoney'];
+                $data[$key]['gs']=-($datum['getMoney'] + $datum['sy']);
             }
             //打赏金额
             //获取当前代理下的会员
@@ -178,8 +478,428 @@ class AgentDayEndController extends Controller
             $money = LiveReward::query()->whereIn('user_id',$userData)->sum('money');
             $data[$key]['reward']=$money;
         }
+        if (true==$request->has('excel'))
+        {
+            $excel = array();
+            foreach ($data as $key=>&$datum)
+            {
+                $a = array();
+                $a['desk_type']='全部';
+                $a['name']=$datum['nickname'];
+                $a['username']=$datum['username'];
+                $a['washMoney']=number_format($datum['washMoney']/100,2);
+                if ($datum['getMoney']>0)
+                {
+                    $a['getMoney']=number_format(-$datum['getMoney']/100,2);
+                }
+                else{
+                    $a['getMoney']=number_format($datum['getMoney']/100,2);
+                }
+                $a['betMoney']=number_format($datum['betMoney']/100,2);
+                if ($datum['userType']==1){
+                    $a['feeMoney']=number_format($datum['feeMoney']/100,2);
+                }else{
+                    $a['feeMoney']='-';
+                }
+                $a['reward']=number_format($datum['reward']/100,2);
+                if ($datum['userType']==1)
+                {
+                    $a['fee']=$datum['fee']['baccarat'].'/'.$datum['fee']['dragonTiger'].'/'.$datum['fee']['niuniu'].'/'.$datum['fee']['sangong'].'/'.$datum['fee']['A89'];
+                }else
+                {
+                    $a['fee']='-';
+                }
+
+                if ($datum['userType']==1)
+                {
+                    $a['code']=number_format($datum['code']/100,2);
+                    $a['pump']='-';
+                    $a['puSy']='-';
+                    $a['proportion']=$datum['proportion'].'%';
+                    $a['zg'] = number_format($datum['zg']/100,2);
+                }else
+                {
+                    $a['code']='-';
+                    $a['pump']=$datum['pump'].'%';
+                    $a['puSy']=number_format($datum['feeMoney']/100,2);
+                    $a['proportion']='-';
+                    $a['zg']=0.00;
+                }
+                $a['sy'] = number_format($datum['sy']/100,2);
+                $a['gs']=number_format($datum['gs']/100,2);
+                $excel[] = $a;
+            }
+            $head = array('台类型','名称','账号','总押码','总赢','总洗码','总抽水','打赏金额','百/龙/牛/三/A','洗码费','抽水比例','抽水收益','占股','占股收益','总收益','公司收益');
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'代理日结', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         return view('agentDay.list',['list'=>$data,'input'=>$request->all()]);
     }
+
+    public function getAncestorsByAgentId($id,$order)
+    {
+        $idArr = Agent::query()->select('id','username','nickname','fee','userType','pump','proportion')->where('parent_id','=',$id)->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+        foreach ($idArr as $key=>&$value)
+        {
+            $value['count']=0;
+            //总押码
+            $value['sumMoney']=0;
+            //总赢
+            $value['getMoney']=0;
+            //总洗码
+            $value['betMoney']=0;
+            $idArray = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$value['id']])->get()->toArray();
+            $data = $order->leftJoin('user as u','u.user_id','=','order.user_id')
+                ->select('order.user_id','order.bet_money','order.get_money','order.game_type','order.status')
+                ->where('u.agent_id','=',$value['id'])->orWhereIn('u.agent_id',$idArray)->get()->toArray();
+            foreach ($data as  $k=>$datum)
+            {
+                $value['count']=1;
+                $value['getMoney'] = $value['getMoney'] + $datum['get_money'];
+                $betMoney = json_decode($datum['bet_money'],true);
+                if ($datum['game_type']==1 || $datum['game_type']==2)
+                {
+                    $value['sumMoney'] = $value['sumMoney'] + array_sum($betMoney);
+                    if ($datum['status']==1)
+                    {
+                        $value['betMoney'] = $value['betMoney'] + array_sum($betMoney);
+                    }
+                }elseif ($datum['game_type']==3)
+                {
+                    $value['sumMoney'] = $value['sumMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                    if ($datum['status']==1)
+                    {
+                        $value['betMoney'] = $value['betMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                    }
+                }elseif ($datum['game_type']==4)
+                {
+                    $value['sumMoney'] = $value['sumMoney'] + $this->getSanGongBetMoney($betMoney);
+                    if ($datum['status']==1)
+                    {
+                        $value['betMoney'] = $value['betMoney'] + $this->getSanGongBetMoney($betMoney);
+                    }
+                }elseif ($datum['game_type']==5)
+                {
+                    $value['sumMoney'] = $value['sumMoney'] + $this->getA89BetMoney($betMoney);
+                    if ($datum['status']==1)
+                    {
+                        $value['betMoney'] = $value['betMoney'] + $this->getA89BetMoney($betMoney);
+                    }
+                }
+            }
+        }
+        return $idArr;
+    }
+
+    public function checkAgentIdIsExist($agentId,$data)
+    {
+        $arr = array();
+        $arr['exist']=1;
+        foreach ($data as $key=>$datum)
+        {
+            if ($agentId==$datum['agent_id']){
+                $arr['exist']=0;
+                $arr['index']=$key;
+            }
+        }
+        return $arr;
+    }
+
+    public function whetherAffiliatedAgent($agentId,$ancestors)
+    {
+        foreach ($ancestors as $key=>$value)
+        {
+            if ($agentId==$value){
+                return true;
+                break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 获取今天的打赏金额
+     * @return int|mixed
+     */
+    public function getToDayReward()
+    {
+        $start = strtotime(date('Y-m-d',time()));
+        $end = strtotime('+1day',$start)-1;
+        return LiveReward::query()->whereBetween('creatime',[$start,$end])->sum('money');
+    }
+
+    /**
+     * 获取总赢
+     * @param $data
+     * @return int
+     */
+    public function getToDayWinMoney($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $money = $money + $datum['get_money'];
+        }
+        return $money;
+    }
+
+    /**
+     * 获取今日的总下注金额
+     * @param $data
+     * @return float|int
+     */
+    public function getToDaySumBetMoney($data)
+    {
+        $money = 0;
+        foreach ($data as $key=>$datum)
+        {
+            $betMoney = json_decode($datum['bet_money'],true);
+            if ($datum['game_type']==1 || $datum['game_type']==2)
+            {
+                $money = $money + array_sum($betMoney);
+            }
+            else if ($datum['game_type']==3)
+            {
+                $money = $money + $this->getNiuNiuBetMoney($betMoney);
+            }
+            else if($datum['game_type']==4)
+            {
+                $money = $money + $this->getSanGongBetMoney($betMoney);
+            }
+            else if($datum['game_type']==5)
+            {
+                $money = $money + $this->getA89BetMoney($betMoney);
+            }
+        }
+        return $money;
+    }
+
+    /**
+     * 获取总洗码
+     * @param $data
+     * @return float|int
+     */
+    public function getToDayCode($data)
+    {
+        $money =0;
+        foreach ($data as $key=>$datum)
+        {
+            if ($datum['status']!=1)
+            {
+                continue;
+            }
+            $betMoney = json_decode($datum['bet_money'],true);
+            if ($datum['game_type']==1 || $datum['game_type']==2)
+            {
+                $money = $money + array_sum($betMoney);
+            }
+            else if ($datum['game_type']==3)
+            {
+                $money = $money + $this->getNiuNiuBetMoney($betMoney);
+            }
+            else if($datum['game_type']==4)
+            {
+                $money = $money + $this->getSanGongBetMoney($betMoney);
+            }
+            else if($datum['game_type']==5)
+            {
+                $money = $money + $this->getA89BetMoney($betMoney);
+            }
+        }
+        return $money;
+    }
+
+    /**
+     * 计算a89下注金额
+     * @param $data
+     * @return float|int
+     */
+    public function getA89BetMoney($data)
+    {
+        $money = 0;
+        if (!empty($data['ShunMen_equal']))
+        {
+            $money = $money + $data['ShunMen_equal'];
+        }
+        if (!empty($data['ShunMen_Super_Double']))
+        {
+            $money = $money + $data['ShunMen_Super_Double'] * 10;
+        }
+        if (!empty($data['TianMen_equal']))
+        {
+            $money = $money + $data['TianMen_equal'];
+        }
+        if (!empty($data['TianMen_Super_Double']))
+        {
+            $money = $money + $data['TianMen_Super_Double'] * 10;
+        }
+        if (!empty($data['FanMen_equal']))
+        {
+            $money = $money + $data['FanMen_equal'];
+        }
+        if (!empty($data['FanMen_Super_Double']))
+        {
+            $money = $money + $data['FanMen_Super_Double'] * 10;
+        }
+        return $money;
+    }
+
+    /**
+     * 计算三公下注金额
+     * @param $data
+     * @return float|int
+     */
+    public function getSanGongBetMoney($data)
+    {
+        $money = 0;
+        if (!empty($data['x1_equal']))
+        {
+            $money = $money + $data['x1_equal'];
+        }
+        if (!empty($data['x1_double']))
+        {
+            $money = $money + $data['x1_double'] * 3;
+        }
+        if (!empty($data['x1_Super_Double']))
+        {
+            $money = $money + $data['x1_Super_Double'] * 10;
+        }
+        if (!empty($data['x2_equal']))
+        {
+            $money = $money + $data['x2_equal'];
+        }
+        if (!empty($data['x2_double']))
+        {
+            $money = $money + $data['x2_double'] * 3;
+        }
+        if (!empty($data['x2_Super_Double']))
+        {
+            $money = $money + $data['x2_Super_Double'] * 10;
+        }
+        if (!empty($data['x3_equal']))
+        {
+            $money = $money + $data['x3_equal'];
+        }
+        if (!empty($data['x3_double']))
+        {
+            $money = $money + $data['x3_double'] * 3;
+        }
+        if (!empty($data['x3_Super_Double']))
+        {
+            $money = $money + $data['x3_Super_Double'] * 10;
+        }
+        if (!empty($data['x4_equal']))
+        {
+            $money = $money + $data['x4_equal'];
+        }
+        if (!empty($data['x4_double']))
+        {
+            $money = $money + $data['x4_double'] * 3;
+        }
+        if (!empty($data['x4_Super_Double']))
+        {
+            $money = $money + $data['x4_Super_Double'] * 10;
+        }
+        if (!empty($data['x5_equal']))
+        {
+            $money = $money + $data['x5_equal'];
+        }
+        if (!empty($data['x5_double']))
+        {
+            $money = $money + $data['x5_double'] *3;
+        }
+        if (!empty($data['x5_Super_Double']))
+        {
+            $money = $money + $data['x5_Super_Double'] * 10;
+        }
+        if (!empty($data['x6_equal']))
+        {
+            $money = $money + $data['x6_equal'];
+        }
+        if (!empty($data['x6_double']))
+        {
+            $money = $money + $data['x6_double'] *3;
+        }
+        if (!empty($data['x6_Super_Double']))
+        {
+            $money = $money + $data['x6_Super_Double'] * 10;
+        }
+        return $money;
+    }
+    /**
+     * 计算牛牛下注金额
+     * @param $data
+     * @return float|int
+     */
+    public function getNiuNiuBetMoney($data)
+    {
+        $money = 0;
+        if (!empty($data['x1_equal']))
+        {
+            $money = $money + $data['x1_equal'];
+        }
+        if (!empty($data['x1_double']))
+        {
+            $money = $money + $data['x1_double'] * 3;
+        }
+        if (!empty($data['x1_Super_Double']))
+        {
+            $money = $money + $data['x1_Super_Double'] * 10;
+        }
+        if (!empty($data['x2_equal']))
+        {
+            $money = $money + $data['x2_equal'];
+        }
+        if (!empty($data['x2_double']))
+        {
+            $money = $money + $data['x2_double'] * 3;
+        }
+        if (!empty($data['x2_Super_Double']))
+        {
+            $money = $money + $data['x2_Super_Double'] * 10;
+        }
+        if (!empty($data['x3_equal']))
+        {
+            $money = $money + $data['x3_equal'];
+        }
+        if (!empty($data['x3_double']))
+        {
+            $money = $money + $data['x3_double'] * 3;
+        }
+        if (!empty($data['x3_Super_Double']))
+        {
+            $money = $money + $data['x3_Super_Double'] * 10;
+        }
+        return $money;
+    }
+    /**
+     * 效验是否查询存在今日
+     * @param $start
+     * @param $end
+     * @return bool
+     */
+    public function checkIsToDay($start,$end)
+    {
+        $bool = false;
+        $data = $this->getDateTimePeriodByBeginAndEnd($start,$end);
+        foreach ($data as $key)
+        {
+            /*if ($key==date('Ymd',time())){
+                $bool = true;
+                break;
+            }*/
+            if ($key==date('Ymd',time())){
+                $bool = true;
+                break;
+            }
+        }
+        return $bool;
+    }
+
+
     /**
      * 下级代理日结
      * @param $id

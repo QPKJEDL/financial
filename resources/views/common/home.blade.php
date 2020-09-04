@@ -134,11 +134,8 @@
         </div>
     </div>
 </body>
-<script src="/static/tools/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/tools/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    layui.use(['element','jquery'],function () {
-        var element = layui.element,
-            $ = layui.jquery;
         $(".agent").click(function () {
             var id = $(this).attr('data-id');
             var url = $(this).attr('data-url');
@@ -169,7 +166,7 @@
                 var index = topWindow.find('#nav').children(':first').children('li[class="layui-this"]');
                 index.removeClass('layui-this');
                 var tabUL = topWindow.find('#nav').children(':first');
-                var str = '<li lay-id="'+id+'" class="layui-this">'+title+'<i class="layui-icon layui-unselect layui-tab-close tabClose">ဆ</i></li>';
+                var str = '<li lay-id="'+id+'" class="layui-this">'+title+'<i class="layui-icon layui-unselect layui-tab-close" onclick="tabClose(this)">ဆ</i></li>';
                 tabUL.append(str);
                 var indexHtml = topWindow.find('#nav').children(':last').children('div[class="layui-tab-item layui-show"]');
                 indexHtml.removeClass('layui-show');
@@ -178,6 +175,5 @@
                 tabDiv.append(str1)
             }
         });
-    });
 </script>
 </html>

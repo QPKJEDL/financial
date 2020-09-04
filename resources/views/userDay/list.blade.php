@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" id="begin" placeholder="开始日期" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -16,8 +17,7 @@
     {{--@endif--}}
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo" value="submit" name="submit">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>导出EXCEL</button>
+        <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出EXCEL</button>
     </div>
     <br>
     <div class="layui-btn-group">
@@ -73,14 +73,10 @@
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['getMoney']/100,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info['userType']==1)
-                        -
-                    @else
-                        {{number_format($info['feeMoney']/100,2)}}
-                    @endif
+                    {{number_format($info['feeMoney']/100,2)}}
                 </td>
                 <td class="hidden-xs">
-                    @if($info['userType']==1)
+                    @if($info['userType']==2)
                         -
                     @else
                         {{number_format($info['betMoney']/100 * 0.009,2)}}
@@ -89,7 +85,7 @@
                 <td class="hidden-xs">{{number_format($info['reward']/100,2)}}</td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button class="layui-btn layui-btn-xs dayInfo" data-id="{{$info->user_id}}" data-name="{{$info->nickname}}" data-desc="详情"><i class="layui-icon">详情</i></button>
+                        <button class="layui-btn layui-btn-xs dayInfo" data-id="{{$info['user_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">详情</i></button>
                     </div>
                 </td>
             </tr>
@@ -99,9 +95,6 @@
         @endif
         </tbody>
     </table>
-    <div class="page-wrap">
-        <div id="demo"></div>
-    </div>
 @endsection
 @section('js')
     <script>
@@ -112,9 +105,9 @@
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
-            var count = {{$list->total()}};
-            var curr = {{$list->currentPage()}};
-            var limit = {{$limit}};
+            /*var count = {{--{{$list->total()}}--}};
+            var curr = {{--{{$list->currentPage()}}--}};
+            var limit = {{--{{$limit}}--}};
             var url = "";
             //分页
             laypage.render({
@@ -134,7 +127,7 @@
                         location.href = url;
                     }
                 }
-            });
+            });*/
             laydate.render({
                 elem:"#begin"
             });

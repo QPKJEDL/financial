@@ -87,6 +87,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/order',   'OrderController');//注单记录
     Route::resource('/gameRecord','GameRecordController');//台桌游戏查询
     Route::resource('/online',      'OnlineController');//在线用户管理
+    Route::post('/retreat','OnlineController@destroy');//踢下线
 
     //第三方
     Route::resource('/three','ThreeController');//第三方支付流水

@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">
@@ -11,7 +12,6 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
 @endsection
 @section('table')
@@ -165,7 +165,7 @@
                 var id = $(this).attr('data-id');
                 var nickname = $(this).attr('data-name');
                 var account = $(this).attr('data-acc');
-                layer.open({
+                var index = layer.open({
                     type: 2,
                     title: nickname + '('+account+')' + '充值提现',
                     shadeClose: true,
@@ -173,6 +173,7 @@
                     area:['60%','80%'],
                     content:'/admin/hquser/topCode/' + id
                 });
+                layer.full(index)
             });
             $(".update").click(function(){
                 var id = $(this).attr('data-id');

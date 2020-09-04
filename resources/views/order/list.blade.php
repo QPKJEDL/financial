@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -18,12 +19,21 @@
         </select>
     </div>
     <div class="layui-inline">
+        <input type="text" lay-verify="" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="" value="{{$input['pave_num'] or ''}}" name="pave_num" placeholder="铺号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="layui-inline">
         <select name="type">
             <option value="">请选择游戏类型</option>
             @foreach($game as $g)
                 <option value="{{$g['id']}}" {{isset($input['type'])&&$input['type']==$g['id']?'selected':''}}>{{$g['game_name']}}</option>
             @endforeach
         </select>
+    </div>
+    <div class="layui-inline">
+        <input type="text" lay-verify="" value="{{$input['orderSn'] or ''}}" name="orderSn" placeholder="注单号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
         <select name="status" lay-filter="status" lay-verify="status">
@@ -34,20 +44,11 @@
         </select>
     </div>
     <div class="layui-inline">
-        <input type="text" lay-verify="" value="{{$input['boot_num'] or ''}}" name="boot_num" placeholder="靴号" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
-        <input type="text" lay-verify="" value="{{$input['pave_num'] or ''}}" name="pave_num" placeholder="铺号" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
-        <input type="text" lay-verify="" value="{{$input['orderSn'] or ''}}" name="orderSn" placeholder="注单号" autocomplete="off" class="layui-input">
-    </div>
-    <div class="layui-inline">
         <input type="text" lay-verify value="{{$input['account'] or ''}}" name="account" placeholder="多个会员账号用英文版逗号隔开" autocomplete="off" class="layui-input"/>
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+        <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出EXCEL</button>
     </div>
 @endsection
 @section('table')

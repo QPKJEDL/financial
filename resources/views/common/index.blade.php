@@ -64,7 +64,26 @@
 <script src="/static/tools/layui/layui.js" type="text/javascript" charset="utf-8"></script>
 <script src="/static/tools/js/menu.js?t=2" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    setInterval("aaa()",1000)
+    function tabClose(that) {
+        var _this = $(that);
+        var id = _this.parent().attr('lay-id');
+        var ul = $("#nav").children(':first').children();
+        var index;
+        for (var i=0;i<ul.length;i++){
+            if($(ul[i]).attr('lay-id')==id){
+                index = i;
+                break;
+            }
+        }
+        //删除当前元素
+        $(ul[index]).remove();
+        $(ul[index-1]).addClass('layui-this');
+        //获取iframe
+        var iframe = $("#nav").children(':last').children();
+        $(iframe[index]).remove();//删除iframe元素
+        $(iframe[index-1]).addClass('layui-show');
+    }
+    //setInterval("aaa()",1000)
     function aaa() {
         $.ajax({
             type:"get",

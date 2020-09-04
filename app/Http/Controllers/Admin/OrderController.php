@@ -155,6 +155,114 @@ class OrderController extends Controller
              left join hq_user u on u.user_id = t.user_id
              where t.creatime between '.$begin.' and '.$endTime.' order by t.creatime desc';
             $count = DB::select($countSql);
+            if (true==$request->has('excel'))
+            {
+                $head = array('注单号','台类型','台号','下注时间','靴号','铺号','会员名称[账号]','下注前金额','注单详情','下注余额','开牌结果','下注金额','洗码量','会员赢','洗码率','会员码佣','状态');
+                $excel = array();
+                foreach ($count as $key=>$value)
+                {
+                    $a = array();
+                    $a['order_sn']=$value->order_sn;
+                    if ($value->game_type==1)
+                    {
+                        $a['game']='百家乐';
+                    }elseif($value->game_type==2)
+                    {
+                        $a['game']="龙虎";
+                    }elseif ($value->game_type==3)
+                    {
+                        $a['game']='牛牛';
+                    }elseif ($value->game_type==4)
+                    {
+                        $a['game']='三公';
+                    }elseif ($value->game_type==5)
+                    {
+                        $a['game']='A89';
+                    }
+                    $a['desk_name']=$value->desk_name;
+                    $a['time']=date('Y-m-d H:i:s',$value->creatime);
+                    $a['boot']=$value->boot_num;
+                    $a['pave']=$value->pave_num;
+                    $user = HqUser::getUserInfoByUserId($value->user_id);
+                    $a['user']=$user['nickname'].'['.$user['account'].']';
+                    //获取表名
+                    $tableName = $this->getGameRecordTableNameByRecordSn($value->record_sn);
+                    $winner = $this->getGameRecordInfo($tableName,$value->record_sn);
+                    $bill = Billflow::getBillflowByOrderSn($value->order_sn,$tableName);
+                    $a['s']=number_format($bill['bet_before']/100,2);
+                    if ($value->game_type==1){
+                       $a['money']=$this->getBaccaratBetMoney($value->bet_money);
+                       $a['v']=number_format($bill['bet_after']/100,2);
+                       $a['result']=$this->splicingArr($this->getBaccaratParseJson($winner));
+                    }else if($value->game_type==2){
+                        $a['money']=$this->getDragonTieTiger($value->bet_money);
+                        $a['v']=number_format($bill['bet_after']/100,2);
+                        $a['result']=$this->getDragonTigerJson($winner);
+                    }else if($value->game_type==3){
+                        $a['money']=$this->getNiuNiuBetMoney($value->bet_money);
+                        $a['v']=number_format($bill['bet_after']/100,2);
+                        $a['result']=$this->splicingArr($this->getFullParseJson($winner));
+                    }else if($value->game_type==4){
+                        $a['money']=$this->getSanGongMoney($value->bet_money);
+                        $a['v']=number_format($bill['bet_after']/100,2);
+                        $a['result']=$this->splicingArr($this->getSanGongResult($winner));
+                    }else if($value->game_type==5){
+                        $a['money']=$this->getA89BetMoney($value->bet_money);
+                        $a['v']=number_format($bill['bet_after']/100,2);
+                        $a['result']=$this->splicingArr($this->getA89Result($winner));
+                    }
+                    //$a['oMoney']=number_format($this->getSumBetMoney($value)/100,2);
+                    $a['oMoney']=$this->getSumBetMoney($value);
+                    $a['vvv']=number_format($this->getSumBetMoney($value)/100,2);
+                    $a['getMoney']=number_format($value->get_money/100,2);
+                    if ($value->game_type==1)
+                    {
+                        $a['fee']=$user['fee']['baccarat'];
+                        $a['aa']=$a['oMoney']*($user['fee']['baccarat']/100);
+                        $a['aa']=number_format($a['aa']/100,2);
+                        $a['oMoney']= number_format($a['oMoney']/100,2);
+                    }elseif($value->game_type==2){
+                        $a['fee']=$user['fee']['dragonTiger'];
+                        $a['aa']=$a['oMoney']*($user['fee']['dragonTiger']/100);
+                        $a['aa']=number_format($a['aa']/100,2);
+                        $a['oMoney']= number_format($a['oMoney']/100,2);
+                    }elseif ($value->game_type==3){
+                        $a['fee']=$user['fee']['niuniu'];
+                        $a['aa']=$a['oMoney']*($user['fee']['niuniu']/100);
+                        $a['aa']=number_format($a['aa']/100,2);
+                        $a['oMoney']= number_format($a['oMoney']/100,2);
+                    }elseif ($value->game_type==4){
+                        $a['fee']=$user['fee']['sangong'];
+                        $a['aa']=$a['oMoney']*($user['fee']['sangong']/100);
+                        $a['aa']=number_format($a['aa']/100,2);
+                        $a['oMoney']= number_format($a['oMoney']/100,2);
+                    }elseif ($value->game_type==5){
+                        $a['fee']=$user['fee']['A89'];
+                        $a['aa']=$a['oMoney']*($user['fee']['A89']/100);
+                        $a['aa']=number_format($a['aa']/100,2);
+                        $a['oMoney']= number_format($a['oMoney']/100,2);
+                    }
+                    if ($value->status==1)
+                    {
+                        $a['status']="结算完成";
+                    }elseif ($value->status==2)
+                    {
+                        $a['status']="玩家取消";
+                    }elseif ($value->status==0)
+                    {
+                        $a['status']="等待开牌";
+                    }elseif($value->status==3)
+                    {
+                        $a['status']='作废';
+                    }
+                    $excel[] = $a;
+                }
+                try {
+                    exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'注单查询', '', true);
+                } catch (\PHPExcel_Reader_Exception $e) {
+                } catch (\PHPExcel_Exception $e) {
+                }
+            }
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
                 $data[$key]->user = HqUser::getUserInfoByUserId($value->user_id);
@@ -235,8 +343,10 @@ class OrderController extends Controller
             {
                 $limit = 10;
             }
-            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' order by t.creatime desc limit '.(($curr-1) * $limit).','.$limit;
-            $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.strtotime($begin).' and '.strtotime($end).' order by t.creatime desc';
+            $start = strtotime($begin);
+            $endart = strtotime('+1day',strtotime($end))-1;
+            $dataSql = 'select t.* from ('.$sql.') t where t.creatime between '.$start.' and '.$endart.' order by t.creatime desc limit '.(($curr-1) * $limit).','.$limit;
+            $countSql = 'select t.* from ('.$sql.') t where t.creatime between '.$start.' and '.$endart.' order by t.creatime desc';
             $count = DB::select($countSql);
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
@@ -270,6 +380,16 @@ class OrderController extends Controller
             $count= array();
             return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
         }
+    }
+
+    public function splicingArr($data)
+    {
+        $a = '';
+        foreach ($data as $key)
+        {
+            $a = $a.$key;
+        }
+        return $a;
     }
 
     /**

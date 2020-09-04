@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" placeholder="日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -22,7 +23,7 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+        <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出</button>
     </div>
 @endsection
 @section('table')
@@ -165,8 +166,11 @@
                     }
                 }
             });
+            var date = new Date();
+            var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             laydate.render({
-                elem:"#begin"
+                elem:"#begin",
+                max:max
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');

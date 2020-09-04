@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始日期" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -21,7 +22,7 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
+        <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出EXCEL</button>
     </div>
     <br>
     <div class="layui-btn-group">
@@ -85,23 +86,23 @@
                         <td class="hidden-xs">{{number_format($sum['washMoney']/100,2)}}</td>
                         <td class="hidden-xs">
                             @if($sum['getMoney']<0)
-                                <span style="color: red;">{{number_format($sum['getMoney']/100,2)}}</span>
+                                {{number_format(-$sum['getMoney']/100,2)}}
                             @else
-                                {{number_format($sum['getMoney']/100,2)}}
+                                <span style="color: red;">{{number_format(-$sum['getMoney']/100,2)}}</span>
                             @endif
                         </td>
                         <td class="hidden-xs">
                                 <span style="color: red;">
                                     {{number_format(-$sum['betMoney']/100,2)}}
                                 </span>
-
                         </td>
                         <td class="hidden-xs">
-                            @if($sum['feeMoney']<0)
+                            <span style="color: red;">{{number_format(-$sum['feeMoney']/100,2)}}</span>
+                           {{-- @if($sum['feeMoney']<0)
                                 <span style="color: red;">{{number_format($sum['feeMoney']/100,2)}}</span>
                             @else
                                 {{number_format($sum['feeMoney']/100,2)}}
-                            @endif
+                            @endif--}}
                         </td>
                         <td class="hidden-xs">{{number_format($sum['reward']/100,2)}}</td>
                         <td class="hidden-xs">0.9/0.9/0.9/0.9/0.9</td>
@@ -109,7 +110,9 @@
                             <span style="color: red;">{{number_format(-($sum['code']/100),2)}}</span>
                         </td>
                         <td class="hidden-xs">100%</td>
-                        <td class="hidden-xs">{{number_format($sum['pumpSy']/100,2)}}</td>
+                        <td class="hidden-xs">
+                            <span style="color: red;">{{number_format(-$sum['pumpSy']/100,2)}}</span>
+                        </td>
                         <td class="hidden-xs">100%</td>
                         <td class="hidden-xs">
                             @if($sum['zg']<0)
@@ -213,18 +216,26 @@
                 </td>
 
                 <td class="hidden-xs">
-                    @if($info['getMoney']>0)
-                        <span style="color: red;">{{number_format($info['zg']/100,2)}}</span>
+                    @if($info['userType']==1)
+                        @if($info['zg']<0)
+                            <span style="color: red;">{{number_format($info['zg']/100,2)}}</span>
+                        @else
+                            {{number_format(abs($info['zg']/100),2)}}
+                        @endif
                     @else
-                        {{number_format($info['zg']/100,2)}}
+                        0.00
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info['getMoney']>0)
-                        <span style="color: red;">{{number_format($info['sy']/100,2)}}</span>
-                    @else
-                        {{number_format($info['sy']/100,2)}}
-                    @endif
+                        @if($info['userType']==1)
+                            @if($info['sy']<0)
+                                <span style="color: red;">{{number_format($info['sy']/100,2)}}</span>
+                            @else
+                                {{number_format($info['sy']/100,2)}}
+                            @endif
+                        @else
+                            {{number_format($info['sy']/100,2)}}
+                        @endif
                 </td>
                 <td class="hidden-xs">
                     @if($info['userType']==1)
@@ -234,7 +245,7 @@
                             {{number_format($info['gs']/100,2)}}
                         @endif
                     @else
-                        -
+                        {{number_format($info['gs']/100,2)}}
                     @endif
                 </td>
                 <td class="hidden-xs">

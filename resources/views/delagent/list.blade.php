@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="username" value="{{ $input['username'] or '' }}" name="username" placeholder="代理账号"" autocomplete="off" class="layui-input">
@@ -18,7 +19,6 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn reset" lay-submit>重置</button>
     </div>
 @endsection
 @section('table')
@@ -39,6 +39,7 @@
             <th class="hidden-xs">最近充值</th>
             <th class="hidden-xs">账户余额</th>
             <th class="hidden-xs">百/龙/牛/三/A</th>
+            <th class="hidden-xs">抽水</th>
             <th class="hidden-xs">占成</th>
             <th class="hidden-xs">创建日期</th>
         </tr>
@@ -59,9 +60,16 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info['userType']==1)
-                        {{$info['proportion']}}%
+                        -
                     @else
                         {{$info['pump']}}%
+                    @endif
+                </td>
+                <td class="hidden-xs">
+                    @if($info['userType']==1)
+                        {{$info['proportion']}}%
+                    @else
+                        0%
                     @endif
                 </td>
                 <td class="hidden-xs">{{$info['created_at']}}</td>

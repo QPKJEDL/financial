@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" id="begin" name="begin" placeholder="开始时间" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -20,8 +21,15 @@
         </select>
     </div>
     <div class="layui-inline">
+        <select name="business_name">
+            <option value="">请选择三方商户</option>
+            @foreach($business as $info)
+                <option value="{{$info['business_id']}}" {{isset($input['business_name'])&&$input['business_name']==$info['business_id']?'selected':''}}>{{$info['service_name']}}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
         <button class="layui-btn layui-btn-normal" name="excel" value="excel">导出EXCEL</button>
     </div>
 @endsection
@@ -60,26 +68,36 @@
                 <td class="hidden-xs">{{$info->sj['nickname']}}[{{$info->sj['username']}}]</td>
                 <td class="hidden-xs">{{$info->zsyj['nickname']}}[{{$info->zsyj['username']}}]</td>
                 <td class="hidden-xs">{{number_format($info->bet_before/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info->score/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info->status==3)
+                        {{number_format(-$info->score/100,2)}}
+                    @else
+                        {{number_format($info->score/100,2)}}
+                    @endif
+                </td>
                 <td class="hidden-xs">{{number_format($info->bet_after/100,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info->status==1)
-                        充值
-                    @elseif($info->status==3)
-                        提现
-                    @endif
-                    @if($info->pay_type==1)
-                        (到款)
-                    @elseif($info->pay_type==2)
-                        (签单)
-                    @elseif($info->pay_type==3)
-                        (移分)
-                    @elseif($info->pay_type==4)
-                        (按比例)
-                    @elseif($info->pay_type==5)
-                        (支付宝)
-                    @elseif($info->pay_type==6)
-                        (微信)
+                    @if($info->business_id==0)
+                        @if($info->status==1)
+                            充值
+                        @elseif($info->status==3)
+                            提现
+                        @endif
+                        @if($info->pay_type==1)
+                            (到款)
+                        @elseif($info->pay_type==2)
+                            (签单)
+                        @elseif($info->pay_type==3)
+                            (移分)
+                        @elseif($info->pay_type==4)
+                            (按比例)
+                        @elseif($info->pay_type==5)
+                            (支付宝)
+                        @elseif($info->pay_type==6)
+                            (微信)
+                        @endif
+                    @else
+                        {{$info->business_name}}
                     @endif
                 </td>
                 <td class="hidden-xs">{{$info->remark}}</td>
@@ -126,18 +144,23 @@
                     }
                 }
             });
+            var date = new Date();
+            var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             //日期插件初始化
             laydate.render({
-                elem: '#begin'
+                elem: '#begin',
+                max:max
             });
             laydate.render({
-                elem:"#end"
+                elem:"#end",
+                max:max
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
                 $("input[name='end']").val('');
                 $("input[name='account']").val('');
                 $("select[name='user_type']").val('')
+                $("select[name='business_name']").val('')
             });
             form.on('submit(formDemo)', function(data) {
                 console.log(data);

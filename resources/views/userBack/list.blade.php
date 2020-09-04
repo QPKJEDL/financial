@@ -3,6 +3,7 @@
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-normal addBtn" data-desc="添加黑名单" data-url="{{url('/admin/userBack/0/edit')}}"><i class="layui-icon">&#xe654;</i></button>
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="用户账号" autocomplete="off" class="layui-input">
@@ -16,7 +17,6 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
 @endsection
 @section('table')

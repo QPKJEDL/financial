@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入会员账号" autocomplete="off" class="layui-input">
@@ -19,7 +20,6 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn reset" lay-submit>重置</button>
     </div>
 @endsection
 @section('table')

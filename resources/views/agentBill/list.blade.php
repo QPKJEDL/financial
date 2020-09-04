@@ -2,6 +2,7 @@
 @section('header')
     <div class="layui-inline">
         <button class="layui-btn layui-btn-small layui-btn-warm freshBtn"><i class="layui-icon">&#xe9aa;</i></button>
+        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
     </div>
     <div class="layui-inline">
         <input class="layui-input" lay-verify="begin" name="begin" placeholder="开始时间" id="begin" value="{{ $input['begin'] or '' }}" autocomplete="off">
@@ -28,7 +29,6 @@
     </div>
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
-        <button class="layui-btn layui-btn-normal reset" lay-submit>重置</button>
         <button class="layui-btn layui-btn-normal" name="excel" value="excel">导出EXCEL</button>
     </div>
 @endsection
@@ -103,7 +103,7 @@
             </tr>
         @endforeach
         @if(!$list[0])
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="10" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>

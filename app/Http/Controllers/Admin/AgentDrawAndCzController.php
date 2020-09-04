@@ -50,6 +50,64 @@ class AgentDrawAndCzController extends Controller
             $request->offsetSet('end',date('Y-m-d',$end));
         }
         $sql->whereBetween('agent_billflow.creatime',[$begin,$end]);
+        if (true==$request->has('excel'))
+        {
+            $head = array('时间','代理名称[账号]','会员名称[账号]','直属上级[账号]','直属一级[账号]','操作前金额','操作金额','操作后金额','操作类型','操作人');
+            $excelData = $sql->where($map)->get()->toArray();
+            $excel = array();
+            foreach ($excelData as $key=>$datum)
+            {
+                $arr['creatime']=date('Y-m-d H:i:s',$datum['creatime']);
+                $arr['agentName']=$datum['agentName'].'['.$datum['username'].']';
+                $arr['uName']=$datum['uName'].'['.$datum['account'].']';
+                $agentInfo = $datum['agent_id']?Agent::find($datum['agent_id']):[];
+                $arr['sj']=$agentInfo['nickname'].'['.$agentInfo['username'].']';
+                if ($agentInfo['parent_id']==0)
+                {
+                    $arr['zsyj']=$agentInfo['nickname'].'['.$agentInfo['username'].']';
+                }
+                else
+                {
+                    $ancestors = explode(',',$agentInfo['ancestors']);
+                    $agent = $ancestors[1]?Agent::find($ancestors[1]):[];
+                    $arr['zsyj'] =$agent['nickname'].'['.$agent['username'].']';
+                }
+                $arr['bet_before']=number_format($datum['bet_before']/100,2);
+                $arr['money']=number_format($datum['money']/100,2);
+                $arr['bet_after']=number_format($datum['bet_after']/100,2);
+                if ($datum['status']==1)
+                {
+                    $arr['status']="充值";
+                    if ($datum['type']==1)
+                    {
+                        $arr['status']=$arr['status'].'(到款)';
+                    }elseif ($datum['type']==2)
+                    {
+                        $arr['status']=$arr['status'].'(签单)';
+                    }elseif ($datum['type']==3)
+                    {
+                        $arr['status']=$arr['status'].'(移分)';
+                    }elseif ($datum['type']==4){
+                        $arr['status']=$arr['status'].'(按比例)';
+                    }elseif ($datum['type']==5)
+                    {
+                        $arr['status']=$arr['status'].'(支付宝)';
+                    }elseif ($datum['type']==6)
+                    {
+                        $arr['status']=$arr['status'].'(微信)';
+                    }
+                }else{
+                    $arr['status']='提现';
+                }
+                $arr['remark']=$datum['remark'];
+                $excel[] = $arr;
+            }
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'代理充值提现查询', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         if (true==$request->has('limit'))
         {
             $limit = (int)$request->input('limit');

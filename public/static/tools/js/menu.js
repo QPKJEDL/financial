@@ -28,6 +28,15 @@ layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'elemen
 		var chl = list[0];
 		var chlID = $(chl).attr('data-id');
 		var isActive = $(".layui-tab-title").find('li[lay-id="'+chlID+'"]');
+		/*if(chlID==2){
+			element.tabDelete('menuTab',chlID);
+			element.tabAdd('menuTab',{
+				title: $(chl).attr('data-title'),//标题
+				content:'<iframe frameborder="0" style="width: 100%; height: calc(100vh - 157px)" name="'+$(chl).attr('data-title')+'" src="'+$(chl).attr('data-url')+'"></iframe>',//内容
+				id:chlID
+			});
+			element.tabChange('menuTab',chlID);	//添加完成切换到该选项卡
+		}*/
 		if (isActive.length>0){
 			element.tabChange('menuTab',chlID);
 		}else {
@@ -52,7 +61,22 @@ layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'elemen
 		var title = $(this).attr('data-title');//获取标题
 		var isActive = $(".layui-tab-title").find("li[lay-id=" + id + "]");
 		if(isActive.length>0){
-			element.tabChange('menuTab',id)	//切换到指定选项卡
+			/*element.tabChange('menuTab',id)	//切换到指定选项卡*/
+			if (id==46)
+			{
+				console.log('1');
+				element.tabDelete('menuTab',id);
+				element.tabAdd('menuTab',{
+					title: title,//标题
+					content:'<iframe frameborder="0" style="width: 100%; height: calc(100vh - 157px)" name="'+title+'" src="'+url+'"></iframe>',//内容
+					id:id
+				});
+				element.tabChange('menuTab',id);	//添加完成切换到该选项卡
+			}
+			else
+			{
+				element.tabChange('menuTab',id);
+			}
 		}else{
 			element.tabAdd('menuTab',{
 				/*<iframe id="index" marginwidth="0" marginheight="0" frameborder="0" scrolling="no" name="iframe0" width="100%" height="100%" src="{{url('/admin/home')}}"></iframe>*/

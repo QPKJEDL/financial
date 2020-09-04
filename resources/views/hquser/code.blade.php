@@ -90,7 +90,7 @@
                 var v = $("#status").val();
                 var userName = $("#nickname").val();
                 if(v==1){
-                    layer.confirm('您确定给会员['+v+']充值'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
+                    layer.confirm('您确定给会员['+userName+']充值'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
                         btn:['确定','取消']//按钮
                     },function () {
                         $.ajax({
@@ -122,7 +122,7 @@
                         layer.msg('您取消了对该会员的充值');
                     });
                 }else{
-                    layer.confirm('您确定给会员['+v+']提现'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
+                    layer.confirm('您确定给会员['+userName+']提现'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
                         btn:['确定','取消']//按钮
                     },function () {
                         $.ajax({

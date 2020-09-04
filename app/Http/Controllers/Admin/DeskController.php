@@ -23,6 +23,48 @@ class DeskController extends Controller
         {
             $map['id']=$request->input('deskId');
         }
+        if (true==$request->has('excel'))
+        {
+            $head = array('日期','台类型','台桌名称','总下注','下注输赢','洗码费','公司总赢');
+            $excelData = Desk::where($map)->get()->toArray();
+            $excel = array();
+            foreach ($excelData as $key=>&$datum)
+            {
+                $a = array();
+                $excelData[$key]['time']=$tableName;
+                $a['time']=$tableName;
+                if($datum['game_id']==1){//百家乐
+                    $a['gameName']="百家乐";
+                    $a['money'] = number_format($this->getBaccaratMoney($datum['id'],$datum['game_id'],0,0,$tableName)/100,2);
+                    $a['betMoney']=number_format($this->getCalculationMoney($excelData[$key]['id'],0,0,$tableName)/100,2);
+                }else if($datum['game_id']==2){//龙虎
+                    $a['gameName']="龙虎";
+                    $a['betMoney']=number_format($this->getCalculationMoney($excelData[$key]['id'],0,0,$tableName)/100,2);
+                    $a['money'] = number_format($this->getDragonTieTigerMoney($datum['id'],$datum['game_id'],0,0,$tableName)/100,2);
+                }else if($datum['game_id']==3){//牛牛
+                    $a['gameName']="牛牛";
+                    $a['betMoney'] = number_format($this->getNiuNiuMoney($datum['id'],$datum['game_id'],0,0,$tableName)/100,2);
+                    $a['money']=$a['betMoney'];
+                }else if($datum['game_id']==4){//三公
+                    $a['gameName']="三公";
+                    $a['betMoney']=number_format($this->getSanGongMoney($datum['id'],$datum['game_id'],0,0,$tableName)/100,2);
+                    $a['money']=$a['betMoney'];
+                }else if($datum['game_id']==5){//A89
+                    $a['gameName']="A89";
+                    $a['betMoney']=number_format($this->getA89Money($datum['id'],$datum['game_id'],0,0,$tableName)/100,2);
+                    $a['money']=$a['betMoney'];
+                }
+                $a['desk_name']=$datum['desk_name'];
+                $a['game_id']=Game::getGameNameByGameId($datum['game_id']);
+                $a['winAndErr']=number_format($this->getWinAndErrMoney($excelData[$key]['id'],0,0,$tableName)/100,2);
+                $excel[] = $a;
+            }
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'台桌输赢', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         if (true==$request->has('limit'))
         {
             $limit = $request->input('limit');

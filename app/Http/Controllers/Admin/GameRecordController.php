@@ -41,6 +41,59 @@ class GameRecordController extends Controller
         {
             $limit = 10;
         }
+        if (true==$request->has('excel'))
+        {
+            $game = new GameRecord();
+            $game->setTable('game_record_'.$tableName);
+            $excelData = $game->leftJoin('desk','game_record_'.$tableName.'.desk_id','=','desk.id')
+            ->select('desk.desk_name','game_record_'.$tableName.'.boot_num','game_record_'.$tableName.'.pave_num','game_record_'.$tableName.'.creatime',
+            'game_record_'.$tableName.'.winner','game_record_'.$tableName.'.update_result_before','game_record_'.$tableName.'.type')->where($map)->get()->toArray();
+            foreach ($excelData as $key=>$datum)
+            {
+                $excelData[$key]['creatime']=date('Y-m-d H:m:s',$datum['creatime']);
+                if ($excelData[$key]['type'] == 1) {//百家乐
+                    $excelData[$key]['type']="百家乐";
+                    $excelData[$key]['winner'] = $this->getBaccaratParseJson($excelData[$key]['winner']);
+                    $excelData[$key]['winner'] = $excelData[$key]['winner']['game'].$excelData[$key]['winner']['playerPair'].$excelData[$key]['winner']['bankerPair'];
+                    if ($excelData[$key]['update_result_before'] != '') {
+                        $excelData[$key]['update_result_before'] = $this->getBaccaratParseJson($excelData[$key]['update_result_before']);
+                        $excelData[$key]['update_result_before'] = $excelData[$key]['update_result_before']['game'].$excelData[$key]['update_result_before']['playerPair'].$excelData[$key]['update_result_before']['bankerPair'];
+                    }
+                } else if ($excelData[$key]['type'] == 2) {//龙虎
+                    $excelData[$key]['type']="龙虎";
+                    $excelData[$key]['winner'] = $this->getDragonTigerJson($excelData[$key]['winner']);
+                    if ($excelData[$key]['update_result_before'] != '') {
+                        $excelData[$key]['update_result_before'] = $this->getDragonTigerJson($excelData[$key]['update_result_before']);
+                    }
+                } else if ($excelData[$key]['type'] == 3) {//牛牛
+                    $excelData[$key]['type']="牛牛";
+                    $excelData[$key]['winner'] = $this->getNiuNiu($excelData[$key]['winner']);
+                    if ($excelData[$key]['update_result_before'] != '') {
+                        $excelData[$key]['update_result_before'] = $this->getNiuNiu($excelData[$key]['update_result_before']);
+                    }
+                } else if ($excelData[$key]['type'] == 4) {
+                    $excelData[$key]['type']="三公";
+                    $excelData[$key]['winner'] = $this->getSanGong($excelData[$key]['winner']);
+                    if ($excelData[$key]['update_result_before']!= '')
+                    {
+                        $excelData[$key]['update_result_before'] = $this->getSanGong($excelData[$key]['update_result_before']);
+                    }
+                } else {
+                    $excelData[$key]['type']="A89";
+                    $excelData[$key]['winner'] = $this->getA89($excelData[$key]['winner']);
+                    if ($excelData[$key]['update_result_before']!='')
+                    {
+                        $excelData[$key]['update_result_before'] = $this->getA89($excelData[$key]['update_result_before']);
+                    }
+                }
+            }
+            $head = array('台桌','靴号','铺号','时间','结果','修改前结果','游戏类型');
+            try {
+                exportExcel($head, $excelData, date('Y-m-d',time()).'游戏记录查询', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         $data = $gameRecord->where($map)->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
             $data[$key]['desk']=Desk::getDeskInfo($value['desk_id']);
@@ -154,6 +207,26 @@ class GameRecordController extends Controller
         $arr['num']='庄'.$data['bankernum'].' 闲1 '.$data['x1num'].' 闲2 '.$data['x2num'].' 闲3 '.$data['x3num'];
         return $arr;
     }
+    public function getNiuNiu($jsonStr)
+    {
+        $str = '';
+        $data = json_decode($jsonStr, true);
+        //先判断庄是不是通吃
+        if ($data['x1result'] == "" && $data['x2result'] == "" && $data['x3result'] == "") {
+            $str = "庄";
+        } else {
+            if ($data['x1result'] == "win") {
+                $str = $str. "闲1";
+            }
+            if ($data['x2result'] == "win") {
+                $str = $str."闲2";
+            }
+            if ($data['x3result'] == "win") {
+                $str=$str."闲3";
+            }
+        }
+        return $str;
+    }
     /**
      * 三公
      * @param $jsonStr
@@ -204,6 +277,37 @@ class GameRecordController extends Controller
         return $arr;
     }
 
+    public function getSanGong($jsonStr)
+    {
+        $str = '';
+        $data = json_decode($jsonStr,true);
+        //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
+        //判断庄是否通吃
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+            $str = "庄";
+        }else{
+            if ($data['x1result'] == "win") {
+                $str = $str."闲1";
+            }
+            if ($data['x2result'] == "win") {
+                $str = $str."闲2";
+            }
+            if ($data['x3result'] == "win") {
+                $str = $str."闲3";
+            }
+            if ($data['x4result'] == "win") {
+                $str = $str."闲4";
+            }
+            if ($data['x5result'] == "win") {
+                $str = $str."闲5";
+            }
+            if ($data['x6result'] == "win") {
+                $str = $str."闲6";
+            }
+        }
+        return $str;
+    }
+
     /**
      * A89
      */
@@ -234,5 +338,27 @@ class GameRecordController extends Controller
         }
         $arr['num']='庄'.$data['BankerNum'].' 反门'.$data['FanNum'].'顺门'.$data['ShunNum'].'天门'.$data['TianNum'];
         return $arr;
+    }
+
+    public function getA89($jsonStr)
+    {
+        $str = '';
+        $data = json_decode($jsonStr,true);
+        //{"BankerNum":"5点","FanNum":"0点","Fanresult":"","ShunNum":"8点","Shunresult":"win","TianNum":"5点","Tianresult":"win"}
+        //判断庄是否通知
+        $arr = array();
+        if ($data['Fanresult']=="" && $data['Shunresult']=="" && $data['Tianresult']==""){
+            $str = "庄";
+        }
+        if ($data['Fanresult'] == "win") {
+            $str = $str."反门";
+        }
+        if ($data['Shunresult'] == "win") {
+            $str = $str."顺门";
+        }
+        if ($data['Tianresult']=="win"){
+            $str = $str."天门";
+        }
+        return $str;
     }
 }

@@ -49,14 +49,14 @@ class AgentListController extends Controller
            $sql->where('nickname','like','%'.HttpFilter($request->input('nickname')).'%');
         }
         if (true==$request->has('excel') && true==$request->input('excel')){
-            $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','created_at')
+            $excel = $sql->select('id','username','nickname','balance','ancestors','fee','proportion','pump','created_at')
                 ->where($map)->get()->toArray();
             foreach ($excel as $key=>$value){
                 $excel[$key]['ancestors'] = $this->getGroupBalance($value['id']);
                 $data = json_decode($value['fee'],true);
                 $excel[$key]['fee']=$data['baccarat'].'%/'.$data['dragonTiger'].'%/'.$data['niuniu'].'%/'.$data['sangong'].'%/'.$data['A89'].'%';
             }
-            $head = array('ID','代理账号','姓名','账户余额','群组余额','百/龙/牛/三/A','占成(%)','创建时间');
+            $head = array('ID','代理账号','姓名','账户余额','群组余额','百/龙/牛/三/A','占成(%)','抽水百分比','创建时间');
             try {
                 exportExcel($head, $excel, '代理列表', '', true);
             } catch (\PHPExcel_Reader_Exception $e) {
@@ -448,9 +448,10 @@ class AgentListController extends Controller
      */
     public function user($id,Request $request){
         $map = array();
-        $map['agent_id']=(int)$id;
+        $map['user.agent_id']=(int)$id;
+        $map['user.del_flag']=0;
         if(true==$request->has('account')){
-            $map['account']=HttpFilter($request->input('account'));
+            $map['agent_users.account']=HttpFilter($request->input('account'));
         }
         $user = HqUser::query();
         $sql = $user->leftJoin('agent_users','user.agent_id','=','agent_users.id')
@@ -550,7 +551,7 @@ class AgentListController extends Controller
                         $this->unRedissLock($id);
                         return ['msg'=>'操作失败','status'=>0];
                     }
-                    $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] + $data['balance'],$data['type'],0,Auth::user()['username'].'[点击提现]');
+                    $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] - $data['balance'],$data['type'],0,Auth::user()['username'].'[点击提现]');
                     if (!$result)
                     {
                         DB::rollBack();

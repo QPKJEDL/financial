@@ -56,6 +56,33 @@ class LiveRewardController extends Controller
             $request->offsetSet('end',date('Y-m-d',time()));
         }
         $sql->whereBetween('live_reward.creatime',[$begin,$end]);
+        if (true==$request->has('excel'))
+        {
+            $head = array('账号','昵称','直属一级','台桌号','靴','铺','主播账号','主播名称','打赏金额','打赏时间');
+            $excelData = $sql->where($map)->get()->toArray();
+            $excel = array();
+            foreach ($excelData as $key=>$datum)
+            {
+                $a = array();
+                $a['account']=$datum['userAcc'];
+                $a['userName']=$datum['userName'];
+                $agent = $this->get_direct_agent($datum['agent_id']);
+                $a['agent']=$agent['nickname'].'['.$agent['username'].']';
+                $a['desk_name'] = $datum['desk_name'];
+                $a['boot_num']=$datum['boot_num'];
+                $a['pave_num']=$datum['pave_num'];
+                $a['liveAcc']=$datum['liveAcc'];
+                $a['liveName']=$datum['liveName'];
+                $a['money']=number_format($datum['money']/100,2);
+                $a['creatime']=date('Y-m-d H:i:s',$datum['creatime']);
+                $excel[] = $a;
+            }
+            try {
+                exportExcel($head, $excel, date('Y-m-d H:i:s',time()).'会员打赏记录', '', true);
+            } catch (\PHPExcel_Reader_Exception $e) {
+            } catch (\PHPExcel_Exception $e) {
+            }
+        }
         if (true==$request->has('limit'))
         {
             $limit = $request->input('limit');

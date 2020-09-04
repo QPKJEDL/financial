@@ -2,9 +2,11 @@
 namespace APP\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRequest;
 use App\Models\Desk;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class OnlineController extends Controller
 {
@@ -48,6 +50,28 @@ class OnlineController extends Controller
             $data[$key]['savetime']=date('Y-m-d H:i:s',$value['savetime']);
         }
         return view('online.list',['list'=>$data,'input'=>$request->all(),'desk'=>$this->getAllDeskList(),'count'=>count($countData),'money'=>$this->getOnlineUserMoney($countData),'pc'=>$this->getOnlineCount($countData,1),'ios'=>$this->getOnlineCount($countData,2),'android'=>$this->getOnlineCount($countData,3),'h5'=>$this->getOnlineCount($countData,4)]);
+    }
+
+    /**
+     * 踢下线
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function destroy(StoreRequest $request)
+    {
+        $id = $request->input('id');
+        $count = HqUser::where('user_id','=',$id)->update(['is_online'=>0]);
+        if ($count)
+        {
+            $redis = Redis::connection('redis2');
+            $userdata=$redis->get('UserInfo_'.$id);
+            $userinfo=json_decode($userdata,true);
+            $userinfo["Token"]='11111111111111111111';
+            $new=json_encode($userinfo);
+            $redis->set('UserInfo_'.$id,$new);
+            return ['msg'=>'操作成功','status'=>1];
+        }
+        return ['msg'=>'操作失败','status'=>0];
     }
 
     /**

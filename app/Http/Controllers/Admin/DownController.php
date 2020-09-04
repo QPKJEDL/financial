@@ -51,7 +51,7 @@ class DownController extends Controller
         {
             $limit = 10;
         }
-        $data = $sql->paginate($limit)->appends($request->all());
+        $data = $sql->orderBy('user_draw.creatime','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$value){
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
             $data[$key]['agent']=$this->get_direct_agent($value['agent_id']);
