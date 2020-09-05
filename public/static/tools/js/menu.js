@@ -61,10 +61,8 @@ layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'elemen
 		var title = $(this).attr('data-title');//获取标题
 		var isActive = $(".layui-tab-title").find("li[lay-id=" + id + "]");
 		if(isActive.length>0){
-			/*element.tabChange('menuTab',id)	//切换到指定选项卡*/
-			if (id==46)
+			if (id!=0 && id!=29)
 			{
-				console.log('1');
 				element.tabDelete('menuTab',id);
 				element.tabAdd('menuTab',{
 					title: title,//标题
