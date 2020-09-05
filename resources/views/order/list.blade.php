@@ -225,11 +225,15 @@
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
+            var date = new Date();
+            var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             laydate.render({
-                elem:"#begin"
+                elem:"#begin",
+                max:max
             });
             laydate.render({
-                elem:"#end"
+                elem:"#end",
+                max:max
             });
             var pages = {{$pages}};
             var curr = {{$curr}};
@@ -281,10 +285,10 @@
             form.verify({
                 begin:function(value){
                     var begin = Date.parse(new Date(value));
-                    //获取当前时间戳
-                    var nowTime = (new Date()).getTime();
-                    if(begin>nowTime){
-                        return "选择的日期不能大于今天的日期";
+                    var endTime = $("input[name='end']").val();
+                    var end = Date.parse(new Date(endTime));
+                    if (begin>end){
+                        return '开始时间不能大于结束时间'
                     }
                 }
             });
