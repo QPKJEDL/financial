@@ -118,7 +118,8 @@
                 <td class="hidden-xs" style="font-size: 1px;">{{$info->user['nickname']}}[{{$info->user['account']}}]</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_before']/100,2)}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">
-                    <button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-xs layui-btn-normal result">查看结果</button>
+                    {{--<button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-xs layui-btn-normal result">查看结果</button>--}}
+                    {{$info->bet_money}}
                 </td>
                 <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_after']/100,2)}}</td>
                 <td class="hidden-xs">
