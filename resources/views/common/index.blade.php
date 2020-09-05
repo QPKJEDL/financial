@@ -54,7 +54,7 @@
         <ul class="layui-tab-title tabList">
             <li lay-id="0" class="layui-this">首页</li>
         </ul>
-        <div class="layui-tab-content " >
+        <div class="layui-tab-content">
             <div class="layui-tab-item layui-show" id="index">
                 <iframe src="{{url('/admin/home')}}" frameborder="0" style="width: 100%; height: calc(100vh - 157px);" id="demoAdmin"></iframe>
             </div>
