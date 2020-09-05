@@ -70,7 +70,13 @@
                 <td class="hidden-xs">{{number_format($info->bet_before/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info->status==3)
-                        {{number_format(-$info->score/100,2)}}
+                        <span style="color: red;">
+                            @if($info->score > 0)
+                            {{number_format(-$info->score/100,2)}}
+                            @else
+                            {{number_format($info->score/100,2)}}
+                            @endif
+                        </span>
                     @else
                         {{number_format($info->score/100,2)}}
                     @endif
