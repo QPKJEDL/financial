@@ -151,6 +151,7 @@
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
+                $("input[name='end']").val('');
                 $("input[name='account']").val('');
                 $("select[name='status']").val('');
             });
