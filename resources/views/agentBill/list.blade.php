@@ -77,7 +77,19 @@
                 <td class="hidden-xs">{{$info['sj']['nickname']}}[{{$info['sj']['username']}}]</td>
                 <td class="hidden-xs">{{$info['zsyj']['nickname']}}[{{$info['zsyj']['username']}}]</td>
                 <td class="hidden-xs">{{number_format($info['bet_before']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info['money']/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info['bet_before']>$info['bet_after'])
+                        <span style="color: red;">
+                            @if($info['money']>0)
+                                {{number_format(-$info['money']/100,2)}}
+                            @else
+                                {{number_format($info['money']/100,2)}}
+                            @endif
+                        </span>
+                    @else
+                        {{number_format($info['money']/100,2)}}
+                    @endif
+                </td>
                 <td class="hidden-xs">{{number_format($info['bet_after']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['status']==1)
