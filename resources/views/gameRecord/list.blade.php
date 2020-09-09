@@ -35,6 +35,7 @@
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
+            <col class="hidden-xs" width="100">
         </colgroup>
         <thead>
         <tr>
@@ -44,6 +45,7 @@
             <th class="hidden-xs">时间</th>
             <th class="hidden-xs">结果</th>
             <th class="hidden-xs">修改前结果</th>
+            <th class="hidden-xs">操作人</th>
         </tr>
         </thead>
         <tbody>
@@ -84,7 +86,7 @@
                         @endif
                 @elseif($info['status']==2)
                     作废
-                    @elseif($info['status']==0)
+                @elseif($info['status']==0)
                     下注中
                 @endif
                 </td>
@@ -123,6 +125,7 @@
                             @endif
                     @endif
                 </td>
+                <td class="hidden-xs">{{$info['update_by']}}</td>
             </tr>
         @endforeach
         @if(!$list[0])

@@ -186,6 +186,8 @@
                         success:function (res) {
                             if (res.status==1){
                                 layer.msg(res.msg,{icon:6});
+                                layer.close(index);
+                                window.location.reload();
                             }else{
                                 layer.msg(res.msg,{shift: 6,icon:5});
                             }
@@ -194,67 +196,101 @@
                             layer.msg('网络失败', {time: 1000});
                         }
                     });
-                    layer.close(index);
-                    window.location.reload();
                 });
             });
             //确认
             $(".approve").click(function () {
                 var id = $(this).attr('data-id');
-                layer.confirm('确定要操作吗？',function (index) {
+                layer.prompt({title:'请输入密码，并确认',formType:1},function (pass,index) {
                     $.ajax({
                         headers:{
                             "X-CSRF-TOKEN":$("input[name='_token']").val()
                         },
-                        url:"{{url('/admin/down/approveData')}}",
-                        type:"post",
-                        data:{"id":id},
+                        url:"{{url('/admin/checkPasswordIsTrue')}}",
+                        type:'post',
+                        data:{'password':pass},
                         dataType:"json",
                         success:function (res) {
                             if(res.status==1){
-                                layer.msg(res.msg,{icon:6});
+                                layer.close(index);
+                                layer.confirm('确定要操作吗？',function (index) {
+                                    $.ajax({
+                                        headers:{
+                                            "X-CSRF-TOKEN":$("input[name='_token']").val()
+                                        },
+                                        url:"{{url('/admin/down/approveData')}}",
+                                        type:"post",
+                                        data:{"id":id},
+                                        dataType:"json",
+                                        success:function (res) {
+                                            if(res.status==1){
+                                                layer.msg(res.msg,{icon:6});
+                                            }else{
+                                                layer.msg(res.msg,{shift:6,icon:5});
+                                            }
+                                        },
+                                        error : function (XMLHttpRequest,textStatus,errorThrow) {
+                                            layer.msg('网络失败',{time:1000});
+                                        }
+                                    });
+                                    layer.close(index);
+                                    window.location.reload();
+                                });
                             }else{
                                 layer.msg(res.msg,{shift:6,icon:5});
                             }
-                        },
-                        error : function (XMLHttpRequest,textStatus,errorThrow) {
-                            layer.msg('网络失败',{time:1000});
                         }
                     });
-                    layer.close(index);
-                    window.location.reload();
                 });
             });
             //作废
             $(".void").click(function () {
                 var id = $(this).attr('data-id');
-                layer.confirm('确定要作废吗？',function (index) {
-                    layer.prompt({title:'填写驳回原因，并确认',formType:2},function (text,index) {
-                        layer.close(index)
-                        $.ajax({
-                            headers:{
-                                "X-CSRF-TOKEN":$("input[name='_token']").val()
-                            },
-                            url:"{{url('/admin/down/obsoleteData')}}",
-                            type:"post",
-                            data:{"id":id,'reason':text},
-                            dataType:"json",
-                            success:function (res) {
-                                if(res.status==1){
-                                    layer.msg(res.msg,{icon:6});
-                                    layer.close(index);
-                                    window.location.reload();
-                                }else{
-                                    layer.msg(res.msg,{shift:6,icon:5});
-                                }
-                            },
-                            error : function (XMLHttpRequest,textStatus,errorThrow) {
-                                layer.msg('网络失败',{time:1000});
+                layer.prompt({title:'请输入密码，并确认',formType:1},function (pass,index) {
+                    $.ajax({
+                        headers:{
+                            "X-CSRF-TOKEN":$("input[name='_token']").val()
+                        },
+                        url:"{{url('/admin/checkPasswordIsTrue')}}",
+                        type:'post',
+                        data:{'password':pass},
+                        dataType:"json",
+                        success:function (res) {
+                            if(res.status==1){
+                                layer.close(index);
+                                layer.confirm('确定要作废吗？',function (index) {
+                                    layer.prompt({title:'填写驳回原因，并确认',formType:2},function (text,i) {
+                                        layer.close(i)
+                                        $.ajax({
+                                            headers:{
+                                                "X-CSRF-TOKEN":$("input[name='_token']").val()
+                                            },
+                                            url:"{{url('/admin/down/obsoleteData')}}",
+                                            type:"post",
+                                            data:{"id":id,'reason':text},
+                                            dataType:"json",
+                                            success:function (res) {
+                                                if(res.status==1){
+                                                    layer.msg(res.msg,{icon:6});
+                                                    layer.close(index);
+                                                    window.location.reload();
+                                                }else{
+                                                    layer.msg(res.msg,{shift:6,icon:5});
+                                                }
+                                            },
+                                            error : function (XMLHttpRequest,textStatus,errorThrow) {
+                                                layer.msg('网络失败',{time:1000});
+                                            }
+                                        });
+                                    });
+                                },function () {
+                                    layer.msg('取消了');
+                                });
+                            }else{
+                                layer.msg(res.msg,{shift:6,icon:5});
                             }
-                        });
+                        }
                     });
-                },function () {
-                    layer.msg('取消了');
                 });
             });
             $(".dayInfo").click(function () {

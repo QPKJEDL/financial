@@ -37,35 +37,38 @@ class DepositAndWithController extends Controller
         }
         if (true==$request->has('account'))
         {
-            $map['user.account']=HttpFilter($request->input('account'));
+            $map['account']=HttpFilter($request->input('account'));
         }
         if (true==$request->has('user_type'))
         {
-            $map['user.user_type']=HttpFilter($request->input('user_type'));
+            $map['user_type']=HttpFilter($request->input('user_type'));
+        }
+        if (true==$request->has('create_by'))
+        {
+            $map['create_by']=$request->input('create_by');
         }
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
         //获取第一天的数据
         $bill = new Billflow();
         $bill->setTable('user_billflow_'.$dateArr[0]);
         $sql = $bill->leftJoin('user','user_billflow_'.$dateArr[0].'.user_id','=','user.user_id')
-            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.agent_id','user.user_type');
         for ($i=1;$i<count($dateArr);$i++)
         {
             $b = new Billflow();
             $b->setTable('user_billflow_'.$dateArr[$i]);
             $d = $b->leftJoin('user','user_billflow_'.$dateArr[$i].'.user_id','=','user.user_id')
-                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.agent_id','user.user_type');
             $sql->unionAll($d);
         }
-        $arr = array();
         if (true==$request->has('business_name'))
         {
-            $arr['business_id']=$request->input('business_name');
+            $map['business_id']=$request->input('business_name');
         }
         if (true==$request->has('excel'))
         {
             $head = array('时间','用户名称[账号]','直属上级[账号]','直属一级[账号]','操作前金额','充值提现金额','操作后金额','操作类型','操作人');
-            $excelData = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($arr)->get()->toArray();
+            $excelData = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map)->get()->toArray();
             $excel = array();
             foreach ($excelData as $key=>$datum)
             {
@@ -134,7 +137,7 @@ class DepositAndWithController extends Controller
         {
             $limit = 10;
         }
-        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($arr)->paginate($limit)->appends($request->all());
+        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map)->whereIn('status',[1,3])->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             //获取直属上级
@@ -154,9 +157,9 @@ class DepositAndWithController extends Controller
                 $data[$key]->zsyj['nickname']=$zsyj['nickname'];
                 $data[$key]->zsyj['username']=$zsyj['username'];
             }
-            $data[$key]->creatime=date('Y-m-d H:i:s',time());
+            $data[$key]->creatime=date('Y-m-d H:i:s',$datum->creatime);
         }
-        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList()]);
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList(),'user'=>User::getAllUser()]);
     }
 
     /**
@@ -190,21 +193,29 @@ class DepositAndWithController extends Controller
         }
         if (true==$request->has('account'))
         {
-            $map['user.account']=$request->input('account');
+            $map['account']=$request->input('account');
+        }
+        if (true==$request->has('business_name'))
+        {
+            $map['business_id']=$request->input('business_name');
+        }
+        if (true==$request->has('create_by'))
+        {
+            $map['create_by']=$request->input('create_by');
         }
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
         //获取第一天的数据
         $bill = new Billflow();
         $bill->setTable('user_billflow_'.$dateArr[0]);
         $sql = $bill->leftJoin('user','user_billflow_'.$dateArr[0].'.user_id','=','user.user_id')
-            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+            ->select('user_billflow_'.$dateArr[0].'.*','user.account','user.agent_id');
         //dump($sql->get());
         for ($i=1;$i<count($dateArr);$i++)
         {
             $b = new Billflow();
             $b->setTable('user_billflow_'.$dateArr[$i]);
             $d = $b->leftJoin('user','user_billflow_'.$dateArr[$i].'.user_id','=','user.user_id')
-                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.nickname','user.agent_id')->where($map)->where('status','=',1)->orWhere('status','=',3);
+                ->select('user_billflow_'.$dateArr[$i].'.*','user.account','user.agent_id');
             $sql->unionAll($d);
         }
         if (true==$request->has('limit'))
@@ -215,7 +226,7 @@ class DepositAndWithController extends Controller
         {
             $limit = 10;
         }
-        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->paginate($limit)->appends($request->all());
+        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map)->whereIn('status',[1,3])->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             //获取直属上级
@@ -237,7 +248,7 @@ class DepositAndWithController extends Controller
             }
             $data[$key]->creatime=date('Y-m-d H:i:s',time());
         }
-        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList()]);
+        return view('daw.list',['list'=>$data,'limit'=>$limit,'input'=>$request->all(),'business'=>Pay::getAllPayList(),'user'=>User::getAllUser()]);
     }
     /**
      * 根据开始时间结束时间获取中间得时间段

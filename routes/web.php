@@ -27,7 +27,7 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
     Route::resource('/menus',           'MenuController');
     Route::resource('/logs',            'LogController');
     Route::resource('/users',           'UserController');
-    Route::get('/userinfo',             'UserController@userInfo');
+   // Route::get('/userinfo',             'UserController@userInfo');
     Route::post('/saveinfo/{type}',     'UserController@saveInfo');
     Route::resource('/roles',           'RoleController');
     Route::resource('/permissions',     'PermissionController');

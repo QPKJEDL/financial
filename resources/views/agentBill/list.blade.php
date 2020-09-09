@@ -15,16 +15,24 @@
     </div>
     <div class="layui-inline">
         <select name="status">
-            <option value="">请选择</option>
+            <option value="">请选择类型</option>
             <option value="1" {{isset($input['status'])&&$input['status']==1?'selected':''}}>充值</option>
             <option value="2" {{isset($input['status'])&&$input['status']==2?'selected':''}}>提现</option>
         </select>
     </div>
     <div class="layui-inline">
         <select name="userType">
-            <option value="">请选择</option>
+            <option value="">请选择用户类型</option>
             <option value="1" {{isset($input['userType'])&&$input['userType']==1?'selected':''}}>线下</option>
             <option value="2" {{isset($input['userType'])&&$input['userType']==2?'selected':''}}>线上</option>
+        </select>
+    </div>
+    <div class="layui-inline">
+        <select name="create_by">
+            <option value="">请选择操作人</option>
+            @foreach($user as $i)
+                <option value="{{$i['id']}}" {{isset($input['create_by'])&&$input['create_by']==$i['id']?'selected':''}}>{{$i['username']}}[{{$i['nickname']}}]</option>
+            @endforeach
         </select>
     </div>
     <div class="layui-inline">
@@ -66,10 +74,10 @@
         @foreach($list as $info)
             <tr>
                 <td class="hidden-xs">{{$info['creatime']}}</td>
-                <td class="hidden-xs">{{$info['agentName']}}[{{$info['username']}}]</td>
+                <td class="hidden-xs">{{$info['agent_name']}}[{{$info['username']}}]</td>
                 <td class="hidden-xs">
                     @if($info['user_id']!="")
-                        {{$info['uName']}}[{{$info['account']}}]
+                        {{$info['user_name']}}[{{$info['account']}}]
                     @else
                         -
                     @endif
@@ -166,6 +174,7 @@
                 $("input[name='end']").val('');
                 $("input[name='account']").val('');
                 $("select[name='status']").val('');
+                $("select[name='create_by']").val('');
             });
             form.on('submit(formDemo)', function(data) {
                 console.log(data);

@@ -71,7 +71,7 @@ class AgentListController extends Controller
             {
                 $limit = 10;
             }
-            $data = $sql->where($map)->paginate($limit)->appends($request->all());
+            $data = $sql->where($map)->orderBy('created_at','desc')->paginate($limit)->appends($request->all());
             $sumBalance=0;
             foreach ($data as $key=>$value){
                 $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
@@ -262,13 +262,6 @@ class AgentListController extends Controller
 
     public function destroy($id)
     {
-        /*$count = Agent::where('id','=',$id)->update(['del_flag'=>1]);
-        if ($count!==false)
-        {
-            return ['msg'=>'操作成功','status'=>1];
-        }else{
-            return ['msg'=>'操作失败','status'=>0];
-        }*/
         DB::beginTransaction();
         try {
             $agentIdArray = array();
@@ -324,11 +317,44 @@ class AgentListController extends Controller
      */
     public function stop(StoreRequest $request){
         $id=$request->input('id');
-        $stop = Agent::where('id','=',(int)$id)->update(array("status"=>1));
-        if($stop){
-            return ['msg'=>'停用成功','status'=>1];
-        }else{
-            return ['msg'=>'停用失败','status'=>0];
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //获取所有下级代理id
+            $idArr = Agent::query()->select('id')->where('id','=',$id)->orWhereRaw('FIND_IN_SET(?,ancestors)',[$id])->where('status','=',0)->get()->toArray();
+            //获取所有下级代理id
+            $userIdArr = HqUser::query()->select('user_id as id')->whereIn('agent_id',$idArr)->where('is_over','=',0)->get()->toArray();
+            //修改状态
+            $count = Agent::query()->whereIn('id',$idArr)->update(['status'=>1]);
+            if ($count!=count($idArr)){
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            $result = HqUser::query()->whereIn('user_id',$userIdArr)->update(['is_over'=>1]);
+            if ($result!=count($userIdArr))
+            {
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            $arr = array();
+            $arr['user']=$userIdArr;
+            $arr['agent']=$idArr;
+            $arr = json_encode($arr);
+            $num = Agent::where('id','=',$id)->update(['disable_json'=>$arr]);
+            if ($num!==false)
+            {
+                DB::commit();
+                return ['msg'=>'操作成功','status'=>1];
+            }
+            else
+            {
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+        }catch (\Exception $exception)
+        {
+            DB::rollback();
+            return ['msg'=>'操作失败1','status'=>0];
         }
     }
     /*
@@ -336,11 +362,31 @@ class AgentListController extends Controller
      */
     public function start(StoreRequest $request){
         $id=$request->input('id');
-        $stop = Agent::where('id','=',(int)$id)->update(array("status"=>0));
-        if($stop){
-            return ['msg'=>'启用成功','status'=>1];
-        }else{
-            return ['msg'=>'启用失败','status'=>0];
+        DB::beginTransaction();
+        try {
+            $info = $id?Agent::find($id):[];
+            $idArr = json_decode($info['disable_json'],true);
+            $user = $idArr['user'];
+            $agent = $idArr['agent'];
+            //修改代理
+            $count = Agent::query()->whereIn('id',$agent)->update(['status'=>0]);
+            if (count($agent)!=$count)
+            {
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            $result = HqUser::query()->whereIn('user_id',$user)->update(['is_over'=>0]);
+            if ($result!=count($user))
+            {
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
+            }
+            DB::commit();
+            return ['msg'=>'操作成功','status'=>1];
+        }catch (\Exception $exception)
+        {
+            DB::rollback();
+            return ['msg'=>'操作失败','status'=>0];
         }
     }
 
@@ -433,7 +479,12 @@ class AgentListController extends Controller
             }
             $data = $sql->where($map)->paginate($limit)->appends($request->all());
             foreach ($data as $key=>$value){
-                $data[$key]['fee']=json_decode($value['fee'],true);
+                $data[$key]['agentCount']=$this->getSubordinateCount($value['id']);
+                $data[$key]['userCount']=$this->getHqUserCount($value['id']);
+                if ($value['userType']==1)
+                {
+                    $data[$key]['fee']=json_decode($value['fee'],true);
+                }
                 $data[$key]['groupBalance']=$this->getGroupBalance($value['id']);
             }
         }
@@ -451,7 +502,7 @@ class AgentListController extends Controller
         $map['user.agent_id']=(int)$id;
         $map['user.del_flag']=0;
         if(true==$request->has('account')){
-            $map['agent_users.account']=HttpFilter($request->input('account'));
+            $map['user.account']=HttpFilter($request->input('account'));
         }
         $user = HqUser::query();
         $sql = $user->leftJoin('agent_users','user.agent_id','=','agent_users.id')
@@ -587,7 +638,9 @@ class AgentListController extends Controller
      * @return bool
      */
     public function insertAgentBillFlow($agentId,$userId,$money,$before,$after,$status,$type,$remark){
+        $agentInfo = $agentId?Agent::find($agentId):[];
         $data['agent_id']=$agentId;
+        $data['agent_name']=$agentInfo['nickname'];
         $data['user_id']=$userId;
         $data['money']=$money;
         $data['bet_before']=$before;
@@ -596,6 +649,7 @@ class AgentListController extends Controller
         $data['type']=$type;
         $data['remark']=$remark;
         $data['creatime']=time();
+        $data['create_by']=Auth::id();
         return AgentBill::insert($data);
     }
     /**

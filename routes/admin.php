@@ -132,6 +132,9 @@ Route::group(['namespace' => "Admin",'middleware' => ['auth', 'permission']], fu
 
     //黑名单
     Route::resource('/userBack','BackController');
+
+    //下分请求作废和确认需要验证密码
+    Route::post('/checkPasswordIsTrue','AgentMonthEndController@checkPasswordIsTrue');
 });
 Route::group(['namespace' => "Online",'middleware' => ['auth','permission']],function (){
     Route::resource('/onAgentDay','OnAgentDayController');//线上代理日结

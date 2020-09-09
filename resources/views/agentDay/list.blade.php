@@ -97,7 +97,7 @@
                                 </span>
                         </td>
                         <td class="hidden-xs">
-                            <span style="color: red;">{{number_format(-$sum['feeMoney']/100,2)}}</span>
+                            <span style="color: red;">{{number_format($sum['feeMoney']/100,2)}}</span>
                            {{-- @if($sum['feeMoney']<0)
                                 <span style="color: red;">{{number_format($sum['feeMoney']/100,2)}}</span>
                             @else

@@ -49,13 +49,19 @@
                 <td class="hidden-xs">{{$info['game_id']}}</td>
                 <td class="hidden-xs">{{$info['desk_name']}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info['winAndErr']/100,2)}}</td>
-                <td class="hidden-xs">{{number_format(($info['money']/100) * 0.009,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info['winAndErr']/100>0)
-                    {{number_format(($info['winAndErr']/100) -(($info['money']/100) * 0.009),2)}}
+                    @if($info['getMoney']<0)
+                        <span style="color:red;">{{number_format($info['getMoney']/100,2)}}</span>
                     @else
-                    {{number_format(abs(($info['winAndErr']/100) -(($info['money']/100) * 0.009)),2)}}
+                        {{number_format($info['getMoney']/100,2)}}
+                     @endif
+                </td>
+                <td class="hidden-xs">{{number_format($info['code']/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info['win']<0)
+                        <span style="color: red;">{{number_format($info['win']/100,2)}}</span>
+                    @else
+                        {{number_format($info['win']/100,2)}}
                     @endif
                 </td>
             </tr>
@@ -101,8 +107,11 @@
                     }
                 }
             });
+            var date = new Date();
+            var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             laydate.render({
-                elem:"#begin"
+                elem:"#begin",
+                max:max
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');

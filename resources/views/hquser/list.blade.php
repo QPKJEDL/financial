@@ -14,8 +14,8 @@
         <select name="user_type">
             <option value="">请选择类型</option>
             <option value="0" {{isset($input['user_type'])&&$input['user_type']==0?'selected':''}}>全部</option>
-            <option value="1" {{isset($input['user_type'])&&$input['user_type']==1?'selected':''}}>线上</option>
-            <option value="2" {{isset($input['user_type'])&&$input['user_type']==2?'selected':''}}>线下</option>
+            <option value="2" {{isset($input['user_type'])&&$input['user_type']==2?'selected':''}}>线上</option>
+            <option value="1" {{isset($input['user_type'])&&$input['user_type']==1?'selected':''}}>线下</option>
         </select>
     </div>
     <div class="layui-inline">
@@ -60,9 +60,9 @@
                 <td class="hidden-xs"><a href="javascript:;" class="children" data-id="{{$info['user_id']}}">{{$info['account']}}</a></td>
                 <td class="hidden-xs">
                     @if($info['user_type']==1)
-                        线上
-                    @else
                         线下
+                    @else
+                        线上
                     @endif
                 </td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
@@ -80,7 +80,7 @@
                 <td class="hidden-xs">{{number_format($info['cz']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['userAccount']['balance']/100,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info['user_type']==1)
+                    @if($info['user_type']==2)
                         -
                     @else
                         {{$info['fee']['baccarat']}}/{{$info['fee']['dragonTiger']}}/{{$info['fee']['niuniu']}}/{{$info['fee']['sangong']}}/{{$info['fee']['A89']}}

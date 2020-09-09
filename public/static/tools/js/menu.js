@@ -29,6 +29,10 @@ layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'elemen
 		var chlID = $(chl).attr('data-id');
 		var isActive = $(".layui-tab-title").find('li[lay-id="'+chlID+'"]');
 		/*if(chlID==2){
+
+		}*/
+		if (isActive.length>0){
+			//element.tabChange('menuTab',chlID);
 			element.tabDelete('menuTab',chlID);
 			element.tabAdd('menuTab',{
 				title: $(chl).attr('data-title'),//标题
@@ -36,9 +40,6 @@ layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'elemen
 				id:chlID
 			});
 			element.tabChange('menuTab',chlID);	//添加完成切换到该选项卡
-		}*/
-		if (isActive.length>0){
-			element.tabChange('menuTab',chlID);
 		}else {
 			element.tabAdd('menuTab',{
 				title: $(chl).attr('data-title'),//标题

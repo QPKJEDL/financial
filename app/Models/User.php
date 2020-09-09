@@ -20,4 +20,10 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         $user =User::where('username','=',$account)->first();
         return $user;
     }
+
+    public static function getAllUser()
+    {
+        $data = User::query()->select('id','username','nickname')->get()->toArray();
+        return $data;
+    }
 }

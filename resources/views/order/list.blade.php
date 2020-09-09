@@ -41,6 +41,8 @@
             <option value="0" {{isset($input['status'])&&$input['status']=='0'?'selected':''}}>等待开牌</option>
             <option value="1" {{isset($input['status'])&&$input['status']=='1'?'selected':''}}>结算完成</option>
             <option value="2" {{isset($input['status'])&&$input['status']=='2'?'selected':''}}>玩家取消</option>
+            <option value="3" {{isset($input['status'])&&$input['status']=='3'?'selected':''}}>作废</option>
+            <option value="4" {{isset($input['status'])&&$input['status']=='4'?'selected':''}}>结果修改</option>
         </select>
     </div>
     <div class="layui-inline">
@@ -125,7 +127,7 @@
                 <td class="hidden-xs">
                     @if($info->status==2)
                         -
-                    @elseif($info->status==1)
+                    @elseif($info->status==1 || $info->status==4)
                         @if($info->game_type==1)
                             {{$info->result['game']}}&nbsp;{{$info->result['playerPair']}} {{$info->result['bankerPair']}}
                         @elseif($info->game_type==2)
@@ -158,7 +160,7 @@
                 <td class="hidden-xs">{{number_format($info->money/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info->get_money/100,2)}}</td>
                 <td class="hidden-xs">
-                    @if($info->user['user_type']==1)
+                    @if($info->user['user_type']!=1)
                         -
                     @else
                         @if($info->status==1)
@@ -180,16 +182,20 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info->status==1)
-                        @if($info->game_type==1)
-                            {{number_format(($info->money/100)*($info->user['fee']['baccarat']/100),2)}}
-                        @elseif($info->game_type==2)
-                            {{number_format(($info->money/100)*($info->user['fee']['dragonTiger']/100),2)}}
-                        @elseif($info->game_type==3)
-                            {{number_format(($info->money/100)*($info->user['fee']['niuniu']/100),2)}}
-                        @elseif($info->game_type==4)
-                            {{number_format(($info->money/100)*($info->user['fee']['sangong']/100),2)}}
-                        @elseif($info->game_type==5)
-                            {{number_format(($info->money/100)*($info->user['fee']['A89']/100),2)}}
+                        @if($info->user['user_type']==1)
+                            @if($info->game_type==1)
+                                {{number_format(($info->money/100)*($info->user['fee']['baccarat']/100),2)}}
+                            @elseif($info->game_type==2)
+                                {{number_format(($info->money/100)*($info->user['fee']['dragonTiger']/100),2)}}
+                            @elseif($info->game_type==3)
+                                {{number_format(($info->money/100)*($info->user['fee']['niuniu']/100),2)}}
+                            @elseif($info->game_type==4)
+                                {{number_format(($info->money/100)*($info->user['fee']['sangong']/100),2)}}
+                            @elseif($info->game_type==5)
+                                {{number_format(($info->money/100)*($info->user['fee']['A89']/100),2)}}
+                            @endif
+                        @else
+                            0.00
                         @endif
                     @else
                         0.00
@@ -204,6 +210,8 @@
                         等待开牌
                     @elseif($info->status==3)
                         作废
+                    @elseif($info->status==4)
+                        结果修改
                     @endif
                 </td>
             </tr>

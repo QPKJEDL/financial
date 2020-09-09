@@ -59,7 +59,7 @@ class LiveRewardController extends Controller
         if (true==$request->has('excel'))
         {
             $head = array('账号','昵称','直属一级','台桌号','靴','铺','主播账号','主播名称','打赏金额','打赏时间');
-            $excelData = $sql->where($map)->get()->toArray();
+            $excelData = $sql->where($map)->orderBy('live_reward.creatime','desc')->get()->toArray();
             $excel = array();
             foreach ($excelData as $key=>$datum)
             {
@@ -91,7 +91,7 @@ class LiveRewardController extends Controller
         {
             $limit = 10;
         }
-        $data = $sql->where($map)->paginate($limit)->appends($request->all());
+        $data = $sql->where($map)->orderBy('live_reward.creatime','desc')->paginate($limit)->appends($request->all());
         $money = $sql->where($map)->sum('money');
         foreach ($data as $key=>$value){
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);

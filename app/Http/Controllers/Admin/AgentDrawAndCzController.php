@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\AgentBill;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AgentDrawAndCzController extends Controller
@@ -26,10 +27,14 @@ class AgentDrawAndCzController extends Controller
         {
             $map['agent_users.userType']=(int)$request->input('userType');
         }
+        if (true==$request->has('create_by'))
+        {
+            $map['agent_billflow.create_by']=$request->input('create_by');
+        }
         $sql = AgentBill::query();
         $sql->leftJoin('agent_users','agent_billflow.agent_id','=','agent_users.id')
             ->leftJoin('user','user.user_id','=','agent_billflow.user_id')
-            ->select('agent_billflow.*','agent_users.nickname as agentName','agent_users.username','user.nickname as uName','user.account');
+            ->select('agent_billflow.*','agent_users.username','user.account');
         if (true==$request->has('begin'))
         {
             $begin = strtotime($request->input('begin'));
@@ -58,8 +63,8 @@ class AgentDrawAndCzController extends Controller
             foreach ($excelData as $key=>$datum)
             {
                 $arr['creatime']=date('Y-m-d H:i:s',$datum['creatime']);
-                $arr['agentName']=$datum['agentName'].'['.$datum['username'].']';
-                $arr['uName']=$datum['uName'].'['.$datum['account'].']';
+                $arr['agentName']=$datum['agent_name'].'['.$datum['username'].']';
+                $arr['uName']=$datum['user_name'].'['.$datum['account'].']';
                 $agentInfo = $datum['agent_id']?Agent::find($datum['agent_id']):[];
                 $arr['sj']=$agentInfo['nickname'].'['.$agentInfo['username'].']';
                 if ($agentInfo['parent_id']==0)
@@ -134,7 +139,7 @@ class AgentDrawAndCzController extends Controller
             }
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
         }
-        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
+        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit,'user'=>User::getAllUser()]);
     }
 
     /**
@@ -191,6 +196,6 @@ class AgentDrawAndCzController extends Controller
             }
             $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
         }
-        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
+        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit,'user'=>User::getAllUser()]);
     }
 }

@@ -59,7 +59,7 @@ class HqUserController extends Controller
             $data = $sql->paginate($limit)->appends($request->all());
             foreach($data as $key=>&$value){
                 $data[$key]['creatime']=date("Y-m-d H:m:s",$value['creatime']);
-                if ($value['user_type']==2){
+                if ($value['user_type']==1){
                     $data[$key]['fee']=json_decode($value['fee'],true);
                 }
                 $data[$key]['userAccount']=UserAccount::getUserAccountInfo($value['user_id']);
@@ -243,12 +243,13 @@ class HqUserController extends Controller
             try {
                 $info = UserAccount::where('user_id','=',$id)->lockForUpdate()->first();
                 $bill = new Billflow();
+                $userInfo = $id?HqUser::find($id):[];
                 $bill->setTable('user_billflow_'.date('Ymd',time()));
                 $betBefore = $info['balance'];
                 if ($data['type']==1){//上分
                     $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore +($data['balance'] * 100)]);
                     if ($res){
-                        $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'pay_type'=>$data['payType'],'remark'=>Auth::user()['username'].'[财务后台直接上分]','creatime'=>time()]);
+                        $result = $bill->insert(['user_id'=>$id,'nickname'=>$userInfo['nickname'],'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'pay_type'=>$data['payType'],'remark'=>Auth::user()['username'].'[财务后台直接上分]','creatime'=>time(),'create_by'=>Auth::id()]);
                         if ($result){
                             $b = SysBalance::where('id','=',1)->decrement('balance',$data['balance']*100);
                             if (!$b){
@@ -266,6 +267,7 @@ class HqUserController extends Controller
                             }
                             DB::commit();
                             $this->unRedisUserLock($id);
+                            $this->dataByHttpsPost($id,$data['balance']*100,1);
                             return ['msg'=>'操作成功','status'=>1,'type'=>1,'userName'=>$id?HqUser::find($id):[]['nickname']];
                         }else{
                             DB::rollBack();
@@ -284,7 +286,7 @@ class HqUserController extends Controller
                     }else{
                         $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -$data['balance'] * 100]);
                         if ($res){
-                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'pay_type'=>0,'remark'=>Auth::user()['username'].'[财务后台直接下分]','creatime'=>time()]);
+                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'pay_type'=>0,'remark'=>Auth::user()['username'].'[财务后台直接下分]','creatime'=>time(),'create_by'=>Auth::id()]);
                             if ($result){
                                 $b = SysBalance::where('id','=',1)->increment('balance',$data['balance']*100);
                                 if (!$b)
@@ -293,6 +295,7 @@ class HqUserController extends Controller
                                 }
                                 DB::commit();
                                 $this->unRedisUserLock($id);
+                                $this->dataByHttpsPost($id,$data['balance']*100,2);
                                 return ['msg'=>'操作成功','status'=>1,'type'=>2,'userName'=>$id?HqUser::find($id):[]['nickname']];
                             }else{
                                 DB::rollBack();
@@ -338,6 +341,43 @@ class HqUserController extends Controller
         }else{
             return true;
         }
+    }
+
+    /**
+     * 推送消息
+     * @param $userId
+     * @param $balance
+     * @param $type
+     */
+    public function dataByHttpsPost($userId,$balance,$type)
+    {
+        $url = "http://119.28.52.160:8210/postpeermessage";
+        $money = UserAccount::where('user_id','=',$userId)->first();
+        $arr['uid']=$userId;
+        $arr['appid']=(int)1;
+        $data['Cmd']=(int)31;
+        $data['Money']=(float)$balance/100;
+        $data['Balance']=(float)$money['balance']/100;
+        $data['Type']=(int)$type;
+        $arr['content']=json_encode($data);
+        $this->https_post_kf($url,$arr);
+    }
+
+    //http 请求
+    private function https_post_kf($url, $data)
+    {
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        //curl_setopt($curl, CURLOPT_USERAGENT, "Dalvik/1.6.0 (Linux; U; Android 4.1.2; DROID RAZR HD Build/9.8.1Q-62_VQW_MR-2)");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($curl);
+        if (curl_errno($curl)) {
+            return 'Errno' . curl_error($curl);
+        }
+        curl_close($curl);
+        return $result;
     }
 
     /**

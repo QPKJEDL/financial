@@ -87,9 +87,19 @@ class BackController extends Controller
                         {
                             $agentIdArr = array();
                             $agentIdArr[]=$info['id'];
-                            $agentData = Agent::select('id')->whereRaw('FIND_IN_SET('.$info['id'].',ancestors)')->get();
+                            $agentData = Agent::query()->whereRaw('FIND_IN_SET('.$info['id'].',ancestors)')->get()->toArray();
                             foreach ($agentData as $key=>$datum)
                             {
+                                if (UserAndAgentBack::where('user_type','=',1)->where('account','=',$datum['username'])->exists())
+                                {
+                                    continue;
+                                }
+                                $b = UserAndAgentBack::insert(['user_id'=>$datum['id'],'account'=>$datum['username'],'user_type'=>$data['user_type'],'status'=>$data['status'],'remark'=>$data['remark'],'create_by'=>Auth::id(),'create_time'=>time()]);
+                                if (!$b)
+                                {
+                                    DB::rollback();
+                                    return ['msg'=>'操作失败','status'=>0];
+                                }
                                 $agentIdArr[] = $datum['id'];
                             }
                             $userData = HqUser::select('user_id')->where('del_flag','=',0)->whereIn('agent_id',$agentIdArr)->get();
@@ -210,6 +220,7 @@ class BackController extends Controller
     public function destroy($id)
     {
         $info = $id?UserAndAgentBack::find($id):[];
+        DB::beginTransaction();
         if ($info['user_type']==1)
         {
             $agentIdArr = array();
@@ -218,11 +229,12 @@ class BackController extends Controller
             if (count($agentData)>0){
                 foreach ($agentData as $key=>$datum)
                 {
+                    $b = UserAndAgentBack::where('user_id','=',$datum['id'])->where('user_type','=',1)->delete();
                     $agentIdArr[] = $datum['id'];
                 }
             }
             $userData = HqUser::select('user_id')->where('del_flag','=',0)->whereIn('agent_id',$agentIdArr)->get();
-            DB::beginTransaction();
+
             try {
                 $bool = UserAndAgentBack::where('id','=',$info['id'])->delete();
                 if ($bool)

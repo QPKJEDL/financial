@@ -67,7 +67,7 @@
                 <td class="hidden-xs">全部</td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
                 <td class="hidden-xs">{{$info['account']}}</td>
-                <td class="hidden-xs">{{number_format($info['balance'],2)}}</td>
+                <td class="hidden-xs">{{number_format($info['balance']/100,2)}}</td>
                 <td class="hidden-xs">{{$info['betNum']}}</td>
                 <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>

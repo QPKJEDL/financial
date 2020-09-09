@@ -29,6 +29,14 @@
         </select>
     </div>
     <div class="layui-inline">
+        <select name="create_by">
+            <option value="">请选择操作人</option>
+            @foreach($user as $i)
+                <option value="{{$i['id']}}" {{isset($input['create_by'])&&$input['create_by']==$i['id']?'selected':''}}>{{$i['username']}}[{{$i['nickname']}}]</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal" name="excel" value="excel">导出EXCEL</button>
     </div>

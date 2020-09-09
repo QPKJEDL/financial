@@ -188,6 +188,7 @@ class OrderController extends Controller
                     //获取表名
                     $tableName = $this->getGameRecordTableNameByRecordSn($value->record_sn);
                     $winner = $this->getGameRecordInfo($tableName,$value->record_sn);
+                    $afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                     $bill = Billflow::getBillflowByOrderSn($value->order_sn,$tableName);
                     $a['s']=number_format($bill['bet_before']/100,2);
                     if ($value->game_type==1){
@@ -244,7 +245,10 @@ class OrderController extends Controller
                     }
                     if ($value->status==1)
                     {
-                        $a['status']="结算完成";
+                        if ($afterResult!=null && $afterResult!='')
+                            $a['status']="结果修改";
+                        else
+                            $a['status']="结算完成";
                     }elseif ($value->status==2)
                     {
                         $a['status']="玩家取消";
@@ -287,6 +291,7 @@ class OrderController extends Controller
                     $data[$key]->result=$this->getA89Result($winner);
                     $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
                 }
+                $data[$key]->afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
             return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
@@ -372,6 +377,7 @@ class OrderController extends Controller
                     $data[$key]->result=$this->getA89Result($winner);
                     $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
                 }
+                $data[$key]->afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
             return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
@@ -416,6 +422,14 @@ class OrderController extends Controller
         $data = $game->where('record_sn','=',$recordSn)->first();
         return $data['winner'];
     }
+    public function getGameRecordInfoUpdateResult($tableName,$recordSn)
+    {
+        $game = new GameRecord();
+        $game->setTable('game_record_'.$tableName);
+        $data = $game->where('record_sn','=',$recordSn)->first();
+        return $data['update_result_before'];
+    }
+
 
     /**
      * 解析百家乐json数据
@@ -587,7 +601,7 @@ class OrderController extends Controller
                 $str = $str."闲".$data['player']/100;
             }
             if ($data['playerPair']>0) {
-                $str = $str."庄对".$data['playerPair']/100;
+                $str = $str."闲对".$data['playerPair']/100;
             }
             if ($data['tie']>0) {
                 $str = $str."和".$data['tie']/100;
@@ -608,19 +622,14 @@ class OrderController extends Controller
     {
         $data = json_decode($betMoney,true);
         $str = '';
-        foreach($data as $key=>$value){
-            if($data['dragon']>0){
-                $str = "龙".$data['dragon']/100;
-                break;
-            }
-            if($data['tie']>0){
-                $str = $str." 和".$data['tie']/100;
-                break;
-            }
-            if($data['tiger']>0){
-                $str = $str." 虎".$data['tiger']/100;
-                break;
-            }
+        if($data['dragon']>0){
+            $str = "龙".$data['dragon']/100;
+        }
+        if($data['tie']>0){
+            $str = $str." 和".$data['tie']/100;
+        }
+        if($data['tiger']>0){
+            $str = $str." 虎".$data['tiger']/100;
         }
         return $str;
     }
@@ -639,7 +648,7 @@ class OrderController extends Controller
             $str = $str."闲一(翻倍)".$data['x1_double']/100;
         }
         if(!empty($data['x2_equal'])){
-            $str = "闲二（平倍）".$data['x2_equal']/100;
+            $str =$str."闲二（平倍）".$data['x2_equal']/100;
         }
         if(!empty($data['x2_double'])){
             $str = $str."闲二(翻倍)".$data['x2_double']/100;

@@ -47,10 +47,10 @@ class GameRecordController extends Controller
             $game->setTable('game_record_'.$tableName);
             $excelData = $game->leftJoin('desk','game_record_'.$tableName.'.desk_id','=','desk.id')
             ->select('desk.desk_name','game_record_'.$tableName.'.boot_num','game_record_'.$tableName.'.pave_num','game_record_'.$tableName.'.creatime',
-            'game_record_'.$tableName.'.winner','game_record_'.$tableName.'.update_result_before','game_record_'.$tableName.'.type')->where($map)->get()->toArray();
+            'game_record_'.$tableName.'.winner','game_record_'.$tableName.'.update_result_before','game_record_'.$tableName.'.type','game_record_'.$tableName.'.update_by')->where($map)->get()->toArray();
             foreach ($excelData as $key=>$datum)
             {
-                $excelData[$key]['creatime']=date('Y-m-d H:m:s',$datum['creatime']);
+                $excelData[$key]['creatime']=date('Y-m-d H:i:s',$datum['creatime']);
                 if ($excelData[$key]['type'] == 1) {//百家乐
                     $excelData[$key]['type']="百家乐";
                     $excelData[$key]['winner'] = $this->getBaccaratParseJson($excelData[$key]['winner']);
@@ -97,7 +97,7 @@ class GameRecordController extends Controller
         $data = $gameRecord->where($map)->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
             $data[$key]['desk']=Desk::getDeskInfo($value['desk_id']);
-            $data[$key]['creatime']=date('Y-m-d H:m:s',$value['creatime']);
+            $data[$key]['creatime']=date('Y-m-d H:i:s',$value['creatime']);
             if ($data[$key]['type'] == 1) {//百家乐
                 $data[$key]['result'] = $this->getBaccaratParseJson($data[$key]['winner']);
                 if ($data[$key]['update_result_before'] != '') {
