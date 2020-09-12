@@ -37,22 +37,22 @@ class AgentDrawAndCzController extends Controller
             ->select('agent_billflow.*','agent_users.username','user.account');
         if (true==$request->has('begin'))
         {
-            $begin = strtotime($request->input('begin'));
+            $begin = strtotime($request->input('begin'))+ config('admin.beginTime');
             if (true==$request->has('end'))
             {
-                $end = strtotime('+1day',strtotime($request->input('end')))-1;
+                $end = strtotime('+1day',strtotime($request->input('end'))) + config('admin.beginTime');
             }
             else
             {
-                $end = strtotime('+1day',$begin)-1;
+                $end = strtotime('+1day',$begin)+ config('admin.beginTime');
             }
         }
         else
         {
-            $begin = strtotime(date('Y-m-d',time()));
-            $end = strtotime('+1day',$begin)-1;
+            $begin = strtotime(date('Y-m-d',time()))+ config('admin.beginTime');
+            $end = strtotime('+1day',$begin)+ config('admin.beginTime');
             $request->offsetSet('begin',date('Y-m-d',$begin));
-            $request->offsetSet('end',date('Y-m-d',$end));
+            $request->offsetSet('end',date('Y-m-d',$begin));
         }
         $sql->whereBetween('agent_billflow.creatime',[$begin,$end]);
         if (true==$request->has('excel'))
@@ -166,10 +166,24 @@ class AgentDrawAndCzController extends Controller
             ->select('agent_billflow.*','agent_users.nickname as agentName','agent_users.username','user.nickname as uName','user.account');
         if (true==$request->has('begin'))
         {
-            $start=strtotime($request->input('begin'));
-            $end=strtotime('+1day',$start);
-            $sql->whereBetween('agent_billflow.creatime',[$start,$end]);
+            $begin = strtotime($request->input('begin'))+ config('admin.beginTime');
+            if (true==$request->has('end'))
+            {
+                $end = strtotime('+1day',strtotime($request->input('end'))) + config('admin.beginTime');
+            }
+            else
+            {
+                $end = strtotime('+1day',$begin)+ config('admin.beginTime');
+            }
         }
+        else
+        {
+            $begin = strtotime(date('Y-m-d',time()))+ config('admin.beginTime');
+            $end = strtotime('+1day',$begin)+ config('admin.beginTime');
+            $request->offsetSet('begin',date('Y-m-d',$begin));
+            $request->offsetSet('end',date('Y-m-d',$begin));
+        }
+        $sql->whereBetween('agent_billflow.creatime',[$begin,$end]);
         if (true==$request->has('limit'))
         {
             $limit = (int)$request->input('limit');

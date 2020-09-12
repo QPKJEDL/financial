@@ -38,20 +38,20 @@ class LiveRewardController extends Controller
             ->select('live_reward.*','u1.nickname as userName','u1.agent_id','u1.account as userAcc','u2.nickname as liveName','u2.account as liveAcc','desk.desk_name');
         if (true==$request->has('begin'))
         {
-            $begin = strtotime($request->input('begin'));
+            $begin = strtotime($request->input('begin')) + config('admin.beginTime');
             if (true==$request->has('end'))
             {
-                $end = strtotime('+1day',strtotime($request->input('end'))) -1;
+                $end = strtotime('+1day',strtotime($request->input('end'))) + config('admin.beginTime');
             }
             else
             {
-                $end = strtotime('+1day',$begin)-1;
+                $end = strtotime('+1day',$begin)+ config('admin.beginTime');
             }
         }
         else
         {
-            $begin = strtotime(date('Y-m-d',time()));
-            $end = strtotime('+1day',$begin)-1;
+            $begin = strtotime(date('Y-m-d',time()))+ config('admin.beginTime');
+            $end = strtotime('+1day',$begin);
             $request->offsetSet('begin',date('Y-m-d',time()));
             $request->offsetSet('end',date('Y-m-d',time()));
         }

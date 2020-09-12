@@ -163,7 +163,7 @@
                     @if($info->user['user_type']!=1)
                         -
                     @else
-                        @if($info->status==1)
+                        @if($info->status==1 || $info->status==4)
                             @if($info->game_type==1)
                                 {{$info->user['fee']['baccarat']}}
                             @elseif($info->game_type==2)
@@ -181,7 +181,7 @@
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info->status==1)
+                    @if($info->status==1 || $info->status==4)
                         @if($info->user['user_type']==1)
                             @if($info->game_type==1)
                                 {{number_format(($info->money/100)*($info->user['fee']['baccarat']/100),2)}}

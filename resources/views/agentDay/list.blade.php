@@ -13,13 +13,15 @@
     <div class="layui-inline">
         <input type="text" lay-verify="account" value="{{ $input['account'] or '' }}" name="account" placeholder="请输入代理账号" autocomplete="off" class="layui-input">
     </div>
+    @if($input['type']==1)
     <div class="layui-inline">
         <select name="userType">
             <option value="">请选择账号类型</option>
-            <option value="1">线下</option>
-            <option value="2">线上</option>
+            <option value="1" {{isset($input['userType'])&&$input['userType']==1?'selected':''}}>线下</option>
+            <option value="2" {{isset($input['userType'])&&$input['userType']==2?'selected':''}}>线上</option>
         </select>
     </div>
+    @endif
     <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出EXCEL</button>
@@ -190,10 +192,10 @@
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info['userType']==2)
-                        {{$info['pump']}}%
-                    @else
+                    @if($info['userType']==1)
                         -
+                    @else
+                        {{$info['pump']}}%
                     @endif
                 </td>
                 <td class="hidden-xs">
@@ -238,12 +240,8 @@
                         @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info['userType']==1)
-                        @if($info['gs']<0)
-                            <span style="color:red;">{{number_format($info['gs']/100,2)}}</span>
-                        @else
-                            {{number_format($info['gs']/100,2)}}
-                        @endif
+                    @if($info['gs']<0)
+                        <span style="color:red;">{{number_format($info['gs']/100,2)}}</span>
                     @else
                         {{number_format($info['gs']/100,2)}}
                     @endif
@@ -281,8 +279,10 @@
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
                 $("input[name='end']").val('');
-                $("select[name='desk_id']").val(''); 
+                $("select[name='desk_id']").val('');
+                $("input[name='account']").val('');
                 $("input[name='boot']").val('');
+                $("select[name='userType']").val('')
             });
             //今天
             $("#today").click(function () {

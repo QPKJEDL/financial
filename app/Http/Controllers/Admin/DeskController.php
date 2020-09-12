@@ -9,6 +9,7 @@ use App\Models\GameRecord;
 use App\Models\HqUser;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DeskController extends Controller
 {
@@ -108,19 +109,29 @@ class DeskController extends Controller
             }
             $data[$key]['feeMoney'] = $this->getSumPump($data[$key]['id'],$tableName);
             $data[$key]['getMoney']=$this->getGetMoney($value['id'],$tableName);
+            if ($value['getMoney']>0)
+            {
+                $data[$key]['getMoney']= -$value['getMoney'];
+            }
             $data[$key]['code']=$this->getSumCode($value['id'],$tableName);
-            $data[$key]['win']=$value['getMoney']-$value['code'] - $value['feeMoney'];
+            $data[$key]['win']=$value['getMoney']-$value['code'];
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
         }
         return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'limit'=>$limit]);
     }
 
+    /**
+     * 获取今天台桌线上抽水
+     * @param $deskId
+     * @param $tableName
+     * @return float|int
+     */
     public function xSSumPump($deskId,$tableName)
     {
         $money =0;
         $order = new Order();
         $order->setTable('order_'.$tableName);
-        $data = $order->where(['desk_id'=>$deskId,'status'=>1])->get()->toArray();
+        $data = $order->where(['desk_id'=>$deskId])->whereIn('status',[1,4])->get()->toArray();
         foreach ($data as $key=>$datum)
         {
             $betMoney = json_decode($datum['bet_money'],true);
@@ -151,6 +162,36 @@ class DeskController extends Controller
                         $money = $money + (1 - $userInfo['bjlbets_fee']['player']/100) * $betMoney['player']* $agentInfo['pump']/100;
                     }
                 }
+                elseif ($winner['game']==1)
+                {
+                    if ($userInfo['bjlbets_fee']['tie']<100)
+                    {
+                        if ($betMoney['tie']>0)
+                        {
+                            $money = $money + (1 - $userInfo['bjlbets_fee']['tie']/100) * $betMoney['player'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['bankerPair']==2)
+                {
+                    if ($userInfo['bjlbets_fee']['bankerPair']<100)
+                    {
+                        if ($betMoney['bankerPair']>0)
+                        {
+                            $money = $money + (1 - $userInfo['bjlbets_fee']['bankerPair']/100) * $betMoney['bankerPair'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['playerPair']<1)
+                {
+                    if ($userInfo['bjlbets_fee']['playerPair']<100)
+                    {
+                        if ($betMoney['playerPair']>0)
+                        {
+                            $money = $money + (1 - $userInfo['bjlbets_fee']['playerPair']/100) * $betMoney['playerPair'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
             }
             elseif ($datum['game_type']==2)
             {
@@ -160,11 +201,22 @@ class DeskController extends Controller
                     {
                         $money = $money + (1 - $userInfo['lhbets_fee']['dragon']/100) * $betMoney['dragon'] * $agentInfo['pump']/100;
                     }
-                }elseif ($gameInfo['winner']==4)
+                }
+                elseif ($gameInfo['winner']==4)
                 {
                     if ($betMoney['tiger']>0)
                     {
                         $money = $money + (1 - $userInfo['lhbets_fee']['tiger']/100) * $betMoney['tiger'] * $agentInfo['pump']/100;
+                    }
+                }
+                elseif ($gameInfo['winner']==1)
+                {
+                    if ($userInfo['lhbets_fee']['tie']<100)
+                    {
+                        if ($betMoney['tie']>0)
+                        {
+                            $money = $money + (1 - $userInfo['lhbets_fee']['tie']/100) * $betMoney['tie'] * $agentInfo['pump']/100;
+                        }
                     }
                 }
             }
@@ -230,11 +282,11 @@ class DeskController extends Controller
                     }
                     if (!empty($betMoney['x2_double']))
                     {
-                        if($x1Num>9)
+                        if($x2Num>9)
                         {
                             $money = $money + (1 - $userInfo['nnbets_fee']['Double']) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 3;
                         }
-                        elseif ($x1Num>6 && $x1Num<10)
+                        elseif ($x2Num>6 && $x2Num<10)
                         {
                             $money = $money + (1 - $userInfo['nnbets_fee']['Double']) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 2;
                         }
@@ -253,13 +305,13 @@ class DeskController extends Controller
                     $x3Num = $this->nConvertNumbers($winner['x3num']);
                     if (!empty($betMoney['x3_Super_Double']))
                     {
-                        if ($x1Num>9)
+                        if ($x3Num>9)
                         {
                             $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
                         }
-                        elseif ($x1Num>0 && $x1Num<10)
+                        elseif ($x3Num>0 && $x3Num<10)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x1Num;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x3Num;
                         }
                         else
                         {
@@ -268,11 +320,11 @@ class DeskController extends Controller
                     }
                     if (!empty($betMoney['x3_double']))
                     {
-                        if($x1Num>9)
+                        if($x3Num>9)
                         {
                             $money = $money + (1 - $userInfo['nnbets_fee']['Double']) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 3;
                         }
-                        elseif ($x1Num>6 && $x1Num<10)
+                        elseif ($x3Num>6 && $x3Num<10)
                         {
                             $money = $money + (1 - $userInfo['nnbets_fee']['Double']) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 2;
                         }
@@ -287,9 +339,418 @@ class DeskController extends Controller
                     }
                 }
             }
+            elseif ($datum['game_type']==4)
+            {
+                //{"bankernum":"4点","x1num":"9点","x1result":"win","x2num":"3点","x2result":"","x3num":"6点","x3result":"win","x4num":"1点","x4result":"","x5num":"5点","x5result":"win","x6num":"8点","x6result":"win"}
+                $winner = json_decode($gameInfo['winner'],true);
+                if ($winner['x1result']=="win")
+                {
+                    $x1Num = $this->sConvertNumbers($winner['x1num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x1_Super_Double']))
+                        {
+                            if ($x1Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x1Num>0 && $x1Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x1Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x1_double']))
+                        {
+                            if ($x1Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x1Num>6 && $x1Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x1_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x1_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x1_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x1_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['x2result']=="win")
+                {
+                    $x2Num = $this->sConvertNumbers($winner['x2num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x2_Super_Double']))
+                        {
+                            if ($x2Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x2Num>0 && $x2Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * $x2Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x2_double']))
+                        {
+                            if ($x2Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x2_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x2Num>6 && $x2Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x2_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x2_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x2_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x2_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['x3result']=="win")
+                {
+                    $x3Num = $this->sConvertNumbers($winner['x3num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x3_Super_Double']))
+                        {
+                            if ($x3Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x3Num>0 && $x3Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $agentInfo['pump']/100 * $x3Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x3_double']))
+                        {
+                            if ($x3Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x3_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x3Num>6 && $x3Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x3_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x3_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x3_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x3_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['x4result']=="win")
+                {
+                    $x4Num = $this->sConvertNumbers($winner['x4num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x4_Super_Double']))
+                        {
+                            if ($x4Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x4Num>0 && $x4Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $agentInfo['pump']/100 * $x4Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x4_double']))
+                        {
+                            if ($x4Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x4_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x4Num>6 && $x4Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x4_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x4_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x4_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x4_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['x5result']=="win")
+                {
+                    $x5Num = $this->sConvertNumbers($winner['x5num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x5_Super_Double']))
+                        {
+                            if ($x5Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x5Num>0 && $x5Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $agentInfo['pump']/100 * $x5Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x5_double']))
+                        {
+                            if ($x5Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x5_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x5Num>6 && $x5Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x5_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x5_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x5_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x5_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+                if ($winner['x6result']=="win")
+                {
+                    $x6Num = $this->sConvertNumbers($winner['x6num']);
+                    if ($userInfo['sgbets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['x6_Super_Double']))
+                        {
+                            if ($x6Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($x6Num>0 && $x6Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $agentInfo['pump']/100 * $x6Num;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Double']<100)
+                    {
+                        if (!empty($betMoney['x6_double']))
+                        {
+                            if ($x6Num>9)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x6_double'] * $agentInfo['pump']/100 * 3;
+                            }
+                            elseif ($x6Num>6 && $x6Num<10)
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x6_double'] * $agentInfo['pump']/100 * 2;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['sgbets_fee']['Double']/100) * $betMoney['x6_double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                    if ($userInfo['sgbets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['x6_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['sgbets_fee']['Equal']) * $betMoney['x6_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                }
+            }
+            elseif ($datum['game_type']==5)
+            {
+                $winner = json_decode($gameInfo['winner'],true);
+                if ($winner['Fanresult']=="win")
+                {
+                    $fanNum = $this->aConvertNumbers($winner['FanNum']);
+                    if ($userInfo['a89bets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['FanMen_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['FanMen_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                    if ($userInfo['a89bets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['FanMen_Super_Double']))
+                        {
+                            if ($fanNum>9)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($fanNum>0 && $fanNum<10)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $agentInfo['pump']/100 * $fanNum;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                }
+                if ($winner['Shunresult']=="win")
+                {
+                    $shunNum = $this->aConvertNumbers($winner['ShunNum']);
+                    if ($userInfo['a89bets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['ShunMen_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['ShunMen_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                    if ($userInfo['a89bets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['ShunMen_Super_Double']))
+                        {
+                            if ($shunNum>9)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['ShunMen_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($shunNum>0 && $shunNum<10)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['ShunMen_Super_Double'] * $agentInfo['pump']/100 * $shunNum;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['ShunMen_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                }
+                if ($winner['Tianresult']=="win")
+                {
+                    $tianNum = $this->aConvertNumbers($winner['TianNum']);
+                    if ($userInfo['a89bets_fee']['Equal']<100)
+                    {
+                        if (!empty($betMoney['TianMen_equal']))
+                        {
+                            $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['TianMen_equal'] * $agentInfo['pump']/100;
+                        }
+                    }
+                    if ($userInfo['a89bets_fee']['SuperDouble']<100)
+                    {
+                        if (!empty($betMoney['TianMen_Super_Double']))
+                        {
+                            if ($tianNum>9)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['TianMen_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            }
+                            elseif ($tianNum>0 && $tianNum<10)
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['TianMen_Super_Double'] * $agentInfo['pump']/100 * $tianNum;
+                            }
+                            else
+                            {
+                                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['TianMen_Super_Double'] * $agentInfo['pump']/100;
+                            }
+                        }
+                    }
+                }
+            }
         }
+        return $money;
     }
 
+    /**
+     * 获取线下代理客损所得
+     * @param $deskId
+     * @param $tableName
+     * @return float|int
+     */
+    public function getOfflineAccountedMoney($deskId,$tableName)
+    {
+        $money = 0;
+        $order = new Order();
+        $order->setTable('order_'.$tableName);
+        $data = $order->select('user_id',DB::raw('SUM(get_money) as getMoney'))->where(['desk_id'=>$deskId])->whereIn('status',[1,4])->groupBy('user_id')->get()->toArray();
+        foreach ($data as $key=>$value)
+        {
+            //获取用户
+            $userInfo = $this->getUserInfoByUserId($value['user_id']);
+            if ($userInfo['user_type']!=1)
+            {
+                continue;
+            }
+            //获取直属一级代理
+            $agentInfo = $this->getZsYjByAgentId($userInfo['agent_id']);
+            if ($value['getMoney']>0)
+            {
+                continue;
+            }
+            $money = $money + $value['getMoney'] * $agentInfo['proportion']/100;
+        }
+        return $money;
+    }
     /**
      * 洗码费
      * @param $deskId

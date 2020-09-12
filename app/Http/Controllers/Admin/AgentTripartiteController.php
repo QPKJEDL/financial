@@ -35,18 +35,18 @@ class AgentTripartiteController extends Controller
             $request->offsetSet('business_name','全部');
         }
         if (true==$request->has('begin')){
-            $begin = strtotime($request->input('begin'));
+            $begin = strtotime($request->input('begin')) + config('admin.beginTime');
         }
         else
         {
-            $begin = strtotime(date('Y-m-d',time()));
+            $begin = strtotime(date('Y-m-d',time())) + config('admin.beginTime');
             $request->offsetSet('begin',date('Y-m-d',time()));
         }
         if (true==$request->has('end'))
         {
-            $end = strtotime('+1day',strtotime($request->input('end')))-1;
+            $end = strtotime('+1day',strtotime($request->input('end')))+ config('admin.beginTime');
         }else{
-            $end = strtotime('+1day',strtotime(date('Y-m-d',time())))-1;
+            $end = strtotime('+1day',strtotime(date('Y-m-d',time())))+ config('admin.beginTime');
             $request->offsetSet('end',date('Y-m-d',time()));
         }
         if (true==$request->has('account'))

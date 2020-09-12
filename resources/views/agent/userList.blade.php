@@ -133,7 +133,7 @@
                     shadeClose:true,
                     offset:'10%',
                     area:['30%','50%'],
-                    content:'/admin/agentList/getUserRelation/'+id
+                    content:'/admin/userRelation/'+id
                 });
             });
             //编辑

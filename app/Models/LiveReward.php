@@ -17,6 +17,8 @@ class LiveReward extends Model
      * @return int|mixed
      */
     public static function getSumMoney($userId,$begin,$end){
+        $begin = strtotime($begin);
+        $end = strtotime('+1day',strtotime($end))-1;
         return LiveReward::where('user_id','=',$userId)->whereBetween('creatime',[$begin,$end])->sum('money');
     }
 }

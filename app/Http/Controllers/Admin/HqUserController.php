@@ -249,7 +249,11 @@ class HqUserController extends Controller
                 if ($data['type']==1){//上分
                     $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore +($data['balance'] * 100)]);
                     if ($res){
-                        $result = $bill->insert(['user_id'=>$id,'nickname'=>$userInfo['nickname'],'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'pay_type'=>$data['payType'],'remark'=>Auth::user()['username'].'[财务后台直接上分]','creatime'=>time(),'create_by'=>Auth::id()]);
+                        $sj = $userInfo['agent_id']?Agent::find($userInfo['agent_id']):[];
+                        $ancestors = explode(',',$sj['ancestors']);
+                        $ancestors[] = $sj['id'];
+                        $zs = $ancestors[1]?Agent::find($ancestors[1]):[];
+                        $result = $bill->insert(['user_id'=>$id,'nickname'=>$userInfo['nickname'],'agent_name'=>$sj['nickname'],'fir_name'=>$zs['nickname'],'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore+($data['balance']*100),'status'=>1,'pay_type'=>$data['payType'],'remark'=>Auth::user()['username'].'[财务后台直接上分]','creatime'=>time(),'create_by'=>Auth::id()]);
                         if ($result){
                             $b = SysBalance::where('id','=',1)->decrement('balance',$data['balance']*100);
                             if (!$b){
@@ -286,7 +290,11 @@ class HqUserController extends Controller
                     }else{
                         $res = UserAccount::where('user_id','=',$id)->update(['balance'=>$betBefore -$data['balance'] * 100]);
                         if ($res){
-                            $result = $bill->insert(['user_id'=>$id,'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'pay_type'=>0,'remark'=>Auth::user()['username'].'[财务后台直接下分]','creatime'=>time(),'create_by'=>Auth::id()]);
+                            $sj = $userInfo['agent_id']?Agent::find($userInfo['agent_id']):[];
+                            $ancestors = explode(',',$sj['ancestors']);
+                            $ancestors[] = $sj['id'];
+                            $zs = $ancestors[1]?Agent::find($ancestors[1]):[];
+                            $result = $bill->insert(['user_id'=>$id,'nickname'=>$userInfo['nickname'],'agent_name'=>$sj['nickname'],'fir_name'=>$zs['nickname'],'order_sn'=>$this->getrequestId(),'score'=>$data['balance']*100,'bet_before'=>$betBefore,'bet_after'=>$betBefore-abs($data['balance']*100),'status'=>3,'pay_type'=>0,'remark'=>Auth::user()['username'].'[财务后台直接下分]','creatime'=>time(),'create_by'=>Auth::id()]);
                             if ($result){
                                 $b = SysBalance::where('id','=',1)->increment('balance',$data['balance']*100);
                                 if (!$b)

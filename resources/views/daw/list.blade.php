@@ -73,8 +73,8 @@
             <tr>
                 <td class="hidden-xs">{{$info->creatime}}</td>
                 <td class="hidden-xs">{{$info->nickname}}[{{$info->account}}]</td>
-                <td class="hidden-xs">{{$info->sj['nickname']}}[{{$info->sj['username']}}]</td>
-                <td class="hidden-xs">{{$info->zsyj['nickname']}}[{{$info->zsyj['username']}}]</td>
+                <td class="hidden-xs">{{$info->agent_name}}[{{$info->sj['username']}}]</td>
+                <td class="hidden-xs">{{$info->fir_name}}[{{$info->zsyj['username']}}]</td>
                 <td class="hidden-xs">{{number_format($info->bet_before/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info->status==3)
@@ -175,6 +175,7 @@
                 $("input[name='account']").val('');
                 $("select[name='user_type']").val('')
                 $("select[name='business_name']").val('')
+                $("select[name='create_by']").val('')
             });
             form.on('submit(formDemo)', function(data) {
                 console.log(data);

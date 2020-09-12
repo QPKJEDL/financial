@@ -22,6 +22,14 @@
         <input type="text" lay-verify="" value="{{$input['pave'] or ''}}" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" name="pave" placeholder="铺号" autocomplete="off" class="layui-input">
     </div>
     <div class="layui-inline">
+        <select name="update_by">
+            <option value="">操作人</option>
+            @foreach($user as $info)
+                <option value="{{$info['username']}}" {{isset($input['update_by'])&&$input['update_by']==$info['username']?'selected':''}}>{{$info['username']}}[{{$info['nickname']}}]</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="layui-inline">
         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">搜索</button>
         <button class="layui-btn layui-btn-normal" lay-submit name="excel" value="excel">导出</button>
     </div>
@@ -180,6 +188,7 @@
                 $("select[name='desk_id']").val(''); 
                 $("input[name='boot']").val('');
                 $("input[name='pave']").val('');
+                $("select[name='update_by']").val('');
             });
             form.on('submit(formDemo)', function(data) {
                 console.log(data);

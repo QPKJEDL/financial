@@ -160,6 +160,7 @@
             });
             //关系结构
             $('.children').click(function () {
+                console.log('1')
                 var id = $(this).attr('data-id');
                 layer.open({
                     type:2,

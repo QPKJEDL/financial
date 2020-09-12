@@ -220,21 +220,19 @@ class BackController extends Controller
     public function destroy($id)
     {
         $info = $id?UserAndAgentBack::find($id):[];
-        DB::beginTransaction();
         if ($info['user_type']==1)
         {
+            DB::beginTransaction();
             $agentIdArr = array();
             $agentIdArr[]=$info['user_id'];
             $agentData = Agent::select('id')->whereRaw('FIND_IN_SET('.$info['user_id'].',ancestors)')->get();
             if (count($agentData)>0){
                 foreach ($agentData as $key=>$datum)
                 {
-                    $b = UserAndAgentBack::where('user_id','=',$datum['id'])->where('user_type','=',1)->delete();
                     $agentIdArr[] = $datum['id'];
                 }
             }
             $userData = HqUser::select('user_id')->where('del_flag','=',0)->whereIn('agent_id',$agentIdArr)->get();
-
             try {
                 $bool = UserAndAgentBack::where('id','=',$info['id'])->delete();
                 if ($bool)
@@ -244,7 +242,7 @@ class BackController extends Controller
                         $count = UserBack::where('user_id','=',$datum['user_id'])->where('status','=',$info['status'])->delete();
                         if (!$count)
                         {
-                            DB::rollBack();
+                            DB::rollback();
                             return ['msg'=>'操作失败','status'=>0];
                         }
                     }
@@ -253,12 +251,12 @@ class BackController extends Controller
                 }
                 else
                 {
-                    DB::rollBack();
+                    DB::rollback();
                     return ['msg'=>'操作失败','status'=>0];
                 }
             }catch (\Exception $exception)
             {
-                DB::rollBack();
+                DB::rollback();
                 return ['msg'=>'操作失败','status'=>0];
             }
         }
@@ -277,18 +275,18 @@ class BackController extends Controller
                     }
                     else
                     {
-                        DB::rollBack();
+                        DB::rollback();
                         return ['msg'=>'操作失败','status'=>0];
                     }
                 }
                 else
                 {
-                    DB::rollBack();
+                    DB::rollback();
                     return ['msg'=>'操作失败','status'=>0];
                 }
             }catch (\Exception $exception)
             {
-                DB::rollBack();
+                DB::rollback();
                 return ['msg'=>'操作失败','status'=>0];
             }
         }

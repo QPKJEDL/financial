@@ -29,10 +29,12 @@ class DepositAndWithController extends Controller
         if (true==$request->has('end'))
         {
             $endDate = $request->input('end');
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
         }
         else
         {
             $endDate = date('Y-m-d',time());
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
             $request->offsetSet('end',date('Y-m-d',time()));
         }
         if (true==$request->has('account'))
@@ -47,7 +49,7 @@ class DepositAndWithController extends Controller
         {
             $map['create_by']=$request->input('create_by');
         }
-        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDateTime);
         //获取第一天的数据
         $bill = new Billflow();
         $bill->setTable('user_billflow_'.$dateArr[0]);
@@ -185,10 +187,12 @@ class DepositAndWithController extends Controller
         if (true==$request->has('end'))
         {
             $endDate = $request->input('end');
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
         }
         else
         {
             $endDate = date('Y-m-d',time());
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
             $request->offsetSet('end',date('Y-m-d',time()));
         }
         if (true==$request->has('account'))
@@ -203,7 +207,7 @@ class DepositAndWithController extends Controller
         {
             $map['create_by']=$request->input('create_by');
         }
-        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDateTime);
         //获取第一天的数据
         $bill = new Billflow();
         $bill->setTable('user_billflow_'.$dateArr[0]);

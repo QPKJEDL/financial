@@ -10,6 +10,7 @@ use App\Models\Agent;
 use App\Models\AgentRole;
 use App\Models\AgentRoleUser;
 use App\Models\Czrecord;
+use App\Models\Game;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
 
@@ -98,6 +99,12 @@ class OnAgentListController extends Controller
             $data['limit']=json_encode($data['limit']);
             $data['is_act']=0;
             $data['created_at']=date('Y-m-d H:i:s',time());
+            $game = Game::where('type','=',1)->get()->toArray();
+            $data['bjlbets_fee']=$game[0]['fee'];
+            $data['lhbets_fee']=$game[1]['fee'];
+            $data['nnbets_fee']=$game[2]['fee'];
+            $data['sgbets_fee']=$game[3]['fee'];
+            $data['a89bets_fee']=$game[4]['fee'];
             $count = Agent::insertGetId($data);
             if ($count){
                 $this->insertUserRole($count,$roleId);

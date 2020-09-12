@@ -82,8 +82,8 @@
                         -
                     @endif
                 </td>
-                <td class="hidden-xs">{{$info['sj']['nickname']}}[{{$info['sj']['username']}}]</td>
-                <td class="hidden-xs">{{$info['zsyj']['nickname']}}[{{$info['zsyj']['username']}}]</td>
+                <td class="hidden-xs">{{$info['top_name']}}[{{$info['sj']['username']}}]</td>
+                <td class="hidden-xs">{{$info['fir_name']}}[{{$info['zsyj']['username']}}]</td>
                 <td class="hidden-xs">{{number_format($info['bet_before']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['bet_before']>$info['bet_after'])

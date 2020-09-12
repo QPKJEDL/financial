@@ -28,23 +28,25 @@ class OrderController extends Controller
         if (true==$request->has('begin'))
         {
             $startDate = $request->input('begin');
-            $begin = strtotime($request->input('begin'));
+            $begin = strtotime($request->input('begin'))+config('admin.beginTime');
         }else{
             $startDate = date('Y-m-d',time());
-            $begin = strtotime($startDate);
+            $begin = strtotime($startDate)+config('admin.beginTime');
             $request->offsetSet('begin',$startDate);
         }
         if (true==$request->has('end'))
         {
             $endDate = $request->input('end');
-            $endTime = strtotime('+1day',strtotime($endDate))-1;
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
+            $endTime = strtotime('+1day',strtotime($endDate))+config('admin.beginTime');
         }else{
             $endDate = date('Y-m-d',time());
-            $endTime = strtotime('+1day',strtotime($endDate))-1;
+            $endDateTime = date('Y-m-d H:i:s',strtotime('+1day',strtotime($endDate)));
+            $endTime = strtotime('+1day',strtotime($endDate))+config('admin.beginTime');
             $request->offsetSet('end',$endDate);
         }
         //获取到开始时间和结束时间的时间段数组
-        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDate);
+        $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDateTime);
         $sql = '';
         for ($i=0;$i<count($dateArr);$i++)
         {
@@ -647,17 +649,29 @@ class OrderController extends Controller
         if(!empty($data['x1_double'])){
             $str = $str."闲一(翻倍)".$data['x1_double']/100;
         }
+        if (!empty($data['x1_Super_Double']))
+        {
+            $str = $str."闲一(超倍)".$data['x1_Super_Double']/100;
+        }
         if(!empty($data['x2_equal'])){
             $str =$str."闲二（平倍）".$data['x2_equal']/100;
         }
         if(!empty($data['x2_double'])){
             $str = $str."闲二(翻倍)".$data['x2_double']/100;
         }
+        if (!empty($data['x2_Super_Double']))
+        {
+            $str = $str."闲二(超倍)".$data['x2_Super_Double']/100;
+        }
         if(!empty($data['x3_equal'])){
-            $str = "闲三（平倍）".$data['x3_equal']/100;
+            $str = $str."闲三（平倍）".$data['x3_equal']/100;
         }
         if(!empty($data['x3_double'])){
             $str = $str."闲三(翻倍)".$data['x3_double']/100;
+        }
+        if (!empty($data['x3_Super_Double']))
+        {
+            $str = $str."闲一(超倍)".$data['x3_Super_Double']/100;
         }
         return $str;
     }

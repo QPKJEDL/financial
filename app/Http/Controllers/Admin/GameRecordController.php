@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Desk;
 use App\Models\GameRecord;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +31,10 @@ class GameRecordController extends Controller
         if (true==$request->has('pave'))
         {
             $map['pave_num']=$request->input('pave');
+        }
+        if (true==$request->has('update_by'))
+        {
+            $map['update_by']=$request->input('update_by');
         }
         $gameRecord = new GameRecord();
         $gameRecord->setTable('game_record_'.$tableName);
@@ -127,7 +132,7 @@ class GameRecordController extends Controller
                 }
             }
         }
-        return view('gameRecord.list',['list'=>$data,'limit'=>$limit,'desk'=>Desk::getDeskList(),'input'=>$request->all()]);
+        return view('gameRecord.list',['list'=>$data,'limit'=>$limit,'desk'=>Desk::getDeskList(),'input'=>$request->all(),'user'=>User::getAllUser()]);
     }
 
     /**

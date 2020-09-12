@@ -18,20 +18,20 @@ class ThreeController extends Controller
         $map = array();
         if (true==$request->has('begin'))
         {
-            $start = strtotime($request->input('begin'));
+            $start = strtotime($request->input('begin')) + config('admin.beginTime');
         }
         else
         {
-            $start = strtotime(date('Y-m-d',time()));
+            $start = strtotime(date('Y-m-d',time())) + config('admin.beginTime');
             $request->offsetSet('begin',date('Y-m-d',time()));
         }
         if (true==$request->has('end'))
         {
-            $endDate = strtotime('+1day',strtotime($request->input('end')))-1;
+            $endDate = strtotime('+1day',strtotime($request->input('end')))+ config('admin.beginTime');
         }
         else
         {
-            $endDate = strtotime('+1day',strtotime(date('Y-m-d',time())))-1;
+            $endDate = strtotime('+1day',strtotime(date('Y-m-d',time())))+ config('admin.beginTime');
             $request->offsetSet('end',date('Y-m-d',time()));
         }
         if (true==$request->has('account'))
