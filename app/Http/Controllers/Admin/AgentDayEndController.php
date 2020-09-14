@@ -587,7 +587,7 @@ class AgentDayEndController extends Controller
             //打赏金额
             //获取当前代理下的会员
             $userData = HqUser::where('agent_id','=',$datum['agent_id'])->select('user_id')->get();
-            $money = LiveReward::query()->whereIn('user_id',$userData)->sum('money');
+            $money = LiveReward::query()->whereIn('user_id',$userData)->whereBetween('creatime',[$begin,$end])->sum('money');
             $datum['reward']=$money;
             $sumData['reward']=$sumData['reward'] + $money;
         }

@@ -91,7 +91,19 @@
                 var userName = $("#nickname").val();
                 if(v==1){
                     layer.confirm('您确定给会员['+userName+']充值'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
-                        btn:['确定','取消']//按钮
+                        btn:['确定','取消'],//按钮
+                        success:function (layero, index) {
+                            this.enterEsc = function (event) {
+                                if(event.keyCode == 13){
+                                    $('.layui-layer-btn0').click();
+                                    return false;
+                                }
+                            };
+                            $(document).on('keydown',this.enterEsc);
+                        },
+                        end:function () {
+                            $(document).off('keydown',this.enterEsc);
+                        }
                     },function () {
                         $.ajax({
                             url:"{{url('/admin/hquser/saveTopCode')}}",
@@ -123,7 +135,19 @@
                     });
                 }else{
                     layer.confirm('您确定给会员['+userName+']提现'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
-                        btn:['确定','取消']//按钮
+                        btn:['确定','取消'],//按钮
+                        success:function (layero, index) {
+                            this.enterEsc = function (event) {
+                                if(event.keyCode == 13){
+                                    $('.layui-layer-btn0').click();
+                                    return false;
+                                }
+                            };
+                            $(document).on('keydown',this.enterEsc);
+                        },
+                        end:function () {
+                            $(document).off('keydown',this.enterEsc);
+                        }
                     },function () {
                         $.ajax({
                             url:"{{url('/admin/hquser/saveTopCode')}}",

@@ -85,8 +85,20 @@
                 var v = $("#status").val();
                 if(v==1){
                     layer.confirm('您确定给代理['+username+']充值'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
-                        btn:['确定','取消']//按钮
-                    },function () {
+                        btn:['确定','取消'],//按钮
+                        success:function (layero, index) {
+                            this.enterEsc = function (event) {
+                                if(event.keyCode == 13){
+                                    $('.layui-layer-btn0').click();
+                                    return false;
+                                }
+                            };
+                            $(document).on('keydown',this.enterEsc);
+                        },
+                        end:function () {
+                            $(document).off('keydown',this.enterEsc);
+                        }
+                    },function (index) {
                         $.ajax({
                             url:"{{url('/admin/updateBalance')}}",
                             data:$('form').serialize(),
@@ -117,7 +129,19 @@
                     });
                 }else{
                     layer.confirm('您确定给代理['+username+']提现'+$("input[name='balance']").val()+'('+$("#h4").html()+')吗？',{
-                        btn:['确定','取消']//按钮
+                        btn:['确定','取消'],//按钮
+                        success:function (layero, index) {
+                            this.enterEsc = function (event) {
+                                if(event.keyCode == 13){
+                                    $('.layui-layer-btn0').click();
+                                    return false;
+                                }
+                            };
+                            $(document).on('keydown',this.enterEsc);
+                        },
+                        end:function () {
+                            $(document).off('keydown',this.enterEsc);
+                        }
                     },function () {
                         $.ajax({
                             url:"{{url('/admin/updateBalance')}}",

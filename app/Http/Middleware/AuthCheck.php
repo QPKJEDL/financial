@@ -9,8 +9,9 @@
 namespace App\Http\Middleware;
 use Illuminate\Http\JsonResponse;
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\Guard;
-
+use Illuminate\Support\Facades\Auth;
 class AuthCheck
 {
     /**
@@ -40,6 +41,7 @@ class AuthCheck
      */
     public function handle($request, Closure $next)
     {
+
         if($request->path() == 'logout') {
             $this->auth->logout();
             return redirect('/admin/');
@@ -51,7 +53,20 @@ class AuthCheck
                 return redirect()->guest('/admin/login');
             }
         }
+        $agent=$this->check();
+        if($agent->login_time!=session("AuthTime")){
+            $this->auth->logout();
+            return redirect('/admin/login');
+        }
 
         return $next($request);
+    }
+
+    private function check(){
+
+
+        $agent=DB::table('admin_users')->where('id',Auth::user()['id'])->first();
+        //print_r($agent);
+        return $agent;
     }
 }

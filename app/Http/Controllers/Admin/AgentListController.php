@@ -33,7 +33,7 @@ class AgentListController extends Controller
      */
     public function index(Request $request){
         $map = array();
-        //$map['parent_id']=0;
+        $map['parent_id']=0;
         //$map['userType']=1;
         $map['del_flag']=0;
         if (true==$request->has('username'))
@@ -173,14 +173,6 @@ class AgentListController extends Controller
         if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
             return ['msg'=>'限红错误','status'=>0];
         }
-        if ($data['bjlbets_fee']['banker']<0.9)
-        {
-            return ['msg'=>'庄赔率不能低于0.9'];
-        }
-        if ($data['bjlbets_fee']['player']<0.95)
-        {
-            return ['msg'=>'闲赔率不能低于0.95'];
-        }
         //密码加密
         $data['password']=bcrypt(HttpFilter($data['pwd']));
         unset($data['pwd']);
@@ -298,7 +290,7 @@ class AgentListController extends Controller
                     }
                     else
                     {
-                        DB::rollback();
+                        DB::rollBack();
                         return ['msg'=>'操作失败','status'=>0];
                     }
                 }
@@ -310,12 +302,12 @@ class AgentListController extends Controller
             }
             else
             {
-                DB::rollback();
+                DB::rollBack();
                 return ['msg'=>'操作失败','status'=>0];
             }
         }catch (\Exception $e)
         {
-            DB::rollback();
+            DB::rollBack();
             return ['msg'=>'操作失败','status'=>0];
         }
     }
@@ -352,6 +344,14 @@ class AgentListController extends Controller
             if ($num!==false)
             {
                 DB::commit();
+                $redis = Redis::connection('redis2');
+                foreach ($idArr as $v){
+                    $userdata=$redis->get('UserInfo_'.$v["id"]);
+                    $userinfo=json_decode($userdata,true);
+                    $userinfo["Token"]='11111111111111111111';
+                    $new=json_encode($userinfo);
+                    $redis->set('UserInfo_'.$id,$new);
+                }
                 return ['msg'=>'操作成功','status'=>1];
             }
             else
@@ -376,31 +376,18 @@ class AgentListController extends Controller
             $idArr = json_decode($info['disable_json'],true);
             $user = $idArr['user'];
             $agent = $idArr['agent'];
-            foreach ($agent as $key=>$v)
+            //修改代理
+            $count = Agent::query()->whereIn('id',$agent)->update(['status'=>0]);
+            if (count($agent)!=$count)
             {
-                $count = Agent::query()->where('id','=',$v['id'])->update(['status'=>0]);
-                if ($count!==false)
-                {
-                    continue;
-                }
-                else
-                {
-                    DB::rollback();
-                    return ['msg'=>'操作失败','status'=>0];
-                }
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
             }
-            foreach ($user as $k=>$v)
+            $result = HqUser::query()->whereIn('user_id',$user)->update(['is_over'=>0]);
+            if ($result!=count($user))
             {
-                $result = HqUser::query()->where('user_id','=',$v['id'])->update(['is_over'=>0]);
-                if ($result!==false)
-                {
-                    continue;
-                }
-                else
-                {
-                    DB::rollback();
-                    return ['msg'=>'操作失败','status'=>0];
-                }
+                DB::rollback();
+                return ['msg'=>'操作失败','status'=>0];
             }
             DB::commit();
             return ['msg'=>'操作成功','status'=>1];
@@ -588,15 +575,15 @@ class AgentListController extends Controller
                                 $this->unRedissLock($id);
                                 return ['msg'=>'操作成功','status'=>1];
                             }else{
-                                DB::rollback();
+                                DB::rollBack();
                                 $this->unRedissLock($id);
                                 return ['msg'=>'操作失败','status'=>0];
                             }
-                            DB::rollback();
+                            DB::rollBack();
                             $this->unRedissLock($id);
                             return ['msg'=>'操作失败','status'=>0];
                         }else{
-                            DB::rollback();
+                            DB::rollBack();
                             $this->unRedissLock($id);
                             return ['msg'=>'操作失败','status'=>0];
                         }
@@ -608,25 +595,26 @@ class AgentListController extends Controller
                 }
                 else //下分
                 {
+
                     $bool = Agent::where('id','=',$id)->lockForUpdate()->first();
-                    if (!$bool)
+                    if ($bool['balance']<$data['balance'])
                     {
                         DB::rollback();
-                        $this->unRedissLock($id);
-                        return ['msg'=>'操作失败','status'=>0];
+                        $this->unRedisLock($id);
+                        return ['msg'=>'余额不足，不能操作','status'=>0];
                     }
                     //修改余额 扣钱
                     $count = Agent::where('id','=',$id)->decrement('balance',$data['balance']);
                     if (!$count)
                     {
-                        DB::rollback();
+                        DB::rollBack();
                         $this->unRedissLock($id);
                         return ['msg'=>'操作失败','status'=>0];
                     }
                     $result = $this->insertAgentBillFlow($id,0,$data['balance'],$bool['balance'],$bool['balance'] - $data['balance'],$data['type'],0,Auth::user()['username'].'[点击提现]');
                     if (!$result)
                     {
-                        DB::rollback();
+                        DB::rollBack();
                         $this->unRedissLock($id);
                         return ['msg'=>'操作失败','status'=>0];
                     }
@@ -637,7 +625,7 @@ class AgentListController extends Controller
                 }
             }catch (\Exception $e)
             {
-                DB::rollback();
+                DB::rollBack();
                 $this->unRedissLock($id);
                 return ['msg'=>'操作失败','status'=>0];
             }
@@ -702,7 +690,7 @@ class AgentListController extends Controller
         $code=time().rand(100000,999999);
         //锁入列
         Redis::rPush('cz_cw_agent_lock_'.$userId,$code);
-
+        Redis::expire('cz_cw_agent_lock_'.$userId,5);
         //锁出列
         $codes = Redis::LINDEX('cz_cw_agent_lock_'.$userId,0);
         if ($code!=$codes){

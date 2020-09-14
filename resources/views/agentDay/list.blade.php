@@ -192,10 +192,10 @@
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info['userType']==1)
-                        -
+                    @if($info['userType']==2)
+                        {{isset($info['pump'])?$info['pump']:"-"}}%
                     @else
-                        {{$info['pump']}}%
+                        -
                     @endif
                 </td>
                 <td class="hidden-xs">

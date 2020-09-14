@@ -8,11 +8,13 @@
  */
 namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Log;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\Session;
 class LoginController extends Controller
 {
     /*
@@ -82,6 +84,8 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         Log::addLogs(trans('fzs.login.login_info'),'/admin/login',$user->id);
+        DB::table('admin_users')->where('id',$user['id'])->update(array("login_time"=>time()));
+        Session::put('AuthTime', time()); //存储验证码
         return $this->oriAuthenticated($request, $user);
     }
 

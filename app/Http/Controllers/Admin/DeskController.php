@@ -1468,7 +1468,7 @@ class DeskController extends Controller
             $shunMen = $this->aConvertNumbers($winner['ShunNum']);
             if (!empty($betMoney['ShunMen_equal']))
             {
-                $money = $money + ($agentInfo['a89bets_fee']['Equal'] - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['FanMen_equal'];
+                $money = $money + ($agentInfo['a89bets_fee']['Equal'] - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['ShunMen_equal'];
             }
             if (!empty($betMoney['ShunMen_Super_Double']))
             {
