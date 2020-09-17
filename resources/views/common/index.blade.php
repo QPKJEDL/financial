@@ -83,7 +83,7 @@
         $(iframe[index]).remove();//删除iframe元素
         $(iframe[index-1]).addClass('layui-show');
     }
-    //setInterval("aaa()",1000)
+    setInterval("aaa()",1000)
     function aaa() {
         $.ajax({
             type:"get",

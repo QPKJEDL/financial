@@ -287,12 +287,12 @@ class UserDayEndController extends Controller
                     $betMoney = json_decode($v['bet_money'],true);
                     if ($v['game_type']==1 || $v['game_type']==2)
                     {
-                        $datum['washMoney']=$datum['washMoney'] + array_sum($betMoney);
                         if ($v['status']==1 || $v['status']==4)
                         {
-                            $datum['betMoney']=$datum['betMoney'] + array_sum($betMoney);
+                            $datum['washMoney']=$datum['washMoney'] + array_sum($betMoney);
                             if ($v['game_type']==1)
                             {
+                                $datum['betMoney']=$datum['betMoney'] + $this->getBaccaratBetMoney($v);
                                 if ($agentInfo['userType']==1)
                                 {
                                     $datum['feeMoney']=$datum['feeMoney'] + $this->bjlPump($v);
@@ -304,6 +304,7 @@ class UserDayEndController extends Controller
                             }
                             else
                             {
+                                $datum['betMoney']=$datum['betMoney'] + $this->getDragonAndTigerBetMoney($v);
                                 if ($agentInfo['userType']==2)
                                 {
                                     $datum['feeMoney']=$datum['feeMoney'] + $this->xsDragonAndTigerPump($v);
@@ -312,10 +313,10 @@ class UserDayEndController extends Controller
                         }
                     }elseif ($v['game_type']==3)
                     {
-                        $datum['washMoney']=$datum['washMoney']+$this->getNiuNiuBetMoney($betMoney);
                         if ($v['status']==1 || $v['status']==4)
                         {
-                            $datum['betMoney']=$datum['betMoney'] + $this->getNiuNiuBetMoney($betMoney);
+                            $datum['washMoney']=$datum['washMoney']+array_sum($betMoney);
+                            $datum['betMoney']=$datum['betMoney'] + array_sum($betMoney);
                             if ($agentInfo['userType']==2)
                             {
                                 $datum['feeMoney']=$datum['feeMoney'] + $this->xsNiuNiuPump($v);
@@ -323,10 +324,10 @@ class UserDayEndController extends Controller
                         }
                     }elseif ($v['game_type']==4)
                     {
-                        $datum['washMoney']=$datum['washMoney']+$this->getSanGongBetMoney($betMoney);
                         if ($v['status']==1)
                         {
-                            $datum['betMoney']=$datum['betMoney'] + $this->getSanGongBetMoney($betMoney);
+                            $datum['washMoney']=$datum['washMoney']+array_sum($betMoney);
+                            $datum['betMoney']=$datum['betMoney'] + array_sum($betMoney);
                             if ($agentInfo['userType']==2)
                             {
                                 $datum['feeMoney']=$datum['feeMoney'] + $this->xsSanGongPump($v);
@@ -334,10 +335,10 @@ class UserDayEndController extends Controller
                         }
                     }elseif ($v['game_type']==5)
                     {
-                        $datum['washMoney']=$datum['washMoney']+$this->getA89BetMoney($betMoney);
                         if ($v['status']==1)
                         {
-                            $datum['betMoney']=$datum['betMoney'] + $this->getA89BetMoney($betMoney);
+                            $datum['washMoney']=$datum['washMoney']+array_sum($betMoney);
+                            $datum['betMoney']=$datum['betMoney'] + array_sum($betMoney);
                             if ($agentInfo['userType']==2)
                             {
                                 $datum['feeMoney']=$datum['feeMoney'] + $this->xsA89Pump($v);
@@ -396,7 +397,10 @@ class UserDayEndController extends Controller
                 {
                     if ($v['user_type']==1)
                     {
-                        $info['feeMoney']=$info['feeMoney'] + $this->bjlPump($value);
+                        if ($value['game_type']==1)
+                        {
+                            $info['feeMoney']=$info['feeMoney'] + $this->bjlPump($value);
+                        }
                     }
                     else
                     {
@@ -510,6 +514,70 @@ class UserDayEndController extends Controller
         }
         return view('userDay.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit]);
     }
+
+    /**
+     * 获取百家乐下注金额  开合不算
+     * @param $order
+     * @return float|int|mixed
+     */
+    public function getBaccaratBetMoney($order)
+    {
+        $money = 0;
+        $tableName = $this->getGameRecordTableNameByRecordSn($order['record_sn']);
+        $game = new GameRecord();
+        $game->setTable('game_record_'.$tableName);
+        $recordInfo = $game->where('record_sn','=',$order['record_sn'])->first();
+        $betMoney = json_decode($order['bet_money'],true);
+        $winner = json_decode($recordInfo['winner'],true);
+        if ($winner['game']==1)
+        {
+            if ($betMoney['tie']>0)
+            {
+                $money = $betMoney['tie'];
+            }
+            if ($betMoney['bankerPair']>0)
+            {
+                $money += $betMoney['bankerPair'];
+            }
+            if ($betMoney['playerPair']>0)
+            {
+                $money += $betMoney['playerPair'];
+            }
+        }
+        else
+        {
+            $money = array_sum($betMoney);
+        }
+        return $money;
+    }
+
+    /**
+     * 获取龙虎下注金额 游戏结果开合不算
+     * @param $order
+     * @return float|int|mixed
+     */
+    public function getDragonAndTigerBetMoney($order)
+    {
+        $money = 0;
+        $tableName = $this->getGameRecordTableNameByRecordSn($order['record_sn']);
+        $game = new GameRecord();
+        $game->setTable('game_record_'.$tableName);
+        $recordInfo = $game->where('record_sn','=',$order['record_sn'])->first();
+        $betMoney = json_decode($order['bet_money'],true);
+        if ($recordInfo['winner']==1)
+        {
+            if ($betMoney['tie']>0)
+            {
+                $money = $betMoney['tie'];
+            }
+        }
+        else
+        {
+            $money = array_sum($betMoney);
+        }
+        return $money;
+    }
+
 
     /**
      * 根据userId效验数组中是否存在该数据
@@ -644,13 +712,13 @@ class UserDayEndController extends Controller
             {
                 if ($x1Num>9)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x1Num>0 && $x1Num<10)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $x1Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $x1Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -677,13 +745,13 @@ class UserDayEndController extends Controller
             {
                 if ($x2Num>9)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x2Num>0 && $x2Num<10)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] * $x2Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $x2Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double']* $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double']* $agentInfo['pump']/100;
                 }
             }
         }
@@ -710,13 +778,13 @@ class UserDayEndController extends Controller
             {
                 if ($x3Num>9)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x3Num>0 && $x3Num<10)
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] * $x3Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $x3Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double']* $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double']* $agentInfo['pump']/100;
                 }
             }
         }
@@ -764,13 +832,13 @@ class UserDayEndController extends Controller
             {
                 if ($x1Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x1Num>0 && $x1Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $x1Num  * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $x1Num  * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -798,13 +866,13 @@ class UserDayEndController extends Controller
             {
                 if ($x2Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] *10  * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] *10  * $agentInfo['pump']/100;
                 }elseif ($x2Num>0 && $x2Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] * $x2Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $x2Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -831,13 +899,13 @@ class UserDayEndController extends Controller
             {
                 if ($x3Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x3Num>0 && $x3Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] * $x3Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $x3Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -865,13 +933,13 @@ class UserDayEndController extends Controller
             {
                 if ($x4Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x4Num>0 && $x4Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'] * $x4Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $x4Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -899,13 +967,13 @@ class UserDayEndController extends Controller
             {
                 if ($x5Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x5Num>0 && $x5Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'] * $x5Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $x5Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -933,13 +1001,13 @@ class UserDayEndController extends Controller
             {
                 if ($x6Num>9)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'] *10 * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] *10 * $agentInfo['pump']/100;
                 }elseif ($x6Num>0 && $x6Num<10)
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'] * $x6Num * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $x6Num * $agentInfo['pump']/100;
                 }else
                 {
-                    $money = $money + (1 - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'] * $agentInfo['pump']/100;
+                    $money = $money + (1 - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $agentInfo['pump']/100;
                 }
             }
         }
@@ -972,7 +1040,7 @@ class UserDayEndController extends Controller
             }
             if (!empty($betMoney['FanMen_Super_Double']))
             {
-                $money = $money + (1 - $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['FanMen_Super_Double'] * $fanNum * $agentInfo['pump']/100;
+                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $fanNum * $agentInfo['pump']/100;
             }
         }
         if ($winner['Shunresult']=="win")
@@ -984,7 +1052,7 @@ class UserDayEndController extends Controller
             }
             if (!empty($betMoney['ShunMen_Super_Double']))
             {
-                $money = $money + (1- $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['ShunMen_Super_Double'] * $shunMen* $agentInfo['pump']/100;
+                $money = $money + (1- $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['ShunMen_Super_Double'] * $shunMen* $agentInfo['pump']/100;
             }
         }
         if ($winner['Tianresult']=="win")
@@ -996,7 +1064,7 @@ class UserDayEndController extends Controller
             }
             if (!empty($betMoney['FanMen_Super_Double']))
             {
-                $money = $money + (1 - $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['FanMen_Super_Double'] * $fanNum* $agentInfo['pump']/100;
+                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $fanNum* $agentInfo['pump']/100;
             }
         }
         return $money;
@@ -1016,6 +1084,48 @@ class UserDayEndController extends Controller
         $user['sgbets_fee']=json_decode($user['sgbets_fee'],true);
         $user['a89bets_fee']=json_decode($user['a89bets_fee'],true);
         return $user;
+    }
+    /**
+     * a89结果转数字
+     * @param $str
+     * @return int
+     */
+    public function aConvertNumbers($str){
+        switch ($str)
+        {
+            case "0点":
+                $count=1;
+                break;
+            case "1点":
+                $count=1;
+                break;
+            case "2点":
+                $count=2;
+                break;
+            case "3点":
+                $count=3;
+            case "4点":
+                $count=4;
+                break;
+            case "5点":
+                $count=5;
+                break;
+            case "6点":
+                $count=6;
+                break;
+            case "7点":
+                $count=7;
+                break;
+            case "8点":
+                $count=8;
+                break;
+            case "9点":
+                $count=9;
+                break;
+            default:
+                $count=10;
+        }
+        return $count;
     }
     /**
      * 百家乐抽水
@@ -1231,21 +1341,24 @@ class UserDayEndController extends Controller
         $money = 0;
         foreach ($data as $key=>$datum)
         {
-            $betMoney = json_decode($datum['bet_money'],true);
-            if ($datum['game_type']==1 || $datum['game_type']==2){
-                $money = $money + array_sum($betMoney);
-            }
-            else if ($datum['game_type']==3)
+            if ($datum['status']==1 || $datum['status']==4)
             {
-                $money = $money + $this->getNiuNiuBetMoney($betMoney);
-            }
-            else if ($datum['game_type']==4)
-            {
-                $money = $money + $this->getSanGongBetMoney($betMoney);
-            }
-            else if ($datum['game_type']==5)
-            {
-                $money = $money + $this->getA89BetMoney($betMoney);
+                $betMoney = json_decode($datum['bet_money'],true);
+                if ($datum['game_type']==1 || $datum['game_type']==2){
+                    $money = $money + array_sum($betMoney);
+                }
+                else if ($datum['game_type']==3)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
+                else if ($datum['game_type']==4)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
+                else if ($datum['game_type']==5)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
             }
         }
         return $money;
@@ -1261,26 +1374,30 @@ class UserDayEndController extends Controller
         $money = 0;
         foreach ($data as $key=>$datum)
         {
-            if ($datum['status']!=1)
+            if ($datum['status']==1 || $datum['status']==4)
             {
-                continue;
+                $betMoney = json_decode($datum['bet_money'],true);
+                if ($datum['game_type']==1){
+                    $money = $money + $this->getBaccaratBetMoney($datum);
+                }
+                else if ($datum['game_type']==2)
+                {
+                    $money = $money + $this->getDragonAndTigerBetMoney($datum);
+                }
+                else if ($datum['game_type']==3)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
+                else if ($datum['game_type']==4)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
+                else if ($datum['game_type']==5)
+                {
+                    $money = $money + array_sum($betMoney);
+                }
             }
-            $betMoney = json_decode($datum['bet_money'],true);
-            if ($datum['game_type']==1 || $datum['game_type']==2){
-                $money = $money + array_sum($betMoney);
-            }
-            else if ($datum['game_type']==3)
-            {
-                $money = $money + $this->getNiuNiuBetMoney($betMoney);
-            }
-            else if ($data['game_type']==4)
-            {
-                $money = $money + $this->getSanGongBetMoney($betMoney);
-            }
-            else if ($data['game_type']==5)
-            {
-                $money = $money + $this->getA89BetMoney($betMoney);
-            }
+
         }
         return $money;
     }

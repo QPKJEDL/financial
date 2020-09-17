@@ -13,6 +13,7 @@ use App\Models\Czrecord;
 use App\Models\Game;
 use App\Models\HqUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OnAgentListController extends Controller
 {
@@ -105,6 +106,13 @@ class OnAgentListController extends Controller
             $data['nnbets_fee']=$game[2]['fee'];
             $data['sgbets_fee']=$game[3]['fee'];
             $data['a89bets_fee']=$game[4]['fee'];
+            if(!empty($data['is_allow'])){
+                $data['is_allow']=1;
+            }
+            if (!empty($data['is_allow_draw']))
+            {
+                $data['is_allow_draw']=1;
+            }
             $count = Agent::insertGetId($data);
             if ($count){
                 $this->insertUserRole($count,$roleId);
@@ -215,17 +223,83 @@ class OnAgentListController extends Controller
      */
     public function update(StoreRequest $request)
     {
-        $data = $request->all();
-        $id = $data['id'];
-        unset($data['_token']);
-        unset($data['user_role']);
-        unset($data['id']);
-        $data['limit']=json_encode($data['limit']);
-        $count = Agent::where('id','=',$id)->update($data);
-        if ($count!==false){
-            return ['msg'=>'操作成功','status'=>1];
-        }else{
-            return ['msg'=>'操作失败','status'=>0];
+        DB::beginTransaction();
+        try {
+            $data = $request->all();
+            $id = $data['id'];
+            unset($data['_token']);
+            unset($data['user_role']);
+            unset($data['id']);
+            if (!empty($data['is_allow']))
+            {
+                $data['is_allow']=1;
+            }
+            else
+            {
+                $data['is_allow']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败1','status'=>0];
+                }
+            }
+            if (!empty($data['is_allow_draw']))
+            {
+                $data['is_allow_draw']=1;
+            }
+            else
+            {
+                $data['is_allow_draw']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow_draw'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败2','status'=>0];
+                }
+            }
+            if (!empty($data['is_allow_password']))
+            {
+                $data['is_allow_password']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow_password'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败2','status'=>0];
+                }
+            }
+            else
+            {
+                $data['is_allow_password']=1;
+            }
+            $data['limit']=json_encode($data['limit']);
+            $count = Agent::where('id','=',$id)->update($data);
+            if ($count!==false){
+                DB::commit();
+                return ['msg'=>'操作成功','status'=>1];
+            }else{
+                DB::rollback();
+                return ['msg'=>'操作失败3','status'=>0];
+            }
+        }catch (\Exception $exception)
+        {
+            DB::rollback();
+            return ['msg'=>'操作失败4','status'=>0];
         }
     }
 

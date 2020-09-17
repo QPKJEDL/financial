@@ -27,7 +27,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-size="sm">
+    <table class="layui-table" lay-size="sm" id="table">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -123,7 +123,7 @@
         </tbody>
     </table>
     <input type="hidden" id="token" value="{{csrf_token()}}">
-    <div class="page-wrap">
+    <div class="page-wrap" style="text-align: center;">
         {{--{{$list->render()}}--}}
         <div id="demo"></div>
     </div>

@@ -231,15 +231,15 @@ class DeskController extends Controller
                     {
                         if ($x1Num>9)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
                         }
                         elseif ($x1Num>0 && $x1Num<10)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x1Num;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x1Num;
                         }
                         else
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
                         }
                     }
                     if (!empty($betMoney['x1_double']))
@@ -269,15 +269,15 @@ class DeskController extends Controller
                     {
                         if ($x2Num>9)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * 10;
                         }
                         elseif ($x2Num>0 && $x2Num<10)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * $x2Num;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100 * $x2Num;
                         }
                         else
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x2_Super_Double'] * $agentInfo['pump']/100;
                         }
                     }
                     if (!empty($betMoney['x2_double']))
@@ -307,15 +307,15 @@ class DeskController extends Controller
                     {
                         if ($x3Num>9)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * 10;
                         }
                         elseif ($x3Num>0 && $x3Num<10)
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x3Num;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100 * $x3Num;
                         }
                         else
                         {
-                            $money = $money + (1 - $userInfo['nnbets_fee']['Super_Double']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
+                            $money = $money + (1 - $userInfo['nnbets_fee']['SuperDouble']) * $betMoney['x1_Super_Double'] * $agentInfo['pump']/100;
                         }
                     }
                     if (!empty($betMoney['x3_double']))
@@ -1071,13 +1071,13 @@ class DeskController extends Controller
             {
                 if ($x1Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] *10;
                 }elseif ($x1Num>0 && $x1Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $x1Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $x1Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'];
                 }
             }
         }
@@ -1105,13 +1105,13 @@ class DeskController extends Controller
             {
                 if ($x2Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] *10;
                 }elseif ($x2Num>0 && $x2Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] * $x2Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $x2Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'];
                 }
             }
         }
@@ -1138,13 +1138,13 @@ class DeskController extends Controller
             {
                 if ($x3Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] *10;
                 }elseif ($x3Num>0 && $x3Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] * $x3Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $x3Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'];
                 }
             }
         }
@@ -1172,13 +1172,13 @@ class DeskController extends Controller
             {
                 if ($x4Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] *10;
                 }elseif ($x4Num>0 && $x4Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'] * $x4Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'] * $x4Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x4_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x4_Super_Double'];
                 }
             }
         }
@@ -1206,13 +1206,13 @@ class DeskController extends Controller
             {
                 if ($x5Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] *10;
                 }elseif ($x5Num>0 && $x5Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'] * $x5Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'] * $x5Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x5_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x5_Super_Double'];
                 }
             }
         }
@@ -1240,13 +1240,13 @@ class DeskController extends Controller
             {
                 if ($x6Num>9)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'] *10;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] *10;
                 }elseif ($x6Num>0 && $x6Num<10)
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'] * $x6Num;
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'] * $x6Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['sgbets_fee']['Super_Double'] - $userInfo['sgbets_fee']['Super_Double']/100) * $betMoney['x6_Super_Double'];
+                    $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'];
                 }
             }
         }
@@ -1343,13 +1343,13 @@ class DeskController extends Controller
             {
                 if ($x1Num>9)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] *10;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] *10;
                 }elseif ($x1Num>0 && $x1Num<10)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'] * $x1Num;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'] * $x1Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x1_Super_Double'];
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x1_Super_Double'];
                 }
             }
         }
@@ -1376,13 +1376,13 @@ class DeskController extends Controller
             {
                 if ($x2Num>9)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] *10;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] *10;
                 }elseif ($x2Num>0 && $x2Num<10)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'] * $x2Num;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'] * $x2Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x2_Super_Double'];
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x2_Super_Double'];
                 }
             }
         }
@@ -1409,13 +1409,13 @@ class DeskController extends Controller
             {
                 if ($x3Num>9)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] *10;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] *10;
                 }elseif ($x3Num>0 && $x3Num<10)
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'] * $x3Num;
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'] * $x3Num;
                 }else
                 {
-                    $money = $money + ($agentInfo['nnbets_fee']['Super_Double'] - $userInfo['nnbets_fee']['Super_Double']/100) * $betMoney['x3_Super_Double'];
+                    $money = $money + ($agentInfo['nnbets_fee']['SuperDouble'] - $userInfo['nnbets_fee']['SuperDouble']/100) * $betMoney['x3_Super_Double'];
                 }
             }
         }
@@ -1460,7 +1460,7 @@ class DeskController extends Controller
             }
             if (!empty($betMoney['FanMen_Super_Double']))
             {
-                $money = $money + ($agentInfo['a89bets_fee']['Super_Double'] - $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['FanMen_Super_Double'] * $fanNum;
+                $money = $money + ($agentInfo['a89bets_fee']['SuperDouble'] - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $fanNum;
             }
         }
         if ($winner['Shunresult']=="win")
@@ -1472,7 +1472,7 @@ class DeskController extends Controller
             }
             if (!empty($betMoney['ShunMen_Super_Double']))
             {
-                $money = $money + ($agentInfo['a89bets_fee']['Super_Double'] - $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['ShunMen_Super_Double'] * $shunMen;
+                $money = $money + ($agentInfo['a89bets_fee']['SuperDouble'] - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['ShunMen_Super_Double'] * $shunMen;
             }
         }
         if ($winner['Tianresult']=="win")
@@ -1484,7 +1484,7 @@ class DeskController extends Controller
             }
             if (!empty($betMoney['FanMen_Super_Double']))
             {
-                $money = $money + ($agentInfo['a89bets_fee']['Super_Double'] - $userInfo['a89bets_fee']['Super_Double']/100) * $betMoney['FanMen_Super_Double'] * $fanNum;
+                $money = $money + ($agentInfo['a89bets_fee']['SuperDouble'] - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $fanNum;
             }
         }
         return $money;

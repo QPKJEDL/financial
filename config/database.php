@@ -48,16 +48,18 @@ return [
                 'host' => ['172.19.0.12'],
             ],*/
             'read' => [
-                'host' => ['172.19.0.12'],
+                'host' => ['127.0.0.1'],
             ],
             'write' => [
-                'host' => ['172.19.0.12'],
+                'host' => ['127.0.0.1'],
             ],
             'sticky'    => false,
             'driver'    => 'mysql',
-            'database'  => 'huanqiu',
+            'database'  => 'huanqiu',/*
             'username'  => 'huanqiu',
-            'password'  => 'lcf2954626',
+            'password'  => 'lcf2954626',*/
+            'username'  => 'root',
+            'password'  => 'root',
             'charset'   => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'    => 'hq_',
@@ -108,15 +110,15 @@ return [
         'client' => 'phpredis',
 
         'default' => [
-            'host' => "172.19.0.12",
-            'password' => "lcf2954626",
+            'host' => "127.0.0.1",
+            //'password' => "lcf2954626",
             'port' => '6379',
             'database' => 0,
             'prefix' => "",
         ],
         'redis2' => [
-            'host' => "172.19.0.12",
-            'password' => "lcf2954626",
+            'host' => "127.0.0.1",
+            //'password' => "lcf2954626",
             'port' => '6379',
             'database' => 0,
             'prefix' => "",

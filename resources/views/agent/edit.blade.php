@@ -70,10 +70,6 @@
             <label class="layui-form-label">抽水权限：</label>
             <div class="layui-input-block">
                 <input type="checkbox" id="baccarat" name="baccarat" lay-skin="primary" title="百家乐" {{isset($info['baccarat'])&&$info['baccarat']==1?'checked':''}}>
-                <input type="checkbox" disabled id="dragon_tiger" name="dragon_tiger" lay-skin="primary" title="龙虎" {{isset($info['dragon_tiger'])&&$info['dragon_tiger']==1?'checked':''}}>
-                <input type="checkbox" disabled id="niuniu" name="niuniu" lay-skin="primary" title="牛牛" {{isset($info['niuniu'])&&$info['niuniu']==1?'checked':''}}>
-                <input type="checkbox" disabled id="sangong" name="sangong" lay-skin="primary" title="三公" {{isset($info['sangong'])&&$info['sangong']==1?'checked':''}}>
-                <input type="checkbox" disabled id="A89" name="A89" lay-skin="primary" title="A89" {{isset($info['A89'])&&$info['A89']==1?'checked':''}}>
             </div>
         </div>
     @else
@@ -240,6 +236,13 @@
             </div>
         </div>
     </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_allow" title="允许其直属会员在线充值" @if($info!=null) @if($info['is_allow']==1) checked="checked" @endif @endif>
+            <input type="checkbox" name="is_allow_draw" title="允许其直属会员在线提现" @if($info!=null) @if($info['is_allow_draw']==1) checked="checked" @endif @endif>
+            <input type="checkbox" name="is_allow_password" title="限制代理提现和修改密码" @if($info!=null) @if($info['is_allow_password']!=1) checked="checked" @endif @endif>
+        </div>
+    </div>
 @endsection
 @section('id',$id)
 @section('js')
@@ -355,34 +358,6 @@
                         data.push({"name":"baccarat","value":"1"});
                     }else{
                         data.push({"name":"baccarat","value":"0"});
-                    }
-                    //龙虎
-                    var dragonTiger = document.getElementById('dragon_tiger');
-                    if (dragonTiger.checked){
-                        data.push({"name":"dragon_tiger","value":"1"});
-                    }else{
-                        data.push({"name":"dragon_tiger","value":"0"});
-                    }
-                    //牛牛
-                    var niuniu = document.getElementById('niuniu');
-                    if(niuniu.checked){
-                        data.push({"name":"niuniu","value":"1"});
-                    }else{
-                        data.push({"name":"niuniu","value":"0"});
-                    }
-                    //三公
-                    var sanGong = document.getElementById('sangong');
-                    if(sanGong.checked){
-                        data.push({"name":"sangong","value":"1"});
-                    }else{
-                        data.push({"name":"sangong","value":"0"});
-                    }
-                    //A89
-                    var A89 = document.getElementById('A89');
-                    if(A89.checked){
-                        data.push({"name":"A89","value":"1"});
-                    }else{
-                        data.push({"name":"A89","value":"0"});
                     }
                     $.ajax({
                         url:"{{url('/admin/agentUpdate')}}",

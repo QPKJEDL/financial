@@ -46,7 +46,7 @@
                 ,$ = layui.jquery;
             form.render();
             form.verify({
-                money:function (value) {
+                balance:function (value) {
                     var regu = /^[0-9]+\.?[0-9]*$/;
                     if (value=="" || value==null){
                         return '必须输入大于0，且小于余额的整数';
@@ -106,6 +106,7 @@
                             dataType:'json',
                             success:function(res){
                                 if(res.status == 1){
+                                    $("input[name='balance']").val('')
                                     layer.msg(res.msg,{icon:6});
                                     var index = layer.open({
                                         type:2,
@@ -150,6 +151,7 @@
                             dataType:'json',
                             success:function(res){
                                 if(res.status == 1){
+                                    $("input[name='balance']").val('')
                                     layer.msg(res.msg,{icon:6});
                                     var index = layer.open({
                                         type:2,

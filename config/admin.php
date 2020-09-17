@@ -48,5 +48,6 @@ return [
     //search-min_date
     'min_date'                      =>'2019-12-12',
     'zhu_img'                       =>'http://119.28.226.32:8787/',
-    'beginTime'                     =>'28800'
+    'beginTime'                     =>'28800',
+    'minDate'                       => '2020-09-09',
 ];

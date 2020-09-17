@@ -47,7 +47,10 @@ class DepositAndWithController extends Controller
         }
         if (true==$request->has('create_by'))
         {
-            $map['create_by']=$request->input('create_by');
+            if ($request->input('create_by')!=0)
+            {
+                $map['create_by']=$request->input('create_by');
+            }
         }
         $dateArr = $this->getDateTimePeriodByBeginAndEnd($startDate,$endDateTime);
         //获取第一天的数据
@@ -139,7 +142,15 @@ class DepositAndWithController extends Controller
         {
             $limit = 10;
         }
-        $data = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map)->whereIn('status',[1,3])->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
+        $sqlData = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map)->whereIn('status',[1,3])->orderBy('creatime','desc');
+        if (true==$request->has('create_by'))
+        {
+            if ($request->input('create_by')==0)
+            {
+                $sqlData->where('create_by','!=',0);
+            }
+        }
+        $data = $sqlData->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             //获取直属上级

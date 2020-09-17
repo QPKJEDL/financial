@@ -112,6 +112,7 @@
                             dataType:'json',
                             success:function(res){
                                 if(res.status == 1){
+                                    $("input[name='balance']").val('')
                                     layer.msg(res.msg,{icon:6});
                                     var index = layer.open({
                                         type:2,
@@ -156,6 +157,7 @@
                             dataType:'json',
                             success:function(res){
                                 if(res.status == 1){
+                                    $("input[name='balance']").val('')
                                     layer.msg(res.msg,{icon:6});
                                     var index =  layer.open({
                                         type:2,

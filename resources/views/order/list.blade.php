@@ -54,7 +54,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-size="sm">
+    <table class="layui-table" lay-size="sm" id="table">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -120,7 +120,6 @@
                 <td class="hidden-xs" style="font-size: 1px;">{{$info->user['nickname']}}[{{$info->user['account']}}]</td>
                 <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_before']/100,2)}}</td>
                 <td class="hidden-xs" style="font-size: 1px;">
-                    {{--<button type="button" data-id="{{$info->id}}" data-value="{{$info->bet_money}}" class="layui-btn layui-btn-xs layui-btn-normal result">查看结果</button>--}}
                     {{$info->bet_money}}
                 </td>
                 <td class="hidden-xs" style="font-size: 1px;">{{number_format($info->bill['bet_after']/100,2)}}</td>
@@ -129,35 +128,44 @@
                         -
                     @elseif($info->status==1 || $info->status==4)
                         @if($info->game_type==1)
-                            {{$info->result['game']}}&nbsp;{{$info->result['playerPair']}} {{$info->result['bankerPair']}}
+                            <span style="@if($info->result['game']=='闲') color:blue;@elseif($info->result['game']=='庄') color:red;@else color:green;@endif">{{$info->result['game']}}</span>&nbsp;{{$info->result['playerPair']}} {{$info->result['bankerPair']}}
                         @elseif($info->game_type==2)
-                            {{$info->result}}
+                            <span style="@if($info->result=='龙') color: red; @elseif($info->result=='虎') color:blue; @else color:green;@endif">{{$info->result}}</span>
                         @elseif($info->game_type==3)
                             @if($info->result['bankernum']=="")
-                                {{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
+                                <span style="color: blue;">{{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}</span>
                             @else
-                                {{$info->result['bankernum']}}
+                                <span style="color: red;">{{$info->result['bankernum']}}</span>
                             @endif
+                                [庄：{{$info->winner['bankernum']}} 闲1：{{$info->winner['x1num']}} 闲2：{{$info->winner['x2num']}} 闲3：{{$info->winner['x3num']}}]
                         @elseif($info->game_type==4)
                             @if($info->result['bankernum']=="")
-                                {{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
-                                {{$info->result['x4result']}}&nbsp;{{$info->result['x5result']}}&nbsp;{{$info->result['x6result']}}
+                                <span style="color: blue;">{{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
+                                    {{$info->result['x4result']}}&nbsp;{{$info->result['x5result']}}&nbsp;{{$info->result['x6result']}}</span>
                             @else
-                                {{$info->result['bankernum']}}
+                                <span style="color: red;">{{$info->result['bankernum']}}</span>
                             @endif
+                            [庄：{{$info->winner['bankernum']}} 闲1：{{$info->winner['x1num']}} 闲2：{{$info->winner['x2num']}} 闲3：{{$info->winner['x3num']}} 闲4：{{$info->winner['x4num']}} 闲5：{{$info->winner['x5num']}} 闲6：{{$info->winner['x6num']}}]
                         @elseif($info->game_type==5)
                             @if($info->result['bankernum']=="")
-                                {{$info->result['Fanresult']}} {{$info->result['Shunresult']}} {{$info->result['Tianresult']}}
+                                <span style="color: blue;">{{$info->result['Fanresult']}} {{$info->result['Shunresult']}} {{$info->result['Tianresult']}}</span>
                             @else
-                                {{$info->result['bankernum']}}
+                                <span style="color: red;">{{$info->result['bankernum']}}</span>
                             @endif
+                            [庄：{{$info->winner['BankerNum']}} 反门：{{$info->winner['FanNum']}} 顺们：{{$info->winner['ShunNum']}} 天门：{{$info->winner['TianNum']}}]
                         @endif
                     @elseif($info->status==3)
                         -
                     @endif
                 </td>
                 <td class="hidden-xs">{{number_format($info->money/100,2)}}</td>
-                <td class="hidden-xs">{{number_format($info->money/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info->status==1 || $info->status==4)
+                        {{number_format($info->xmCode/100,2)}}
+                    @else
+                        0.00
+                    @endif
+                </td>
                 <td class="hidden-xs">{{number_format($info->get_money/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info->user['user_type']!=1)
@@ -221,7 +229,7 @@
         @endif
         </tbody>
     </table>
-    <div class="page-wrap">
+    <div class="page-wrap" style="text-align: center;">
         <div id="demo1"></div>
     </div>
 @endsection

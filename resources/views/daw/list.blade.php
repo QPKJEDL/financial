@@ -31,6 +31,7 @@
     <div class="layui-inline">
         <select name="create_by">
             <option value="">请选择操作人</option>
+            <option value="0" {{isset($input['create_by'])&&$input['create_by']==0?'selected':''}}>全部操作人</option>
             @foreach($user as $i)
                 <option value="{{$i['id']}}" {{isset($input['create_by'])&&$input['create_by']==$i['id']?'selected':''}}>{{$i['username']}}[{{$i['nickname']}}]</option>
             @endforeach
@@ -117,7 +118,7 @@
                 <td class="hidden-xs">{{$info->remark}}</td>
             </tr>
         @endforeach
-        @if(!$list[0])
+        @if(count($list)==0)
             <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
@@ -135,29 +136,32 @@
                 layer = layui.layer,
                 laypage = layui.laypage
             ;
-            var count = {{$list->total()}};
-            var curr = {{$list->currentPage()}};
             var limit = {{$limit}};
-            var url = "";
-            //分页
-            laypage.render({
-                elem: 'demo'
-                ,count: count
-                ,curr:curr
-                ,limit:limit
-                ,limits:[10,50,100,150]
-                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
-                ,jump: function(obj,first){
-                    if(url.indexOf("?") >= 0){
-                        url = url.split("?")[0] + "?page=" + obj.curr + "&limit="+ obj.limit + "&" +$("form").serialize();
-                    }else{
-                        url = url + "?page=" + obj.curr + "&limit="+obj.limit;
+            console.log(limit)
+            if(limit!=0){
+                var count = {{$list->total()}};
+                var curr = {{$list->currentPage()}};
+                var url = "";
+                //分页
+                laypage.render({
+                    elem: 'demo'
+                    ,count: count
+                    ,curr:curr
+                    ,limit:limit
+                    ,limits:[10,50,100,150]
+                    ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                    ,jump: function(obj,first){
+                        if(url.indexOf("?") >= 0){
+                            url = url.split("?")[0] + "?page=" + obj.curr + "&limit="+ obj.limit + "&" +$("form").serialize();
+                        }else{
+                            url = url + "?page=" + obj.curr + "&limit="+obj.limit;
+                        }
+                        if (!first){
+                            location.href = url;
+                        }
                     }
-                    if (!first){
-                        location.href = url;
-                    }
-                }
-            });
+                });
+            }
             var date = new Date();
             var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             //日期插件初始化

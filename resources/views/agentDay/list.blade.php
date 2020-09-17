@@ -37,7 +37,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-size="sm">
+    <table class="layui-table" lay-size="sm" id="table">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -85,7 +85,7 @@
                         <td class="hidden-xs">全部</td>
                         <td class="hidden-xs">总公司</td>
                         <td class="hidden-xs">admin</td>
-                        <td class="hidden-xs">{{number_format($sum['washMoney']/100,2)}}</td>
+                        <td class="hidden-xs">{{number_format($sum['betMoney']/100,2)}}</td>
                         <td class="hidden-xs">
                             @if($sum['getMoney']<0)
                                 {{number_format(-$sum['getMoney']/100,2)}}
@@ -95,7 +95,7 @@
                         </td>
                         <td class="hidden-xs">
                                 <span style="color: red;">
-                                    {{number_format(-$sum['betMoney']/100,2)}}
+                                    {{number_format(-$sum['washMoney']/100,2)}}
                                 </span>
                         </td>
                         <td class="hidden-xs">
@@ -146,7 +146,7 @@
                 <td class="hidden-xs">全部</td>
                 <td class="hidden-xs">{{$info['nickname']}}</td>
                 <td class="hidden-xs">{{$info['username']}}</td>
-                <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info['getMoney']<0)
                         <span style="color: red;">{{number_format($info['getMoney']/100,2)}}</span>
@@ -156,9 +156,9 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info['betMoney']<0)
-                        <span style="color: red;">{{number_format($info['betMoney']/100,2)}}</span>
+                        <span style="color: red;">{{number_format($info['washMoney']/100,2)}}</span>
                     @else
-                        {{number_format($info['betMoney']/100,2)}}
+                        {{number_format($info['washMoney']/100,2)}}
                     @endif
                 </td>
                 <td class="hidden-xs">
@@ -248,8 +248,8 @@
                 </td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button type="button" class="layui-btn layui-btn-xs agentDayInfo" data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
-                        <button type="button" class="layui-btn layui-btn-xs userDayInfo" data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs agentDayInfo @if($info['is_exist']==1 || $info['is_exist']==0) layui-btn-disabled @endif @if($input['type']==2) @if($info['id']=$id) layui-btn-disabled @endif @endif" @if($input['type']==2) @if($info['id']=$id) disabled @endif @endif @if($info['is_exist']==1 || $info['is_exist']==0) disabled @endif data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">代理日结</i></button>
+                        <button type="button" class="layui-btn layui-btn-xs userDayInfo @if($info['is_exist_hqUser']==0) layui-btn-disabled @endif"@if($info['is_exist_hqUser']==0) disabled @endif data-id="{{$info['agent_id']}}" data-name="{{$info['nickname']}}" data-desc="详情"><i class="layui-icon">会员日结</i></button>
                     </div>
                 </td>
             </tr>

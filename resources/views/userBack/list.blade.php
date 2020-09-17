@@ -20,7 +20,7 @@
     </div>
 @endsection
 @section('table')
-    <table class="layui-table" lay-size="sm">
+    <table class="layui-table" lay-size="sm" id="table">
         <colgroup>
             <col class="hidden-xs" width="100">
             <col class="hidden-xs" width="100">
@@ -68,7 +68,7 @@
                 <td class="hidden-xs">{{$info['remark']}}</td>
                 <td class="hidden-xs">
                     <div class="layui-inline">
-                        <button class="layui-btn layui-btn-small layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/userBack/'.$info['id'])}}">删除</button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{$info['id']}}" data-url="{{url('/admin/userBack/'.$info['id'])}}">删除</button>
                     </div>
                 </td>
             </tr>
@@ -78,7 +78,7 @@
         @endif
         </tbody>
     </table>
-    <div class="page-wrap">
+    <div class="page-wrap" style="text-align: center;">
         <div id="demo"></div>
     </div>
 @endsection

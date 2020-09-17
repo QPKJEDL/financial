@@ -187,6 +187,17 @@ class AgentListController extends Controller
         $data['nnbets_fee']=json_encode($data['nnbets_fee']);
         $data['a89bets_fee']=json_encode($data['a89bets_fee']);
         $data['sgbets_fee']=json_encode($data['sgbets_fee']);
+        if(!empty($data['is_allow'])){
+            $data['is_allow']=1;
+        }
+        if (!empty($data['is_allow_draw']))
+        {
+            $data['is_allow_draw']=1;
+        }
+        if (!empty($data['is_allow_password']))
+        {
+            $data['is_allow_password']=2;
+        }
         $data["ancestors"]=0;
         $count = Agent::insertGetId($data);
         if ($count){
@@ -215,48 +226,113 @@ class AgentListController extends Controller
      * 编辑
      */
     public function update(StoreRequest $request){
-        $id = (int)$request->input('id');
-        $data = $request->all();
-        $roleId = 38;
-        unset($data['_token']);
-        unset($data['id']);
-        unset($data['user_role']);
-        if(empty($data["pwd"])){
-            unset($data['pwd']);
-            unset($data['pwd_confirmation']);
-        }
-        $data['fee']=json_encode($data['fee']);
-        if ((int)$data['limit']['min']>50000 || (int)$data['limit']['min']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        if ((int)$data['limit']['max']>50000 || (int)$data['limit']['max']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        if ((int)$data['limit']['tieMin']>5000 || (int)$data['limit']['tieMin']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        if ((int)$data['limit']['tieMax']>5000 || (int)$data['limit']['tieMax']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        if ((int)$data['limit']['pairMin']>5000 || (int)$data['limit']['pairMin']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
-            return ['msg'=>'限红错误','status'=>0];
-        }
-        $data['limit']=json_encode($data['limit']);
-        $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
-        $data['lhbets_fee']=json_encode($data['lhbets_fee']);
-        $data['nnbets_fee']=json_encode($data['nnbets_fee']);
-        $data['a89bets_fee']=json_encode($data['a89bets_fee']);
-        $data['sgbets_fee']=json_encode($data['sgbets_fee']);
-        $data['userType']=1;
-        $up=Agent::where('id',$id)->update($data);
-        if($up!==false){
-            AgentRoleUser::where('user_id',$id)->update(array('role_id'=>$roleId));
-            return ['msg'=>'修改成功','status'=>1];
-        }else{
-            return ['msg'=>'修改失败','status'=>0];
+        DB::beginTransaction();
+        try {
+            $id = (int)$request->input('id');
+            $data = $request->all();
+            $roleId = 38;
+            unset($data['_token']);
+            unset($data['id']);
+            unset($data['user_role']);
+            if(empty($data["pwd"])){
+                unset($data['pwd']);
+                unset($data['pwd_confirmation']);
+            }
+            $data['fee']=json_encode($data['fee']);
+            if ((int)$data['limit']['min']>50000 || (int)$data['limit']['min']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            if ((int)$data['limit']['max']>50000 || (int)$data['limit']['max']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            if ((int)$data['limit']['tieMin']>5000 || (int)$data['limit']['tieMin']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            if ((int)$data['limit']['tieMax']>5000 || (int)$data['limit']['tieMax']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            if ((int)$data['limit']['pairMin']>5000 || (int)$data['limit']['pairMin']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            if ((int)$data['limit']['pairMax']>5000 || (int)$data['limit']['pairMax']<10){
+                return ['msg'=>'限红错误','status'=>0];
+            }
+            $data['limit']=json_encode($data['limit']);
+            $data['bjlbets_fee']=json_encode($data['bjlbets_fee']);
+            $data['lhbets_fee']=json_encode($data['lhbets_fee']);
+            $data['nnbets_fee']=json_encode($data['nnbets_fee']);
+            $data['a89bets_fee']=json_encode($data['a89bets_fee']);
+            $data['sgbets_fee']=json_encode($data['sgbets_fee']);
+            $data['userType']=1;
+            if (!empty($data['is_allow']))
+            {
+                $data['is_allow']=1;
+            }
+            else
+            {
+                $data['is_allow']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败1','status'=>0];
+                }
+            }
+            if (!empty($data['is_allow_draw']))
+            {
+                $data['is_allow_draw']=1;
+            }
+            else
+            {
+                $data['is_allow_draw']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow_draw'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败2','status'=>0];
+                }
+            }
+            if (!empty($data['is_allow_password']))
+            {
+                $data['is_allow_password']=2;
+                $idAgentIdArr = Agent::query()->select('id')->whereRaw('FIND_IN_SET(?,ancestors)',[$id])->get()->toArray();
+                foreach ($idAgentIdArr as $key=>$value)
+                {
+                    $res = Agent::query()->where('id','=',$value['id'])->update(['is_allow_password'=>2]);
+                    if ($res!==false)
+                    {
+                        continue;
+                    }
+                    DB::rollback();
+                    return ['msg'=>'操作失败3','status'=>0];
+                }
+            }
+            else
+            {
+                $data['is_allow_password']=1;
+            }
+            $up=Agent::where('id',$id)->update($data);
+            if($up!==false){
+                 DB::commit();
+                 return ['msg'=>'修改成功','status'=>1];
+            }else{
+                DB::rollback();
+                return ['msg'=>'修改失败4','status'=>0];
+            }
+        }catch (\Exception $exception)
+        {
+            DB::rollback();
+            return ['msg'=>'操作失败5','status'=>0];
         }
     }
 
@@ -671,7 +747,14 @@ class AgentListController extends Controller
                 $data['fir_name']=$zs['nickname'];
             }
         }
-        $data['money']=$money;
+        if ($status==1)
+        {
+            $data['money']=$money;
+        }
+        else
+        {
+            $data['money']=-$money;
+        }
         $data['bet_before']=$before;
         $data['bet_after']=$after;
         $data['status']=$status;

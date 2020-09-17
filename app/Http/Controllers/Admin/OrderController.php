@@ -272,26 +272,37 @@ class OrderController extends Controller
             $data = DB::select($dataSql);
             foreach ($data as $key=>$value){
                 $data[$key]->user = HqUser::getUserInfoByUserId($value->user_id);
+                //下注金额
                 $data[$key]->money = $this->getSumBetMoney($value);
                 //获取表名
                 $tableName = $this->getGameRecordTableNameByRecordSn($value->record_sn);
                 $winner = $this->getGameRecordInfo($tableName,$value->record_sn);
                 $data[$key]->bill=Billflow::getBillflowByOrderSn($value->order_sn,$tableName);
                 if ($data[$key]->game_type==1){
+                    //洗码量
+                    $data[$key]->xmCode = $this->getBaccaratBetMoneyCode($value);
                     $data[$key]->result=$this->getBaccaratParseJson($winner);
                     $data[$key]->bet_money=$this->getBaccaratBetMoney($value->bet_money);
                 }else if($data[$key]->game_type==2){
+                    //洗码量
+                    $data[$key]->xmCode = $this->getDragonAndTigerBetMoney($value);
                     $data[$key]->result=$this->getDragonTigerJson($winner);
                     $data[$key]->bet_money=$this->getDragonTieTiger($value->bet_money);
                 }else if($data[$key]->game_type==3){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getFullParseJson($winner);
                     $data[$key]->bet_money=$this->getNiuNiuBetMoney($value->bet_money);
+                    $data[$key]->winner=json_decode($winner,true);
                 }else if($data[$key]->game_type==4){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result = $this->getSanGongResult($winner);
                     $data[$key]->bet_money=$this->getSanGongMoney($value->bet_money);
+                    $data[$key]->winner=json_decode($winner,true);
                 }else if($data[$key]->game_type==5){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getA89Result($winner);
                     $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
+                    $data[$key]->winner=json_decode($winner,true);
                 }
                 $data[$key]->afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
@@ -364,18 +375,25 @@ class OrderController extends Controller
                 $winner = $this->getGameRecordInfo($tableName,$value->record_sn);
                 $data[$key]->bill=Billflow::getBillflowByOrderSn($value->order_sn,$tableName);
                 if ($data[$key]->game_type==1){
+                    //洗码量
+                    $data[$key]->xmCode = $this->getBaccaratBetMoneyCode($value);
                     $data[$key]->result=$this->getBaccaratParseJson($winner);
                     $data[$key]->bet_money=$this->getBaccaratBetMoney($value->bet_money);
                 }else if($data[$key]->game_type==2){
+                    //洗码量
+                    $data[$key]->xmCode = $this->getDragonAndTigerBetMoney($value);
                     $data[$key]->result=$this->getDragonTigerJson($winner);
                     $data[$key]->bet_money=$this->getDragonTieTiger($value->bet_money);
                 }else if($data[$key]->game_type==3){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getFullParseJson($winner);
                     $data[$key]->bet_money=$this->getNiuNiuBetMoney($value->bet_money);
                 }else if($data[$key]->game_type==4){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result = $this->getSanGongResult($winner);
                     $data[$key]->bet_money=$this->getSanGongMoney($value->bet_money);
                 }else if($data[$key]->game_type==5){
+                    $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getA89Result($winner);
                     $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
                 }
@@ -388,6 +406,69 @@ class OrderController extends Controller
             $count= array();
             return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
         }
+    }
+
+    /**
+     * 获取龙虎下注金额 游戏结果开合不算
+     * @param $order
+     * @return float|int|mixed
+     */
+    public function getDragonAndTigerBetMoney($order)
+    {
+        $money = 0;
+        $tableName = $this->getGameRecordTableNameByRecordSn($order->record_sn);
+        $game = new GameRecord();
+        $game->setTable('game_record_'.$tableName);
+        $recordInfo = $game->where('record_sn','=',$order->record_sn)->first();
+        $betMoney = json_decode($order->bet_money,true);
+        if ($recordInfo['winner']==1)
+        {
+            if ($betMoney['tie']>0)
+            {
+                $money = $betMoney['tie'];
+            }
+        }
+        else
+        {
+            $money = array_sum($betMoney);
+        }
+        return $money;
+    }
+
+    /**
+     * 获取百家乐下注金额  开合不算
+     * @param $order
+     * @return float|int|mixed
+     */
+    public function getBaccaratBetMoneyCode($order)
+    {
+        $money = 0;
+        $tableName = $this->getGameRecordTableNameByRecordSn($order->record_sn);
+        $game = new GameRecord();
+        $game->setTable('game_record_'.$tableName);
+        $recordInfo = $game->where('record_sn','=',$order->record_sn)->first();
+        $betMoney = json_decode($order->bet_money,true);
+        $winner = json_decode($recordInfo['winner'],true);
+        if ($winner['game']==1)
+        {
+            if ($betMoney['tie']>0)
+            {
+                $money = $betMoney['tie'];
+            }
+            if ($betMoney['bankerPair']>0)
+            {
+                $money += $betMoney['bankerPair'];
+            }
+            if ($betMoney['playerPair']>0)
+            {
+                $money += $betMoney['playerPair'];
+            }
+        }
+        else
+        {
+            $money = array_sum($betMoney);
+        }
+        return $money;
     }
 
     public function splicingArr($data)
@@ -654,7 +735,7 @@ class OrderController extends Controller
             $str = $str."闲一(超倍)".$data['x1_Super_Double']/100;
         }
         if(!empty($data['x2_equal'])){
-            $str =$str."闲二（平倍）".$data['x2_equal']/100;
+            $str =$str."闲二（平倍)".$data['x2_equal']/100;
         }
         if(!empty($data['x2_double'])){
             $str = $str."闲二(翻倍)".$data['x2_double']/100;
@@ -664,7 +745,7 @@ class OrderController extends Controller
             $str = $str."闲二(超倍)".$data['x2_Super_Double']/100;
         }
         if(!empty($data['x3_equal'])){
-            $str = $str."闲三（平倍）".$data['x3_equal']/100;
+            $str = $str."闲三（平倍)".$data['x3_equal']/100;
         }
         if(!empty($data['x3_double'])){
             $str = $str."闲三(翻倍)".$data['x3_double']/100;
