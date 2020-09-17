@@ -132,7 +132,7 @@ class GameRecordController extends Controller
                 }
             }
         }
-        return view('gameRecord.list',['list'=>$data,'limit'=>$limit,'desk'=>Desk::getDeskList(),'input'=>$request->all(),'user'=>User::getAllUser()]);
+        return view('gameRecord.list',['min'=>config('admin.minDate'),'list'=>$data,'limit'=>$limit,'desk'=>Desk::getDeskList(),'input'=>$request->all(),'user'=>User::getAllUser()]);
     }
 
     /**

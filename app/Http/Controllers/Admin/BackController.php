@@ -39,7 +39,7 @@ class BackController extends Controller
         {
             $limit = 10;
         }
-        $data = $sql->paginate($limit)->appends($request->all());
+        $data = $sql->orderBy('user_and_agent_back.create_time','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)
         {
             $data[$key]['create_time']=date('Y-m-d H:i:s',$datum['create_time']);

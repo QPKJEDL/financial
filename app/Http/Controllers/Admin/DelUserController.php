@@ -36,7 +36,7 @@ class DelUserController extends Controller
         {
             $limit = 10;
         }
-        $data = $sql->paginate($limit)->appends($request->all());
+        $data = $sql->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum){
             $data[$key]['fee']=json_decode($datum['fee'],true);
             $data[$key]['creatime']=date('Y-m-d H:i:s',$datum['creatime']);

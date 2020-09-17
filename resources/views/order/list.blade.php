@@ -246,10 +246,12 @@
             var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             laydate.render({
                 elem:"#begin",
+                min:'{{$min}}',
                 max:max
             });
             laydate.render({
                 elem:"#end",
+                min:'{{$min}}',
                 max:max
             });
             var pages = {{$pages}};

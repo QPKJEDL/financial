@@ -111,6 +111,7 @@
             var max = date.getFullYear()+'-'+(date.getMonth()+1) +'-'+date.getDate();
             laydate.render({
                 elem:"#begin",
+                min:"{{$min}}",
                 max:max
             });
             $(".reset").click(function(){

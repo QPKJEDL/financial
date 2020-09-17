@@ -35,7 +35,7 @@ class DelAgentController extends Controller
         {
             $limit = 10;
         }
-        $data = $sql->where($map)->paginate($limit)->appends($request->all());
+        $data = $sql->where($map)->orderBy('created_at','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$value){
             $data[$key]['fee']=json_decode($value['fee'],true);
         }

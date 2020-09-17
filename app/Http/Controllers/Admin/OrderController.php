@@ -307,7 +307,7 @@ class OrderController extends Controller
                 $data[$key]->afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
+            return view('order.list',['min'=>config('admin.minDate'),'list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }else{
             $data = array();
             $count= array();

@@ -378,6 +378,6 @@ class AgentDrawAndCzController extends Controller
             }
             $data[$key]->creUser = $datum->create_by?User::find($datum->create_by):[];
         }
-        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'limit'=>$limit,'user'=>User::getAllUser(),'business'=>Pay::getAllPayList()]);
+        return view('agentBill.list',['list'=>$data,'input'=>$request->all(),'min'=>config('admin.minDate'),'limit'=>$limit,'user'=>User::getAllUser(),'business'=>Pay::getAllPayList()]);
     }
 }

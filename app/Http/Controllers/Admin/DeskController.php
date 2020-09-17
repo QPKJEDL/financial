@@ -117,7 +117,7 @@ class DeskController extends Controller
             $data[$key]['win']=$value['getMoney']-$value['code'];
             $data[$key]['game_id']=Game::getGameNameByGameId($value['game_id']);
         }
-        return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'limit'=>$limit]);
+        return view('desk.list',['list'=>$data,'desk'=>Desk::getAllDesk(),'input'=>$request->all(),'limit'=>$limit,'min'=>config('admin.minDate')]);
     }
 
     /**
