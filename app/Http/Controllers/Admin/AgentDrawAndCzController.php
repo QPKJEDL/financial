@@ -77,7 +77,7 @@ class AgentDrawAndCzController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = 100;
         }
         $dataSql = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map);
         if (true==$request->has('create_by'))

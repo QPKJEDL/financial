@@ -385,14 +385,17 @@ class OrderController extends Controller
                     $data[$key]->result=$this->getDragonTigerJson($winner);
                     $data[$key]->bet_money=$this->getDragonTieTiger($value->bet_money);
                 }else if($data[$key]->game_type==3){
+                    $data[$key]->winner = json_decode($winner,true);
                     $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getFullParseJson($winner);
                     $data[$key]->bet_money=$this->getNiuNiuBetMoney($value->bet_money);
                 }else if($data[$key]->game_type==4){
+                    $data[$key]->winner = json_decode($winner,true);
                     $data[$key]->xmCode = $value->money;
                     $data[$key]->result = $this->getSanGongResult($winner);
                     $data[$key]->bet_money=$this->getSanGongMoney($value->bet_money);
                 }else if($data[$key]->game_type==5){
+                    $data[$key]->winner = json_decode($winner,true);
                     $data[$key]->xmCode = $value->money;
                     $data[$key]->result=$this->getA89Result($winner);
                     $data[$key]->bet_money=$this->getA89BetMoney($value->bet_money);
@@ -400,7 +403,7 @@ class OrderController extends Controller
                 $data[$key]->afterResult=$this->getGameRecordInfoUpdateResult($tableName,$value->record_sn);
                 $data[$key]->creatime = date('Y-m-d H:i:s',$value->creatime);
             }
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
+            return view('order.list',['min'=>config('admin.minDate'),'list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }else{
             $data=array();
             $count= array();

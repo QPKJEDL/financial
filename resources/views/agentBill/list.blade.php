@@ -74,7 +74,7 @@
             <th class="hidden-xs">充值提现金额</th>
             <th class="hidden-xs">操作后金额</th>
             <th class="hidden-xs">操作类型</th>
-            <th class="hidden-xs" style="display:block; text-align: left; width:30em; overflow:hidden; white-space: nowrap; text-overflow:ellipsis;">操作人</th>
+            <th class="hidden-xs">操作人</th>
         </tr>
         </thead>
         <tbody>
@@ -139,7 +139,7 @@
                 </td>
             </tr>
         @endforeach
-        @if(!$list[0])
+        @if(count($list)==0)
             <tr><td colspan="10" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
@@ -167,7 +167,7 @@
                 ,count: count
                 ,curr:curr
                 ,limit:limit
-                ,limits:[10,50,100,150]
+                ,limits:[100,500,1000]
                 ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
                 ,jump: function(obj,first){
                     if(url.indexOf("?") >= 0){

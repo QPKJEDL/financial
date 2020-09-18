@@ -56,7 +56,7 @@ class HqUserController extends Controller
                 $sql->where('user.nickname','like','%'.$request->input('nickname').'%');
             }
 
-            $data = $sql->paginate($limit)->appends($request->all());
+            $data = $sql->orderBy('creatime','desc')->paginate($limit)->appends($request->all());
             foreach($data as $key=>&$value){
                 $data[$key]['creatime']=date("Y-m-d H:m:s",$value['creatime']);
                 if ($value['user_type']==1){

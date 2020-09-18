@@ -166,7 +166,13 @@
                         0.00
                     @endif
                 </td>
-                <td class="hidden-xs">{{number_format($info->get_money/100,2)}}</td>
+                <td class="hidden-xs">
+                    @if($info->get_money<0)
+                        <span style="color: red;">{{number_format($info->get_money/100,2)}}</span>
+                    @else
+                        {{number_format($info->get_money/100,2)}}
+                    @endif
+                </td>
                 <td class="hidden-xs">
                     @if($info->user['user_type']!=1)
                         -
@@ -211,15 +217,15 @@
                 </td>
                 <td class="hidden-xs">
                     @if($info->status ==1)
-                        结算完成
+                        <span style="color: green;">结算完成</span>
                     @elseif($info->status==2)
-                        玩家取消
+                        <span style="color: red;">玩家取消</span>
                     @elseif($info->status==0)
                         等待开牌
                     @elseif($info->status==3)
-                        作废
+                        <span style="color: red;">作废</span>
                     @elseif($info->status==4)
-                        结果修改
+                        <span style="color: blue;">结果修改</span>
                     @endif
                 </td>
             </tr>
