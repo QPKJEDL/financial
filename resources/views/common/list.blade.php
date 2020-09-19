@@ -12,7 +12,10 @@
     <script src="/static/tools/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
     <style>
         #table tbody .selected{
-            background-color: #e2e2e2;
+            background-color: rgb(103,173,167);
+        }
+        #table tbody .s{
+            background-color: #7FFFD4;
         }
     </style>
 </head>
@@ -36,6 +39,11 @@
 <script type="text/javascript">
     $("#table tbody tr").click(function () {
         $(this).addClass('selected').siblings().removeClass('selected').end();
+    });
+    $("#table tbody tr").mousemove(function () {
+        $(this).addClass('s');
+    }).mouseout(function () {
+        $(this).removeClass('s').end();
     });
 </script>
 @yield('js')

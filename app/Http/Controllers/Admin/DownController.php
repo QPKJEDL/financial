@@ -8,6 +8,7 @@ use App\Models\Agent;
 use App\Models\Billflow;
 use App\Models\Desk;
 use App\Models\Draw;
+use App\Models\HqUser;
 use App\Models\UserAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -119,13 +120,60 @@ class DownController extends Controller
      * @return array
      */
     public function approveData(StoreRequest $request){
-        $id = $request->input('id');
-        $count = Draw::where('id','=',$id)->update(['status'=>1,'endtime'=>time()]);
-        if ($count){
-            DB::table('sys_balance')->where('id','=',1)->increment('balance',$count['money']);
-            return ['msg'=>'确认成功','status'=>1];
-        }else{
-            return ['msg'=>'确认失败','status'=>0];
+        DB::beginTransaction();
+        try {
+            $id = $request->input('id');
+            $info = Draw::where('id','=',$id)->lockForUpdate()->first();
+            $count = Draw::where('id','=',$id)->update(['status'=>1,'endtime'=>time()]);
+            if ($count){
+                $c = DB::table('sys_balance')->where('id','=',1)->increment('balance',$info['money']);
+                if (!$c)
+                {
+                    DB::rollback();
+                    return ['msg'=>'操作失败','status'=>0];
+                }
+                $bill = new Billflow();
+                $bill->setTable('user_billflow_'.date('Ymd',time()));
+                $data['user_id']=$info['user_id'];
+                $user = $info['user_id']?HqUser::find($info['user_id']):[];
+                $data['nickname'] = $user['nickname'];
+                $agent = $user['agent_id']?Agent::find($user['agent_id']):[];
+                $data['agent_name']=$agent['nickname'];
+                if ($agent['parent_id']==0)
+                {
+                    $data['fir_name']=$agent['nickname'];
+                }
+                else
+                {
+                    $ancestors = explode(',',$agent['ancestors']);
+                    $agentInfo = $ancestors[1]?Agent::find($ancestors[1]):[];
+                    $data['fir_name']=$agentInfo['nickname'];
+                }
+                $data['order_sn']=$this->getrequestId();
+                $data['score']=-$info['money'];
+                $data['bet_before']=$info['bet_before'];
+                $data['bet_after']=$info['bet_after'];
+                $data['status']=3;
+                $data['pay_type']=1;
+                $data['creatime']=time();
+                $data['create_by']=Auth::user()['username'];
+                $d = $bill->insert($data);
+                if (!$d)
+                {
+                    DB::rollback();
+                    return ['msg'=>'操作失败','status'=>0];
+                }
+                DB::commit();
+                return ['msg'=>'确认成功','status'=>1];
+            }else{
+                DB::rollback();
+                return ['msg'=>'确认失败','status'=>0];
+            }
+        }catch (\Exception $exception)
+        {
+            dump($exception);
+            DB::rollback();
+            return ['msg'=>'发送异常，请稍后再试','status'=>0];
         }
     }
     /**

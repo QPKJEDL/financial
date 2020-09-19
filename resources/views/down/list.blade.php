@@ -100,7 +100,7 @@
             </tr>
         @endforeach
         @if(!$list[0])
-            <tr><td colspan="9" style="text-align: center;color: orangered;">暂无数据</td></tr>
+            <tr><td colspan="11" style="text-align: center;color: orangered;">暂无数据</td></tr>
         @endif
         </tbody>
     </table>
@@ -221,6 +221,7 @@
                                         url:"{{url('/admin/down/approveData')}}",
                                         type:"post",
                                         data:{"id":id},
+                                        async: false,
                                         dataType:"json",
                                         success:function (res) {
                                             if(res.status==1){

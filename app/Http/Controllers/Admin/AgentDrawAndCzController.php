@@ -41,7 +41,10 @@ class AgentDrawAndCzController extends Controller
         }
         if (true==$request->has('status'))
         {
-            $map['status']=$request->input('status');
+            if ($request->input('status')==1)
+            {
+                $map['status']=$request->input('status');
+            }
         }
         if (true==$request->has('userType'))
         {
@@ -82,9 +85,10 @@ class AgentDrawAndCzController extends Controller
         $dataSql = DB::table(DB::raw("({$sql->toSql()}) as a"))->mergeBindings($sql->getQuery())->where($map);
         if (true==$request->has('create_by'))
         {
+            $user = User::query()->select('id')->get()->toArray();
             if ($request->input('create_by')==0)
             {
-                $dataSql->where('create_by','!=',0);
+                $dataSql->whereIn('create_by',$user);
             }
         }
         if (true==$request->has('account'))
@@ -104,7 +108,24 @@ class AgentDrawAndCzController extends Controller
         }
         if (true==$request->has('business_name'))
         {
-            $dataSql->where('business_id','=',$request->input('business_name'));
+            if ($request->input('business_name')==0)
+            {
+                $dataSql->where('business_id','>',0);
+            }
+            else
+            {
+                $dataSql->where('business_id','=',$request->input('business_name'));
+            }
+        }
+        if (true==$request->has('status'))
+        {
+            if ($request->input('status')==2)
+            {
+                $dataSql->whereRaw('status in (2,3) and pay_type=0');
+            }else if ($request->input('status')==3)
+            {
+                $dataSql->whereRaw('status in (2,3) and pay_type=1');
+            }
         }
         $dataSql->whereRaw('creatime between '.strtotime($startDate).' and '.(strtotime($endDateTime)-1).'');
         if (true==$request->has('excel'))

@@ -18,6 +18,7 @@
             <option value="">请选择类型</option>
             <option value="1" {{isset($input['status'])&&$input['status']==1?'selected':''}}>充值</option>
             <option value="2" {{isset($input['status'])&&$input['status']==2?'selected':''}}>提现</option>
+            <option value="3" {{isset($input['status'])&&$input['status']==3?'selected':''}}>在线提现</option>
         </select>
     </div>
     <div class="layui-inline">
@@ -30,15 +31,13 @@
     <div class="layui-inline">
         <select name="create_by">
             <option value="">请选择操作人</option>
-            <option value="0" {{isset($input['create_by'])&&$input['create_by']==0?'selected':''}}>全部操作人</option>
-            @foreach($user as $i)
-                <option value="{{$i['id']}}" {{isset($input['create_by'])&&$input['create_by']==$i['id']?'selected':''}}>{{$i['username']}}[{{$i['nickname']}}]</option>
-            @endforeach
+            <option value="0" {{isset($input['create_by'])&&$input['create_by']==0?'selected':''}}>操作员</option>
         </select>
     </div>
     <div class="layui-inline">
         <select name="business_name">
             <option value="">请选择三方商户</option>
+            <option value="0" {{isset($input['business_name'])&&$input['business_name']==0?'selected':''}}>全部三方商户</option>
             @foreach($business as $info)
                 <option value="{{$info['business_id']}}" {{isset($input['business_name'])&&$input['business_name']==$info['business_id']?'selected':''}}>{{$info['service_name']}}</option>
             @endforeach
@@ -110,31 +109,53 @@
                 <td class="hidden-xs">{{number_format($info->bet_after/100,2)}}</td>
                 <td class="hidden-xs">
                     @if($info->business_id==0)
-                        @if($info->status==1)
+                        @if($info->status==1 && $info->pay_type!=8)
                             <span style="color: blue">充值</span>
+                        @elseif($info->status==1 && $info->pay_type==8)
+                            <span style="color: green">领取激活红包</span>
                         @elseif($info->status==3 || $info->status==2)
-                            <span style="color: red;">提现</span>
+                            @if($info->user_type==1)
+                                @if($info->status==3 &&$info->pay_type==0)
+                                    <span style="color: red;">提现</span>
+                                @elseif($info->status==3 && $info->pay_type==1)
+                                    <span style="color: red">银行卡提现</span>
+                                @endif
+                            @else
+                                @if($info->status==2)
+                                    <span style="color: red">提现</span>
+                                @elseif($info->status==3)
+                                    <span style="color: green">发放红包</span>
+                                @endif
+                            @endif
                         @endif
-                        @if($info->pay_type==1)
-                            (到款)
-                        @elseif($info->pay_type==2)
-                            (签单)
-                        @elseif($info->pay_type==3)
-                            (移分)
-                        @elseif($info->pay_type==4)
-                            (按比例)
-                        @elseif($info->pay_type==5)
-                            (支付宝)
-                        @elseif($info->pay_type==6)
-                            (微信)
+                        @if($info->status==1)
+                                @if($info->pay_type==1)
+                                    (到款)
+                                @elseif($info->pay_type==2)
+                                    (签单)
+                                @elseif($info->pay_type==3)
+                                    (移分)
+                                @elseif($info->pay_type==4)
+                                    (按比例)
+                                @elseif($info->pay_type==5)
+                                    (支付宝)
+                                @elseif($info->pay_type==6)
+                                    (微信)
+                                @endif
                         @endif
                     @else
                         <span style="color: green;">{{$info->business_name}}</span>
                     @endif
                 </td>
                 <td class="hidden-xs">
-                    @if($info->create_by>0)
+                    {{--@if($info->create_by>0)
+                    @else
+                        {{$info->create_by}}
+                    @endif--}}
+                    @if($info->creUser!=null)
                         {{$info->creUser['username']}}
+                    @else
+                        {{$info->create_by}}
                     @endif
                 </td>
             </tr>
