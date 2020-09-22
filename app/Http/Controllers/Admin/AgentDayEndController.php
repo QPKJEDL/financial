@@ -585,7 +585,7 @@ class AgentDayEndController extends Controller
             {
                 $datum['fee']=json_decode($datum['fee'],true);
                 //洗码费
-                $datum['code']=$datum['betMoney']*0.009;
+                $datum['code']=$datum['washMoney']*0.009;
                 $sumData['code']=$sumData['code'] + $datum['code'];
                 //占股收益
                 $datum['zg']=-($datum['getMoney'] + $datum['code']) * ($datum['proportion']/100);
@@ -1128,7 +1128,7 @@ class AgentDayEndController extends Controller
             if ($datum['userType']==1)
             {
                 //洗码费
-                $datum['code']=$datum['betMoney']*0.009;
+                $datum['code']=$datum['washMoney']*0.009;
                 $data[$key]['fee']=json_decode($datum['fee'],true);
                 $datum['zg']=-($datum['getMoney'] + $datum['code']) * ($datum['proportion']/100);
                 //总收益

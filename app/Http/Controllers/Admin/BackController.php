@@ -37,7 +37,7 @@ class BackController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = $sql->orderBy('user_and_agent_back.create_time','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)

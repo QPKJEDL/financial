@@ -32,7 +32,7 @@ class HqUserController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         if (""==$request->input('account') && ""==$request->input('nickname') && ""==$request->input('user_type'))
         {

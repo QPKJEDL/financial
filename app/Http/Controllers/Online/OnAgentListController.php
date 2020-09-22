@@ -113,6 +113,18 @@ class OnAgentListController extends Controller
             {
                 $data['is_allow_draw']=1;
             }
+            if (!empty($data['is_allow_password']))
+            {
+                $data['is_allow_password']=2;
+            }
+            if (!empty($data['is_realTime']))
+            {
+                $data['is_realTime']=1;
+            }
+            else
+            {
+                $data['is_realTime']=0;
+            }
             $count = Agent::insertGetId($data);
             if ($count){
                 $this->insertUserRole($count,$roleId);
@@ -286,6 +298,14 @@ class OnAgentListController extends Controller
             else
             {
                 $data['is_allow_password']=1;
+            }
+            if (!empty($data['is_realTime']))
+            {
+                $data['is_realTime']=1;
+            }
+            else
+            {
+                $data['is_realTime']=0;
             }
             $data['limit']=json_encode($data['limit']);
             $count = Agent::where('id','=',$id)->update($data);

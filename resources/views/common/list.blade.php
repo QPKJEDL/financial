@@ -35,8 +35,31 @@
         </div>
     </div>
 </div>
+<ul class="layui-fixbar">
+    <li class="layui-icon layui-fixbar-top" id="top" style="display: list-item">&#xe619;</li>
+</ul>
 </body>
 <script type="text/javascript">
+    $(document).ready(function () {
+        //首先隐藏
+        $("#top").hide();
+        $(function () {
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > 50){
+                    $("#top").fadeIn(200);
+                }else{
+                    $("#top").fadeOut(200);
+                }
+            });
+        });
+
+        $("#top").click(function () {
+            $('body,html').animate({
+                scrollTop:0
+            },500)
+            return false;
+        });
+    });
     $("#table tbody tr").click(function () {
         $(this).addClass('selected').siblings().removeClass('selected').end();
     });

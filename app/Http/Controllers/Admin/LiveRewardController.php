@@ -89,7 +89,7 @@ class LiveRewardController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = $sql->where($map)->orderBy('live_reward.creatime','desc')->paginate($limit)->appends($request->all());
         $money = $sql->where($map)->sum('money');

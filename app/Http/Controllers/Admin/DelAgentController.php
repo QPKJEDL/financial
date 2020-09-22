@@ -33,7 +33,7 @@ class DelAgentController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = $sql->where($map)->orderBy('created_at','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$value){

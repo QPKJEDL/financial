@@ -269,6 +269,7 @@
                 ,count: pages
                 ,curr:curr
                 ,limit:limit
+                ,limits:[100,500,1000]
                 ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
                 ,jump: function(obj,first){
                     if(url.indexOf("?") >= 0){

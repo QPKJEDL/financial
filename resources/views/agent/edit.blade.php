@@ -65,21 +65,7 @@
             <textarea placeholder="请填写IP白名单（非必填）" name="ip_config" class="layui-textarea" style="resize: none">{{$info['ip_config'] or ''}}</textarea>
         </div>
     </div>
-    @if($info!=null)
-        <div class="layui-form-item">
-            <label class="layui-form-label">抽水权限：</label>
-            <div class="layui-input-block">
-                <input type="checkbox" id="baccarat" name="baccarat" lay-skin="primary" title="百家乐" {{isset($info['baccarat'])&&$info['baccarat']==1?'checked':''}}>
-            </div>
-        </div>
-    @else
-        <div class="layui-form-item">
-            <label class="layui-form-label">抽水权限：</label>
-            <div class="layui-input-block">
-                <input type="checkbox" name="baccarat" id="baccarat" lay-skin="primary" title="百家乐">
-            </div>
-        </div>
-    @endif
+
     <div class="layui-form-item">
         <div class="layui-inline">
             <label class="layui-form-label">最小限红</label>
@@ -236,11 +222,31 @@
             </div>
         </div>
     </div>
+    @if($info!=null)
+        <div class="layui-form-item">
+            <label class="layui-form-label">抽水权限：</label>
+            <div class="layui-input-block">
+                <input type="checkbox" id="baccarat" name="baccarat" title="百家乐" {{isset($info['baccarat'])&&$info['baccarat']==1?'checked':''}}>
+                <br>
+                <span style="color: red">勾选后不可取消</span>
+            </div>
+        </div>
+    @else
+        <div class="layui-form-item">
+            <label class="layui-form-label">抽水权限：</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="baccarat" id="baccarat" title="百家乐">
+                <br>
+                <span style="color: red">勾选后不可取消</span>
+            </div>
+        </div>
+    @endif
     <div class="layui-form-item">
         <div class="layui-input-block">
             <input type="checkbox" name="is_allow" title="允许其直属会员在线充值" @if($info!=null) @if($info['is_allow']==1) checked="checked" @endif @endif>
             <input type="checkbox" name="is_allow_draw" title="允许其直属会员在线提现" @if($info!=null) @if($info['is_allow_draw']==1) checked="checked" @endif @endif>
             <input type="checkbox" name="is_allow_password" title="限制代理提现和修改密码" @if($info!=null) @if($info['is_allow_password']!=1) checked="checked" @endif @endif>
+            <input type="checkbox" name="is_realTime" title="注单实时查询" @if($info!=null) @if($info['is_realTime']==1) checked="checked" @endif @endif>
         </div>
     </div>
 @endsection

@@ -44,7 +44,7 @@ class GameRecordController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         if (true==$request->has('excel'))
         {

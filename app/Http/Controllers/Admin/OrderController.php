@@ -148,7 +148,7 @@ class OrderController extends Controller
             }
             else
             {
-                $limit = 10;
+                $limit = config('admin.limit');
             }
             $dataSql = 'select t.*,u.user_type from ('.$sql.') t 
             left join hq_user u on u.user_id = t.user_id
@@ -247,10 +247,7 @@ class OrderController extends Controller
                     }
                     if ($value->status==1)
                     {
-                        if ($afterResult!=null && $afterResult!='')
-                            $a['status']="结果修改";
-                        else
-                            $a['status']="结算完成";
+                        $a['status']="结算完成";
                     }elseif ($value->status==2)
                     {
                         $a['status']="玩家取消";
@@ -260,6 +257,9 @@ class OrderController extends Controller
                     }elseif($value->status==3)
                     {
                         $a['status']='作废';
+                    }elseif($value->status==4)
+                    {
+                        $a['status']='结果修改';
                     }
                     $excel[] = $a;
                 }
@@ -311,7 +311,7 @@ class OrderController extends Controller
         }else{
             $data = array();
             $count= array();
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
+            return view('order.list',['list'=>$data,'min'=>config('admin.minDate'),'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>0,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }
     }
     public function getOrderListByUserId($id,$begin,$end,Request $request){
@@ -359,7 +359,7 @@ class OrderController extends Controller
             }
             else
             {
-                $limit = 10;
+                $limit = config('admin.limit');
             }
             $start = strtotime($begin);
             $endart = strtotime('+1day',strtotime($end))-1;

@@ -74,7 +74,7 @@ class DeskController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = Desk::where($map)->paginate($limit)->appends($request->all());
         foreach($data as $key=>$value)

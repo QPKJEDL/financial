@@ -103,7 +103,7 @@ class ThreeController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = $sql->where($map)->orderBy('czrecord.creatime','desc')->paginate($limit)->appends($request->all());
         foreach ($data as $key=>$datum)

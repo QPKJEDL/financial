@@ -109,6 +109,7 @@
             <input type="checkbox" name="is_allow" title="允许其直属会员在线充值" @if($info!=null) @if($info['is_allow']==1) checked="checked" @endif @endif>
             <input type="checkbox" name="is_allow_draw" title="允许其直属会员在线提现" @if($info!=null) @if($info['is_allow_draw']==1) checked="checked" @endif @endif>
             <input type="checkbox" name="is_allow_password" title="限制代理提现和修改密码" @if($info!=null) @if($info['is_allow_password']==2) checked="checked" @endif @endif>
+            <input type="checkbox" name="is_realTime" title="注单实时查询" @if($info!=null) @if($info['is_realTime']==1) checked="checked" @endif @endif>
         </div>
     </div>
 @endsection

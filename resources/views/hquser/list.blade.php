@@ -130,9 +130,9 @@
                 laypage = layui.laypage
             ;
 
-            var count = {{$list->total()}};
-            var curr = {{$list->currentPage()}};
-            var limit = {{$limit}};
+            var count = "{{$list->total()}}";
+            var curr = "{{$list->currentPage()}}";
+            var limit = "{{$limit}}";
             var url = "";
             //分页
             laypage.render({
@@ -140,7 +140,7 @@
                 ,count: count
                 ,curr:curr
                 ,limit:limit
-                ,limits:[10,50,100,150]
+                ,limits:[100,500,1000]
                 ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
                 ,jump: function(obj,first){
                     if(url.indexOf("?") >= 0){

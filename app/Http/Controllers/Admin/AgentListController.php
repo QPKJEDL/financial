@@ -69,7 +69,7 @@ class AgentListController extends Controller
             }
             else
             {
-                $limit = 10;
+                $limit = config('admin.limit');
             }
             $data = $sql->where($map)->orderBy('created_at','desc')->paginate($limit)->appends($request->all());
             $sumBalance=0;
@@ -198,6 +198,14 @@ class AgentListController extends Controller
         {
             $data['is_allow_password']=2;
         }
+        if (!empty($data['is_realTime']))
+        {
+            $data['is_realTime']=1;
+        }
+        else
+        {
+            $data['is_realTime']=0;
+        }
         $data["ancestors"]=0;
         $count = Agent::insertGetId($data);
         if ($count){
@@ -320,6 +328,14 @@ class AgentListController extends Controller
             else
             {
                 $data['is_allow_password']=1;
+            }
+            if (!empty($data['is_realTime']))
+            {
+                $data['is_realTime']=1;
+            }
+            else
+            {
+                $data['is_realTime']=0;
             }
             $up=Agent::where('id',$id)->update($data);
             if($up!==false){
@@ -559,7 +575,7 @@ class AgentListController extends Controller
             }
             else
             {
-                $limit = 10;
+                $limit = config('admin.limit');
             }
             $data = $sql->where($map)->paginate($limit)->appends($request->all());
             foreach ($data as $key=>$value){
@@ -601,7 +617,7 @@ class AgentListController extends Controller
         }
         else
         {
-            $limit = 10;
+            $limit = config('admin.limit');
         }
         $data = $sql->paginate($limit)->appends($request->all());
         foreach($data as $key=>&$value){
