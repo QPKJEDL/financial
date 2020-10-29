@@ -115,7 +115,7 @@
                     @elseif($info['type']==4)
                         @if($info['afterResult']['bankernum']=="")
                             <span style="color: blue;">{{$info['afterResult']['x1result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x2result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x3result']}}</span>
-                            <span style="color: blue;">{{$info['afterResult']['x4result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x5result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x6result']}}</span>
+                            {{--<span style="color: blue;">{{$info['afterResult']['x4result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x5result']}}</span>&nbsp;<span style="color: blue;">{{$info['afterResult']['x6result']}}</span>--}}
                         @else
                             <span style="color: red;">{{$info['afterResult']['bankernum']}}</span>
                         @endif

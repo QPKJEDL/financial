@@ -314,7 +314,10 @@
                                 shadeClose:true,
                                 offset:'10%',
                                 area:['60%','80%'],
-                                content:'/admin/agent/0/edit'
+                                content:'/admin/agent/0/edit',
+                                end:function () {
+                                    location.reload();
+                                }
                             });
                             layer.full(index);
                         });
@@ -325,7 +328,10 @@
                                 shadeClose:true,
                                 offset:'10%',
                                 area:['60%','80%'],
-                                content:'/admin/onAgent/0/edit'
+                                content:'/admin/onAgent/0/edit',
+                                end:function () {
+                                    location.reload();
+                                }
                             });
                             layer.full(index);
                         });

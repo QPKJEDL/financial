@@ -301,7 +301,7 @@
                 var yesterday=new Date(time);
                 var month=yesterday.getMonth();
                 var day=yesterday.getDate();
-                var t=yesterday.getFullYear() + "-" + (yesterday.getMonth()> 9 ? (yesterday.getMonth() + 1) : "0" + (yesterday.getMonth() + 1)) + "-" +(yesterday.getDate()> 9 ? (yesterday.getDate()) : "0" + (yesterday.getDate()));
+                var t=yesterday.getFullYear() + "-" + (yesterday.getMonth()> 9 ? (yesterday.getMonth() + 1) : (yesterday.getMonth() + 1)) + "-" +(yesterday.getDate()> 9 ? (yesterday.getDate()) : "0" + (yesterday.getDate()));
                 var index = layer.open({
                     type:2,
                     title:name+'下注详情',

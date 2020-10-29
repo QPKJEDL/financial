@@ -370,8 +370,9 @@ class UserDayEndController extends Controller
         $sql = UserRebate::query();
         $sql->leftJoin('user','user.user_id','=','user_rebate.user_id')
             ->leftJoin('user_account','user_account.user_id','=','user_rebate.user_id')
-            ->select('user_rebate.id')->where($map)->whereBetween('user_rebate.creatime',[$beginTime,$endTime])->groupBy('user_rebate.agent_id','user_rebate.creatime');
+            ->select('user_rebate.id')->where($map)->whereBetween('user_rebate.creatime',[$beginTime,$endTime]);
         $dataSql = UserRebate::whereIn('user_rebate.id',$sql->get());
+
         $data = $dataSql->leftJoin('user','user.user_id','=','user_rebate.user_id')
             ->leftJoin('user_account','user_account.user_id','=','user_rebate.user_id')
             ->select('user_rebate.user_id','user.nickname','user.account','user_account.balance',DB::raw('SUM(betNum) as betNum'),

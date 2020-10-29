@@ -287,8 +287,8 @@ class GameRecordController extends Controller
         $str = '';
         $data = json_decode($jsonStr,true);
         //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
-        //判断庄是否通吃
-        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+        //判断庄是否通吃 && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" ){
             $str = "庄";
         }else{
             if ($data['x1result'] == "win") {
@@ -300,7 +300,7 @@ class GameRecordController extends Controller
             if ($data['x3result'] == "win") {
                 $str = $str."闲3";
             }
-            if ($data['x4result'] == "win") {
+            /*if ($data['x4result'] == "win") {
                 $str = $str."闲4";
             }
             if ($data['x5result'] == "win") {
@@ -308,7 +308,7 @@ class GameRecordController extends Controller
             }
             if ($data['x6result'] == "win") {
                 $str = $str."闲6";
-            }
+            }*/
         }
         return $str;
     }

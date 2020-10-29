@@ -141,11 +141,11 @@
                         @elseif($info->game_type==4)
                             @if($info->result['bankernum']=="")
                                 <span style="color: blue;">{{$info->result['x1result']}}&nbsp;{{$info->result['x2result']}}&nbsp;{{$info->result['x3result']}}
-                                    {{$info->result['x4result']}}&nbsp;{{$info->result['x5result']}}&nbsp;{{$info->result['x6result']}}</span>
+                                    {{--{{$info->result['x4result']}}&nbsp;{{$info->result['x5result']}}&nbsp;{{$info->result['x6result']}}--}}</span>
                             @else
                                 <span style="color: red;">{{$info->result['bankernum']}}</span>
                             @endif
-                            [庄：{{$info->winner['bankernum']}} 闲1：{{$info->winner['x1num']}} 闲2：{{$info->winner['x2num']}} 闲3：{{$info->winner['x3num']}} 闲4：{{$info->winner['x4num']}} 闲5：{{$info->winner['x5num']}} 闲6：{{$info->winner['x6num']}}]
+                            [庄：{{$info->winner['bankernum']}} 闲1：{{$info->winner['x1num']}} 闲2：{{$info->winner['x2num']}} 闲3：{{$info->winner['x3num']}} {{--闲4：{{$info->winner['x4num']}} 闲5：{{$info->winner['x5num']}} 闲6：{{$info->winner['x6num']}}--}}]
                         @elseif($info->game_type==5)
                             @if($info->result['bankernum']=="")
                                 <span style="color: blue;">{{$info->result['Fanresult']}} {{$info->result['Shunresult']}} {{$info->result['Tianresult']}}</span>

@@ -359,7 +359,7 @@ class HqUserController extends Controller
      */
     public function dataByHttpsPost($userId,$balance,$type)
     {
-        $url = "http://119.28.60.221:8210/postpeermessage";
+        $url = Redis::get('hq_admin_push_url');
         $money = UserAccount::where('user_id','=',$userId)->first();
         $arr['uid']=$userId;
         $arr['appid']=(int)1;

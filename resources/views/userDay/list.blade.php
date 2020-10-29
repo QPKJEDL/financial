@@ -69,8 +69,8 @@
                 <td class="hidden-xs">{{$info['account']}}</td>
                 <td class="hidden-xs">{{number_format($info['balance']/100,2)}}</td>
                 <td class="hidden-xs">{{$info['betNum']}}</td>
-                <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['betMoney']/100,2)}}</td>
+                <td class="hidden-xs">{{number_format($info['washMoney']/100,2)}}</td>
                 <td class="hidden-xs">{{number_format($info['getMoney']/100,2)}}</td>
                 <td class="hidden-xs">
                     {{number_format($info['feeMoney']/100,2)}}
@@ -79,7 +79,7 @@
                     @if($info['userType']==2)
                         -
                     @else
-                        {{number_format($info['betMoney']/100 * 0.009,2)}}
+                        {{number_format($info['washMoney']/100 * 0.009,2)}}
                     @endif
                 </td>
                 <td class="hidden-xs">{{number_format($info['reward']/100,2)}}</td>

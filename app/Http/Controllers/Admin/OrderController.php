@@ -405,9 +405,10 @@ class OrderController extends Controller
             }
             return view('order.list',['min'=>config('admin.minDate'),'list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'limit'=>$limit,'game'=>Game::getGameByType(),'input'=>$request->all(),'pages'=>count($count)]);
         }else{
+            $limit = 10;
             $data=array();
             $count= array();
-            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count)]);
+            return view('order.list',['list'=>$data,'desk'=>$this->getDeskList(),'curr'=>$curr,'game'=>Game::getGameByType(),'input'=>$request->all(),'min'=>config('admin.min_date'),'pages'=>count($count),'limit'=>$limit]);
         }
     }
 
@@ -603,8 +604,8 @@ class OrderController extends Controller
         //解析json
         $data = json_decode($jsonStr,true);
         //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
-        //判断庄是否通吃
-        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+        //判断庄是否通吃   && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']==""){
             $arr['bankernum'] = "庄";
         }else{
             $arr['bankernum'] = "";
@@ -624,7 +625,7 @@ class OrderController extends Controller
         } else {
             $arr['x3result'] = "";
         }
-        if ($data['x4result'] == "win") {
+        /*if ($data['x4result'] == "win") {
             $arr['x4result'] = "闲4";
         } else {
             $arr['x4result'] = "";
@@ -638,7 +639,7 @@ class OrderController extends Controller
             $arr['x6result'] = "闲6";
         } else {
             $arr['x6result'] = "";
-        }
+        }*/
         return $arr;
     }
     /**
