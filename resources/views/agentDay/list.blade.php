@@ -300,13 +300,12 @@
             });
             //本周
             $("#thisWeek").click(function () {
-                var now = new Date();//当前日期
-                var nowDayOfWeek = now.getDay();//今天本周的第几天
-                var nowDay = now.getDate();//当前日
-                var nowMonth = now.getMonth();//当前月
-                var nowYear = now.getFullYear();//当前年
-                var weekStartDate = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek + 1);
-                $("input[name='begin']").val(formatDate(weekStartDate))
+                var now = new Date();
+                var nowTime = now.getTime() ;
+                var day = now.getDay() || 7  //为周日的时候 day 修改为7  否则当天周天会有问题
+                var oneDayTime = 24*60*60*1000 ;
+                var MondayTime = nowTime - (day-1)*oneDayTime ;//显示周一
+                $("input[name='begin']").val(formatDate(new Date(MondayTime)))
                 $("input[name='end']").val(formatDate(now))
             });
             //本月

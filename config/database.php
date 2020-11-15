@@ -42,10 +42,10 @@ return [
 
         'mysql' => [
             /*'read' => [
-                'host' => ['172.19.0.12'],
+                'host' => ['172.19.16.12'],
             ],
             'write' => [
-                'host' => ['172.19.0.12'],
+                'host' => ['172.19.16.12'],
             ],*/
             'read' => [
                 'host' => ['127.0.0.1'],
@@ -55,9 +55,7 @@ return [
             ],
             'sticky'    => false,
             'driver'    => 'mysql',
-            'database'  => 'huanqiu',/*
-            'username'  => 'huanqiu',
-            'password'  => 'lcf2954626',*/
+            'database'  => 'hq',
             'username'  => 'root',
             'password'  => 'root',
             'charset'   => 'utf8mb4',
@@ -67,7 +65,7 @@ return [
         ],
 
         'mysql2' => [
-            'host' => ['172.19.0.12'],
+            'host' => ['172.19.16.12'],
             'sticky'    => false,
             'driver'    => 'mysql',
             'database'  => 'rabbit',

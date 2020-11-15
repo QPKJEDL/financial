@@ -607,7 +607,7 @@ class AgentListController extends Controller
         $user = HqUser::query();
         $sql = $user->leftJoin('agent_users','user.agent_id','=','agent_users.id')
             ->leftJoin('user_account','user.user_id','=','user_account.user_id')
-            ->select('user.*','agent_users.nickname as agentName','user_account.balance')->where($map);
+            ->select('user.*','agent_users.nickname as agentName','agent_users.username as username','user_account.balance')->where($map);
         if(true ==$request->has('nickname')){
             $sql->where('user.nickname','like','%'.HttpFilter($request->input('nickname')).'%');
         }

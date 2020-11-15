@@ -34,7 +34,7 @@ class AgentDayEndController extends Controller
         $sql = UserRebate::query();
         $sql->leftJoin('agent_users','agent_users.id','=','user_rebate.agent_id')
             ->select('user_rebate.agent_id','agent_users.nickname','agent_users.username','agent_users.fee','agent_users.userType','agent_users.proportion','agent_users.pump',
-            DB::raw('SUM(washMoney) as washMoney'),DB::raw('SUM(getMoney) as getMoney'),DB::raw('SUM(betMoney) as betMoney'),DB::raw('SUM(feeMoney) as feeMoney'));
+            DB::raw('SUM(hq_user_rebate.washMoney) as washMoney'),DB::raw('SUM(hq_user_rebate.getMoney) as getMoney'),DB::raw('SUM(hq_user_rebate.betMoney) as betMoney'),DB::raw('SUM(hq_user_rebate.feeMoney) as feeMoney'));
         if (true==$request->has('begin'))
         {
             $begin = strtotime($request->input('begin'))+config('admin.beginTime');
@@ -74,6 +74,7 @@ class AgentDayEndController extends Controller
         {
             $request->offsetSet('account','');
         }
+
         $data = $sql->where($map)->whereBetween('user_rebate.creatime',[$begin,$end])->groupBy('user_rebate.agent_id')->get()->toArray();
         //获取要统计的数据id
         $info = UserRebate::query()->select('id','user_id','creatime')->whereBetween('creatime',[$begin,$end])->groupBy('id','creatime','user_id')->get();
@@ -720,6 +721,7 @@ class AgentDayEndController extends Controller
             } catch (\PHPExcel_Exception $e) {
             }
         }
+
         return view('agentDay.list',['list'=>$data,'input'=>$request->all(),'sum'=>$sumData]);
     }
 
@@ -844,7 +846,8 @@ class AgentDayEndController extends Controller
                                 $datum['feeMoney']=$datum['feeMoney'] + $this->xsNiuNiuPump($v);
                             }
                         }
-                    }elseif ($v['game_type']==4)
+                    }
+                    elseif ($v['game_type']==4)
                     {
                         if ($v['status']==1)
                         {
@@ -855,7 +858,8 @@ class AgentDayEndController extends Controller
                                 $datum['feeMoney']=$datum['feeMoney'] + $this->xsSanGongPump($v);
                             }
                         }
-                    }elseif ($v['game_type']==5)
+                    }
+                    elseif ($v['game_type']==5)
                     {
                         if ($v['status']==1)
                         {
@@ -885,7 +889,7 @@ class AgentDayEndController extends Controller
         $data = $dataSql->leftJoin('user','user.user_id','=','user_rebate.user_id')
             ->leftJoin('user_account','user_account.user_id','=','user_rebate.user_id')
             ->select('user_rebate.user_id','user.nickname','user.account','user_account.balance',DB::raw('SUM(betNum) as betNum'),
-                DB::raw('SUM(washMoney) as washMoney'),DB::raw('SUM(betMoney) as betMoney'),DB::raw('SUM(getMoney) as getMoney'),DB::raw('SUM(feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
+                DB::raw('SUM(hq_user_rebate.washMoney) as washMoney'),DB::raw('SUM(hq_user_rebate.betMoney) as betMoney'),DB::raw('SUM(hq_user_rebate.getMoney) as getMoney'),DB::raw('SUM(hq_user_rebate.feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
         if (count($data)==0)
         {
             foreach ($orderData as $key=>$v)

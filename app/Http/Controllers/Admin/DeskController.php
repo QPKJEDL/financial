@@ -1148,7 +1148,7 @@ class DeskController extends Controller
                 }
             }
         }
-        if ($winner['x4result']=="win")
+        /*if ($winner['x4result']=="win")
         {
             $x4Num = $this->sConvertNumbers($winner['x4num']);
             if (!empty($betMoney['x4_equal']))
@@ -1249,7 +1249,7 @@ class DeskController extends Controller
                     $money = $money + ($agentInfo['sgbets_fee']['SuperDouble'] - $userInfo['sgbets_fee']['SuperDouble']/100) * $betMoney['x6_Super_Double'];
                 }
             }
-        }
+        }*/
         return $money;
     }
     /**

@@ -242,8 +242,8 @@ class GameRecordController extends Controller
         //解析json
         $data = json_decode($jsonStr,true);
         //{"bankernum":"9点","x1num":"小三公","x1result":"win","x2num":"混三公","x2result":"win","x3num":"大三公","x3result":"win","x4num":"0点","x4result":"", "x5num":"1点", "x5result":"", "x6num":"9点", "x6result":""}
-        //判断庄是否通吃
-        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']=="" && $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""){
+        //判断庄是否通吃&& $data['x4result']=="" && $data['x5result']=="" && $data['x6result']==""
+        if ($data['x1result']=='' && $data['x2result']=="" && $data['x3result']==""){
             $arr['bankernum'] = "庄";
         }else{
             $arr['bankernum'] = "";
@@ -263,7 +263,7 @@ class GameRecordController extends Controller
         } else {
             $arr['x3result'] = "";
         }
-        if ($data['x4result'] == "win") {
+        /*if ($data['x4result'] == "win") {
             $arr['x4result'] = "闲4";
         } else {
             $arr['x4result'] = "";
@@ -277,8 +277,8 @@ class GameRecordController extends Controller
             $arr['x6result'] = "闲6";
         } else {
             $arr['x6result'] = "";
-        }
-        $arr['num']='庄'.$data['bankernum'].' 闲1 '.$data['x1num'].' 闲2 '.$data['x2num'].' 闲3 '.$data['x3num'].' 闲4 '.$data['x4num'].' 闲5 '.$data['x5num'].' 闲6 '.$data['x6num'];
+        }*/
+        $arr['num']='庄'.$data['bankernum'].' 闲1 '.$data['x1num'].' 闲2 '.$data['x2num'].' 闲3 '.$data['x3num'];//.' 闲4 '.$data['x4num'].' 闲5 '.$data['x5num'].' 闲6 '.$data['x6num'];
         return $arr;
     }
 

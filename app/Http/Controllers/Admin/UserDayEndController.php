@@ -165,7 +165,7 @@ class UserDayEndController extends Controller
         $data = $dataSql->leftJoin('user','user.user_id','=','user_rebate.user_id')
             ->leftJoin('user_account','user_account.user_id','=','user_rebate.user_id')
             ->select('user_rebate.user_id','user.nickname','user.account','user_account.balance',DB::raw('SUM(betNum) as betNum'),
-                DB::raw('SUM(washMoney) as washMoney'),DB::raw('SUM(betMoney) as betMoney'),DB::raw('SUM(getMoney) as getMoney'),DB::raw('SUM(feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
+                DB::raw('SUM(hq_user_rebate.washMoney) as washMoney'),DB::raw('SUM(hq_user_rebate.betMoney) as betMoney'),DB::raw('SUM(hq_user_rebate.getMoney) as getMoney'),DB::raw('SUM(hq_user_rebate.feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
         foreach ($data as $key=>$datum)
         {
             $data[$key]['reward']=LiveReward::getSumMoney($datum['user_id'],$begin,$end);
@@ -376,7 +376,7 @@ class UserDayEndController extends Controller
         $data = $dataSql->leftJoin('user','user.user_id','=','user_rebate.user_id')
             ->leftJoin('user_account','user_account.user_id','=','user_rebate.user_id')
             ->select('user_rebate.user_id','user.nickname','user.account','user_account.balance',DB::raw('SUM(betNum) as betNum'),
-                DB::raw('SUM(washMoney) as washMoney'),DB::raw('SUM(betMoney) as betMoney'),DB::raw('SUM(getMoney) as getMoney'),DB::raw('SUM(feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
+                DB::raw('SUM(hq_user_rebate.washMoney) as washMoney'),DB::raw('SUM(hq_user_rebate.betMoney) as betMoney'),DB::raw('SUM(hq_user_rebate.getMoney) as getMoney'),DB::raw('SUM(hq_user_rebate.feeMoney) as feeMoney'),'user_rebate.userType')->groupBy('user_rebate.user_id')->get()->toArray();
         if (count($data)==0)
         {
             foreach ($orderData as $key=>$v)

@@ -315,8 +315,16 @@ class OrderController extends Controller
         }
     }
     public function getOrderListByUserId($id,$begin,$end,Request $request){
-        $request->offsetSet('begin',$begin);
-        $request->offsetSet('end',$end);
+        /*
+        $request->offsetSet('end',$end);*/
+        if (false==$request->has('begin'))
+        {
+            $request->offsetSet('begin',$begin);
+        }
+        if (false==$request->has('end'))
+        {
+            $request->offsetSet('end',$end);
+        }
         if (true==$request->has('pageNum')){
             $curr = $request->input('pageNum');
         }else{
