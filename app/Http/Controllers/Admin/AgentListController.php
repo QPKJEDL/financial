@@ -846,7 +846,7 @@ class AgentListController extends Controller
      * 获取用户最近充值记录
      */
     public function getUserCzCord($userId){
-        $data = Czrecord::where('user_id',$userId)->orderBy('creatime','desc')->first();
+        $data = Czrecord::where('user_id',$userId)->orderBy('creatime','desc')->value("score");
         return $data;
     }
 
