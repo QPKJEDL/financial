@@ -65,7 +65,7 @@ class AuthCheck
     private function check(){
 
 
-        $agent=DB::table('admin_users')->where('id',Auth::user()['id'])->first();
+        $agent=DB::table('business')->where('id',Auth::user()['id'])->first();
         //print_r($agent);
         return $agent;
     }
