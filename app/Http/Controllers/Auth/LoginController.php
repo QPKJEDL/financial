@@ -84,7 +84,7 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         Log::addLogs(trans('fzs.login.login_info'),'/admin/login',$user->id);
-        DB::table('admin_users')->where('id',$user['id'])->update(array("login_time"=>time()));
+        DB::table('business')->where('id',$user['id'])->update(array("login_time"=>time()));
         Session::put('AuthTime', time()); //存储验证码
         return $this->oriAuthenticated($request, $user);
     }
