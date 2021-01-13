@@ -1840,7 +1840,7 @@ class AgentDayEndController extends Controller
             $shunMen = $this->aConvertNumbers($winner['ShunNum']);
             if (!empty($betMoney['ShunMen_equal']))
             {
-                $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['FanMen_equal']* $agentInfo['pump']/100;
+                $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['ShunMen_equal']* $agentInfo['pump']/100;
             }
             if (!empty($betMoney['ShunMen_Super_Double']))
             {
@@ -1854,9 +1854,9 @@ class AgentDayEndController extends Controller
             {
                 $money = $money + (1 - $userInfo['a89bets_fee']['Equal']/100) * $betMoney['TianMen_equal']* $agentInfo['pump']/100;
             }
-            if (!empty($betMoney['FanMen_Super_Double']))
+            if (!empty($betMoney['TianMen_Super_Double']))
             {
-                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['FanMen_Super_Double'] * $fanNum* $agentInfo['pump']/100;
+                $money = $money + (1 - $userInfo['a89bets_fee']['SuperDouble']/100) * $betMoney['TianMen_Super_Double'] * $fanNum* $agentInfo['pump']/100;
             }
         }
         return $money;
