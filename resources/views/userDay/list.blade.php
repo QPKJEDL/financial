@@ -137,15 +137,48 @@
             //今天
             $("#today").click(function () {
                 var startDate = new Date();
-                $("input[name='begin']").val(formatDate(startDate))
-                $("input[name='end']").val(formatDate(startDate))
+
+                var beforeEight=eightBeOrAf();
+
+                if(beforeEight){
+                    var startDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                    var endDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + (24*60*60*1000 -1));
+                    $("#begin").val(formatDate(startDate1));
+                    $("#end").val(formatDate(endDate1));
+                }else{
+                    $("input[name='begin']").val(formatDate(startDate));
+                    $("input[name='end']").val(formatDate(startDate));
+                }
+
+
+
+                // $("input[name='begin']").val(formatDate(startDate))
+                // $("input[name='end']").val(formatDate(startDate))
+
             });
             //昨天
             $("#yesterday").click(function () {
-                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
-                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + (24*60*60*1000 -1));
-                $("#begin").val(formatDate(startDate))
-                $("#end").val(formatDate(endDate))
+
+                var beforeEight=eightBeOrAf();
+
+                if(beforeEight){
+                    var startDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000-24*60*60*1000);
+                    var endDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000-24*60*60*1000 + (24*60*60*1000 -1));
+                    $("#begin").val(formatDate(startDate1));
+                    $("#end").val(formatDate(endDate1))
+                }else{
+                    var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                    var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + (24*60*60*1000 -1));
+                    $("#begin").val(formatDate(startDate));
+                    $("#end").val(formatDate(endDate))
+                }
+
+
+                // var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                // var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + (24*60*60*1000 -1));
+                // $("#begin").val(formatDate(startDate))
+                // $("#end").val(formatDate(endDate))
+
             });
             $(".reset").click(function(){
                 $("input[name='begin']").val('');
@@ -219,6 +252,20 @@
             form.render();
             form.on('submit(formDemo)', function(data) {
             });
+
+            //获取当前时间，判断是否为8点前
+            function eightBeOrAf() {
+                var my =new Date();
+                var nowTime =new Date().getTime();//当前时间戳
+                var nowDate=my.getFullYear()+"-"+(my.getMonth()+1)+"-"+my.getDate();
+                var eight=new Date(nowDate).getTime()+28800*1000;//今天上午8点时间戳
+
+                //console.log(nowTime)
+                //console.log(eight)
+                return nowTime<eight
+
+            }
+
             //获得某月的天数 （与上面有重复可删除，不然本月结束日期报错）
             function getMonthDays(nowyear){
                 var lastMonthDate = new Date(); //上月日期

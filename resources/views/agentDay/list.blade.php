@@ -286,18 +286,54 @@
             });
             //今天
             $("#today").click(function () {
-                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
-                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
-                $("input[name='begin']").val(formatDate(startDate))
-                $("input[name='end']").val(formatDate(endDate))
+
+                var beforeEight=eightBeOrAf();
+
+                if(beforeEight){
+                    var startDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime()- 24*60*60*1000);
+                    var endDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000+ 24 *60 *60*1000-1);
+                    $("input[name='begin']").val(formatDate(startDate1));
+                    $("input[name='end']").val(formatDate(endDate1));
+                }else{
+                    var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
+                    var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
+                    $("input[name='begin']").val(formatDate(startDate));
+                    $("input[name='end']").val(formatDate(endDate));
+                }
+
+
+                // var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime());
+                // var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() + 24 *60 *60*1000-1);
+                // $("input[name='begin']").val(formatDate(startDate))
+                // $("input[name='end']").val(formatDate(endDate))
+
+
             });
             //昨天
             $("#yesterday").click(function () {
-                var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
-                var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
-                $("input[name='begin']").val(formatDate(startDate))
-                $("input[name='end']").val(formatDate(endDate))
+
+
+                var beforeEight=eightBeOrAf();
+
+                if(beforeEight){
+                    var startDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000-24*60*60*1000);
+                    var endDate1 = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000-24*60*60*1000 + 24*60*60*1000 -1);
+                    $("input[name='begin']").val(formatDate(startDate1));
+                    $("input[name='end']").val(formatDate(endDate1))
+                }else{
+                    var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                    var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
+                    $("input[name='begin']").val(formatDate(startDate));
+                    $("input[name='end']").val(formatDate(endDate))
+                }
+
+                // var startDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000);
+                // var endDate = new Date(new Date(new Date().toLocaleDateString()).getTime() - 24*60*60*1000 + 24*60*60*1000 -1);
+                // $("input[name='begin']").val(formatDate(startDate))
+                // $("input[name='end']").val(formatDate(endDate))
+
             });
+
             //本周
             $("#thisWeek").click(function () {
                 var now = new Date();
@@ -375,6 +411,20 @@
             form.on('submit(formDemo)', function(data) {
                 console.log(data);
             });
+
+            //获取当前时间，判断是否为8点前
+            function eightBeOrAf() {
+                var my =new Date();
+                var nowTime =new Date().getTime();//当前时间戳
+                var nowDate=my.getFullYear()+"-"+(my.getMonth()+1)+"-"+my.getDate();
+                var eight=new Date(nowDate).getTime()+28800*1000;//今天上午8点时间戳
+
+                //console.log(nowTime)
+                //console.log(eight)
+                return nowTime<eight
+
+            }
+
             //获得某月的天数 （与上面有重复可删除，不然本月结束日期报错）
             function getMonthDays(nowyear){
                 var lastMonthDate = new Date(); //上月日期
