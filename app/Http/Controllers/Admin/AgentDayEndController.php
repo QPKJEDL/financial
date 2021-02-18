@@ -104,7 +104,7 @@ class AgentDayEndController extends Controller
             $sumData['getMoney'] = $sumData['getMoney'] + $this->getToDayWinMoney($orderData);
             $sumData['betMoney'] = $sumData['betMoney'] + $this->getToDayCode($orderData);
             //打赏金额
-            $sumData['reward'] = $sumData['reward'] + $this->getToDayReward($begin,$end);
+            //$sumData['reward'] = $sumData['reward'] + $this->getToDayReward($begin,$end);
             if (count($data)!=0)
             {
                 foreach ($orderData as $key=>$datum)
@@ -225,6 +225,8 @@ class AgentDayEndController extends Controller
                                 $data[$index]['washMoney']=$data[$index]['washMoney'] + 0; + 0;
                             }
                         }
+
+                        $data[$index]['getMoney']+=$datum['get_money'];
                     }
                     else
                     {
